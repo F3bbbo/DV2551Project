@@ -1,0 +1,107 @@
+#pragma once
+#include <windows.h>
+#include <d3d12.h>
+#include <dxgi1_5.h> //Only used for initialization of the device and swap chain.
+#include "../Renderer.h"
+#include "../Utilityfunctions.h"
+#pragma comment (lib, "d3d12.lib")
+#pragma comment (lib, "DXGI.lib")
+#pragma comment (lib, "d3dcompiler.lib")
+#include "RootSignature.h"
+#include "PipelineStateDX12.h"
+
+#include <SDL.h>
+#include <GL/glew.h>
+
+
+#include <iostream>
+#include <wrl\client.h>
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+#include "Defines.h"
+class DirectX12Renderer : public Renderer
+{
+public:
+	DirectX12Renderer();
+	~DirectX12Renderer();
+	Material* makeMaterial(const std::string& name);
+	Mesh* makeMesh();
+	VertexBuffer* makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage);
+	Texture2D* makeTexture2D();
+	Sampler2D* makeSampler2D();
+	RenderState* makeRenderState();
+	std::string getShaderPath();
+	std::string getShaderExtension();
+	ConstantBuffer* makeConstantBuffer(std::string NAME, unsigned int location);
+	Technique* makeTechnique(Material*, RenderState*);
+
+
+	 HWND InitWindow(HINSTANCE hInstance,int width, int height);
+
+
+
+	 int initialize(unsigned int width = 800, unsigned int height = 600);
+	 void setWinTitle(const char* title);
+	 void present();
+	 int shutdown();
+
+	void setClearColor(float, float, float, float);
+	void clearBuffer(unsigned int);
+	// can be partially overriden by a specific Technique.
+	void setRenderState(RenderState* ps);
+	// submit work (to render) to the renderer.
+	void submit(Mesh* mesh);
+	virtual void frame();
+	void waitForGPU();
+	Microsoft::WRL::ComPtr<ID3D12Device> getDevice();
+	void setMaterialState(MaterialDX12 *material);
+
+private:
+	//Window vars
+	MSG msg;
+	HWND wndHandle;			//1. Create Window
+	int width, height;
+	D3D12_VIEWPORT viewPort;
+	D3D12_RECT scissorRect;
+	//Fence vars
+	HANDLE eventHandle = nullptr;
+	UINT64 fenceValue = 0;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
+	//PipelineState
+	PipelineStateDX12 pipelineState;
+	int frameindex;
+	void createDevice();
+	void createFenceAndDescriptorSizes();
+	void createCommandObject();
+	void createSwapChain(HWND& wndHandle);
+	void createRTV();
+	void createViewPortScissor();
+	void createDescriptorHeaps();
+	void createDepthStencil();
+	ID3D12DescriptorHeap*	gDescriptorHeap[1];
+	Rootsignature Root;
+	//Device
+	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
+	//Command list/queue
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	void executeCommandList();
+	//Swap Chain
+	D3D12_CPU_DESCRIPTOR_HANDLE currDescHandle;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> RTVHeap;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainBuffers[SWAP_BUFFER_COUNT];
+	int currBackBuffer = 0;
+	unsigned int RTVDescriptorSize, DSVDescriptorSize, CBVSRVDescriptorSize;
+	D3D12_CPU_DESCRIPTOR_HANDLE getCurrBackBuffView();
+	//Depth stencil
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilBuffer;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DSVHeap;
+	D3D12_CPU_DESCRIPTOR_HANDLE getDepthView();
+	//Draw list
+	int perMat = 1;
+	std::vector<Mesh*> drawList;
+	std::unordered_map<Technique*, std::vector<Mesh*>> drawList2;
+
+	float clearColor[4] = { 0,0,0,0 };
+};
