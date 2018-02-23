@@ -4,7 +4,9 @@
 #include <SDL_timer.h>
 #include <type_traits> 
 #include <assert.h>
-
+#include <assimp/Importer.hpp>
+#include <assimp\cimport.h>
+#include <assimp/postprocess.h>
 #include "Renderer.h"
 #include "Mesh.h"
 #include "Texture2D.h"
@@ -298,6 +300,8 @@ void shutdown() {
 
 int main(int argc, char *argv[])
 {
+
+	
 	renderer = Renderer::makeRenderer(Renderer::BACKEND::DX12);
 	renderer->initialize(800,600);
 	renderer->setWinTitle("OpenGL");
