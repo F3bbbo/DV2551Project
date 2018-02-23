@@ -42,7 +42,7 @@ Mesh * DirectX12Renderer::makeMesh()
 
 VertexBuffer * DirectX12Renderer::makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage)
 {
-	VertexBufferDX12* ptr = new VertexBufferDX12(device.Get(), commandList);
+	VertexBufferDX12* ptr = new VertexBufferDX12(device.Get(), commandList, &Root);
 	ptr->createBuffer(device.Get(), size);
 	return ptr;
 }
@@ -266,7 +266,7 @@ void DirectX12Renderer::frame()
 				{
 					mesh->bindIAVertexBuffer(ele.first);
 				}
-				mesh->txBuffer->bind(work.first->getMaterial());
+				//mesh->txBuffer->bind(work.first->getMaterial());
 				//Bind the table
 				Root.setRootTableData();
 				//Draw

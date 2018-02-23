@@ -13,10 +13,15 @@ void Rootsignature::bindTexture(int slot, ID3D12DescriptorHeap* descHeap)
 	//addBind(slot, heap, SHADER_RESOURCE_VIEW);
 }
 
-void Rootsignature::bindUAV(int slot, ID3D12Resource * resource)
+void Rootsignature::bindStructuredBuffers(int slot, ID3D12Resource * resource)
 {
-	commandList->SetGraphicsRootUnorderedAccessView(UAV_OFFSET + slot, resource->GetGPUVirtualAddress());
+	bindStructuredBuffers(slot, resource, 0);
 	//addBind(slot, heap, UNORDERED_ACCESS_VIEW);
+}
+
+void Rootsignature::bindStructuredBuffers(int slot, ID3D12Resource * resource, size_t offset)
+{
+	commandList->SetGraphicsRootShaderResourceView(STRUCT_BUFF_OFFSET + slot, resource->GetGPUVirtualAddress() + offset);
 }
 
 //void Rootsignature::executeBind(ID3D12GraphicsCommandList * cmdList)
@@ -75,7 +80,7 @@ void Rootsignature::CreateRootsignature(Microsoft::WRL::ComPtr<ID3D12Device> gDe
 		dtRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 		dtRanges[i].NumDescriptors = 1; //Only one view in each table
 		dtRanges[i].BaseShaderRegister = i; //register(ti);
-		dtRanges[i].RegisterSpace = 0; //register(b0,space0);
+		dtRanges[i].RegisterSpace = 1; //register(b0,space1);
 		dtRanges[i].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 		//Define the table
@@ -93,10 +98,10 @@ void Rootsignature::CreateRootsignature(Microsoft::WRL::ComPtr<ID3D12Device> gDe
 	}
 
 	//Defining UAV entries
-	for (UINT i = 0; i < NUM_UAV; i++)
+	for (UINT i = 0; i < NUM_STRUCT_BUFF; i++)
 	{
 		D3D12_ROOT_PARAMETER rp = {};
-		rp.ParameterType = D3D12_ROOT_PARAMETER_TYPE_UAV;
+		rp.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 		rp.Descriptor = { i, 0 }; // {register, space}
 		rp.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 		//Push the root param on the list
@@ -119,7 +124,7 @@ void Rootsignature::CreateRootsignature(Microsoft::WRL::ComPtr<ID3D12Device> gDe
 	sd.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 	D3D12_ROOT_SIGNATURE_DESC rsDesc = {};
-	rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
 	rsDesc.NumParameters = rootParams.size();
 	rsDesc.pParameters = rootParams.data();
 	rsDesc.NumStaticSamplers = 1;

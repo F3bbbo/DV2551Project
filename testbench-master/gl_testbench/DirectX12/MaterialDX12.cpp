@@ -91,7 +91,8 @@ void MaterialDX12::setDiffuse(Color c)
 
 void MaterialDX12::fillPSODesc(D3D12_GRAPHICS_PIPELINE_STATE_DESC & psoDesc)
 {
-	psoDesc.InputLayout = { inputDescriptions.data(), (UINT) inputDescriptions.size() };
+	//psoDesc.InputLayout = { inputDescriptions.data(), (UINT) inputDescriptions.size() };
+	psoDesc.InputLayout = {NULL, 0};
 	psoDesc.VS = { shaders[ShaderType::VS]->GetBufferPointer(), shaders[ShaderType::VS]->GetBufferSize() };
 	psoDesc.PS = { shaders[ShaderType::PS]->GetBufferPointer(), shaders[ShaderType::PS]->GetBufferSize() };
 }
@@ -124,12 +125,11 @@ int MaterialDX12::compileShader(ShaderType type)
 		std::string version;
 		if (type == ShaderType::VS)
 		{
-			version = "vs_5_0";
-			createInputDesc(defines);
+			version = "vs_5_1";
 		}
 		else if (type == ShaderType::PS)
 		{
-			version = "ps_5_0";
+			version = "ps_5_1";
 		}
 		//Define macros code
 		std::vector<std::string> macroValueStrings;
@@ -141,30 +141,6 @@ int MaterialDX12::compileShader(ShaderType type)
 	return 0;
 }
 
-void MaterialDX12::createInputDesc(std::string macros)
-{
-	inputDescriptions.clear();
-
-	if (macros.find("POSITION") != std::string::npos)
-	{
-		inputDescriptions.push_back({ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, POSITION, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });
-		//offset += sizeof(float) * 4;
-	}
-
-	if (macros.find("NORMAL") != std::string::npos)
-	{
-		inputDescriptions.push_back({ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, NORMAL, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });
-		//offset += sizeof(float) * 4;
-	}
-
-	if (macros.find("TEXTCOORD") != std::string::npos)
-	{
-		inputDescriptions.push_back({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, TEXTCOORD, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });
-		//offset += sizeof(float) * 4;
-	}
-
-	return;
-}
 
 D3D_SHADER_MACRO MaterialDX12::getMacro(LPCSTR name, LPCSTR value)
 {

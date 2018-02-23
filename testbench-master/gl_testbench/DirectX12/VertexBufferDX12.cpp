@@ -4,9 +4,10 @@
 #include <d3dx12.h>
 
 
-VertexBufferDX12::VertexBufferDX12(ID3D12Device *device, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& cmdList)
+VertexBufferDX12::VertexBufferDX12(ID3D12Device *device, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& cmdList, Rootsignature* rs)
 {
 	this->commandList = cmdList;
+	this->rootSignature = rs;
 	byteSize = 0;
 	location = UINT_MAX;
 	bufferGPU = nullptr;
@@ -44,25 +45,26 @@ void VertexBufferDX12::setData(const void * data, size_t size, size_t offset)
 
 void VertexBufferDX12::bind(size_t offset, size_t size, unsigned int location)
 {
-	//See the buffer as just one triangle and bind it(should probably not be used).
-	bind(offset, size, size, location);
+	rootSignature->bindStructuredBuffers(location, bufferGPU.Get(), offset);
+	
 }
 
 void VertexBufferDX12::bind(size_t offset, size_t numElements, size_t elementSize, unsigned int location)
 {
-	//Set current location
-	this->location = location;
-	//Set buffer view
-	buffView.BufferLocation = bufferGPU->GetGPUVirtualAddress() + offset;
-	buffView.SizeInBytes = elementSize * numElements;
-	buffView.StrideInBytes = elementSize;
-	//Bind buffer
-	commandList->IASetVertexBuffers(location, 1, &buffView);
+	bind(offset, numElements * elementSize, location);
+	////Set current location
+	//this->location = location;
+	////Set buffer view
+	//buffView.BufferLocation = bufferGPU->GetGPUVirtualAddress() + offset;
+	//buffView.SizeInBytes = elementSize * numElements;
+	//buffView.StrideInBytes = elementSize;
+	////Bind buffer
+	//commandList->IASetVertexBuffers(location, 1, &buffView);
 }
 
 void VertexBufferDX12::unbind()
 {
-	commandList->IASetVertexBuffers(location, 1, nullptr);
+	//commandList->IASetVertexBuffers(location, 1, nullptr);
 }
 
 size_t VertexBufferDX12::getSize()
