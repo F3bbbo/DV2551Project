@@ -43,8 +43,6 @@ private:
 	//std::map <ShaderType, D3D12_SHADER_BYTECODE> shaders;
 	std::map <ShaderType, Microsoft::WRL::ComPtr<ID3DBlob>> shaders;
 	std::string name;
-	std::vector<D3D12_INPUT_ELEMENT_DESC> inputDescriptions;
-	void createInputDesc(std::string macros);
 	D3D_SHADER_MACRO getMacro(LPCSTR name, LPCSTR value);
 	bool makeShaderDefineFile(std::string defines, std::string filename);
 	std::vector<D3D_SHADER_MACRO> calculateMacros(std::string macros, std::vector<std::string> &stringValues);
