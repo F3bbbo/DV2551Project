@@ -156,6 +156,7 @@
     <ClCompile Include="DirectX12\PipelineStateDX12.cpp" />
     <ClCompile Include="DirectX12\RenderStateDX12.cpp" />
     <ClCompile Include="DirectX12\MaterialDX12.cpp" />
+    <ClCompile Include="DirectX12\ResourceDX12.cpp" />
     <ClCompile Include="DirectX12\RootSignature.cpp" />
     <ClCompile Include="DirectX12\Sampler2DDX12.cpp" />
     <ClCompile Include="DirectX12\TechniqueDX12.cpp" />
@@ -197,6 +198,7 @@
     <ClInclude Include="DirectX12\PipelineStateDX12.h" />
     <ClInclude Include="DirectX12\RenderStateDX12.h" />
     <ClInclude Include="DirectX12\MaterialDX12.h" />
+    <ClInclude Include="DirectX12\ResourceDX12.h" />
     <ClInclude Include="DirectX12\RootSignature.h" />
     <ClInclude Include="DirectX12\Sampler2DDX12.h" />
     <ClInclude Include="DirectX12\TechniqueDX12.h" />

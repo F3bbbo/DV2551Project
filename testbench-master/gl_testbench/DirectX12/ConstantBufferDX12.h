@@ -8,23 +8,24 @@
 #include "RootSignature.h"
 #include "d3dUtil.h"
 #include <DirectXMath.h>
-
+#include "ResourceDX12.h"
 
 class ConstantBufferDX12 : public ConstantBuffer
 {
 public:
-	ConstantBufferDX12(Microsoft::WRL::ComPtr<ID3D12Device> gDevice,std::string NAME, unsigned int location, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& cmdList, Rootsignature* rs/*, Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>* descriptorHeaps*/);
+	ConstantBufferDX12(ID3D12Device* device, std::string NAME, unsigned int location, ID3D12GraphicsCommandList* cmdList, Rootsignature* rs);
 	~ConstantBufferDX12();
 	void setData(const void* data, size_t size, Material* m, unsigned int location);
 	void bind(Material*);
 private:
 	Rootsignature * pRS;
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
-	void* 	gConstantBufferCPU_mappedPtr;
-	Microsoft::WRL::ComPtr<ID3D12Resource>	gConstantBufferResource;
-	Microsoft::WRL::ComPtr<ID3D12Resource>	upploadbuffer;
+	ID3D12GraphicsCommandList* commandList;
+	ID3D12Device* device;
+	void* gConstantBufferCPU_mappedPtr;
+	Resource* constantBuffer;
 	std::string name;
 	unsigned int location;
 	void* buff = nullptr;
 	void* lastMat;
+	unsigned int size;
 };
