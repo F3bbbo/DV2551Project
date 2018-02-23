@@ -19,7 +19,7 @@ class twoDgrid
 
 private:
 //	std::vector<Object> test;
-	std::vector<std::vector<Object>> twodtest;
+	std::vector<std::vector<std::vector<Object>>> twodgrid;
 public:
 	twoDgrid();
 	~twoDgrid();
