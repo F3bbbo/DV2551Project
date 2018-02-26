@@ -3,7 +3,7 @@
 #include <string>
 #include <set>
 #include <map>
-
+#include <SimpleMath.h>
 /* 
  * extend this class with a concrete implementation,
  * public interface should not change...
@@ -13,9 +13,6 @@
  * Only need to support Vertex and Fragment for now.
  * Any extra functionality should be added to a concrete subclass
  */
-struct Color {
-	float r, g, b, a;
-};
 
 class Material
 {
@@ -35,7 +32,7 @@ public:
 	// removes any resource linked to shader type
 	virtual void removeShader(ShaderType type) = 0;
 
-	virtual void setDiffuse(Color c) = 0;
+	virtual void setDiffuse(DirectX::SimpleMath::Color c) = 0;
 
 	/*
 	 * Compile and link all shaders
@@ -62,7 +59,7 @@ public:
 	virtual void disable() = 0;
 	
 	bool isValid;
-	Color color {};
+	DirectX::SimpleMath::Color color {};
 
 	std::map<ShaderType, std::string> shaderFileNames;
 	std::map<ShaderType, std::set<std::string>> shaderDefines;

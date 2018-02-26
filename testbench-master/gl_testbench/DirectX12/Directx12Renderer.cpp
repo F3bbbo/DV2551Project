@@ -22,10 +22,12 @@ DirectX12Renderer::DirectX12Renderer()
 	Root.CreateRootsignature(getDevice());
 	Root.bindRootSignature();
 
+	camera = new CameraDX12(width, height, 0.1f, 0.5f, 1.f);
 }
 
 DirectX12Renderer::~DirectX12Renderer()
 {
+	delete camera;
 	shutdown();
 }
 
