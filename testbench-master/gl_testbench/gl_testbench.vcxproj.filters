@@ -132,6 +132,9 @@
     <ClCompile Include="DirectX12\ResourceDX12.cpp">
       <Filter>Source Files\DirectX12</Filter>
     </ClCompile>
+    <ClCompile Include="Grid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
@@ -250,6 +253,9 @@
     </ClInclude>
     <ClInclude Include="..\assets\DX5\Defines.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DirectX12\ResourceDX12.h">
       <Filter>Source Files\DirectX12</Filter>
