@@ -52,6 +52,8 @@ public:
 	void submit(Mesh* mesh);
 	virtual void frame();
 	void waitForGPU();
+	void signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value);
+	void waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime);
 	Microsoft::WRL::ComPtr<ID3D12Device> getDevice();
 	void setMaterialState(MaterialDX12 *material);
 
