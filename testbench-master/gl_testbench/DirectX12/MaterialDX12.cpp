@@ -132,10 +132,12 @@ int MaterialDX12::compileShader(ShaderType type)
 			version = "ps_5_1";
 		}
 		//Define macros code
-		std::vector<std::string> macroValueStrings;
-		macroValueStrings.reserve(10);
-		const std::vector<D3D_SHADER_MACRO> macros(calculateMacros(defines, macroValueStrings));
-		shaders[type] = d3dUtil::CompileShader(convert(shaderFileNames[type]), macros.data(), "main", version.c_str());
+		//std::vector<std::string> macroValueStrings;
+		//macroValueStrings.reserve(10);
+		//const std::vector<D3D_SHADER_MACRO> macros(calculateMacros(defines, macroValueStrings));
+		
+		//makeShaderDefineFile("", "Defines.h");
+		shaders[type] = d3dUtil::CompileShader(convert(shaderFileNames[type]), nullptr, "main", version.c_str());
 		defines = "";
 	}
 	return 0;
@@ -156,42 +158,43 @@ bool MaterialDX12::makeShaderDefineFile(std::string defines, std::string filenam
 	std::ofstream file;
 	file.open(shaderPath + filename, std::ofstream::out);
 
-	if (defines.find("POSITION") != std::string::npos)
-	{
-		file << "#define POSITIONDEF " << std::to_string(POSITION) << "\n";
-	}
-	if (defines.find("NORMAL") != std::string::npos)
-	{
-		file << "#define NORMALDEF " << std::to_string(NORMAL) << "\n";
-	}
-	if (defines.find("TEXTCOORD") != std::string::npos)
-	{
-		file << "#define TEXTCOORDDEF " << std::to_string(TEXTCOORD) << "\n";
-	}
-	if (defines.find("INDEXBUFF") != std::string::npos)
-	{
-		file << "#define INDEXBUFFDEF " << std::to_string(INDEXBUFF) << "\n";
-	}
-	if (defines.find("TRANSLATION") != std::string::npos)
-	{
-		file << "#define TRANSLATIONDEF b" << std::to_string(TRANSLATION) << "\n";
-	}
-	if (defines.find("TRANSLATION_NAME") != std::string::npos)
-	{
-		file << "#define TRANSLATION_NAMEDEF " << TRANSLATION_NAME << "\n";
-	}
-	if (defines.find("DIFFUSE_TINT") != std::string::npos)
-	{
-		file << "#define DIFFUSE_TINTDEF b" << std::to_string(DIFFUSE_TINT) << "\n";
-	}
-	if (defines.find("DIFFUSE_TINT_NAME") != std::string::npos)
-	{
-		file << "#define DIFFUSE_TINT_NAMEDEF " << DIFFUSE_TINT_NAME << "\n";
-	}
-	if (defines.find("DIFFUSE_SLOT") != std::string::npos)
-	{
-		file << "#define DIFFUSE_SLOTDEF t" << std::to_string(DIFFUSE_SLOT) << "\n";
-	}
+	//if (defines.find("POSITION") != std::string::npos)
+	//{
+	//	file << "#define POSITIONDEF " << std::to_string(POSITION) << "\n";
+	//}
+	//if (defines.find("NORMAL") != std::string::npos)
+	//{
+	//	file << "#define NORMALDEF " << std::to_string(NORMAL) << "\n";
+	//}
+	//if (defines.find("TEXTCOORD") != std::string::npos)
+	//{
+	//	file << "#define TEXTCOORDDEF " << std::to_string(TEXTCOORD) << "\n";
+	//}
+	//if (defines.find("INDEXBUFF") != std::string::npos)
+	//{
+	//	file << "#define INDEXBUFFDEF " << std::to_string(INDEXBUFF) << "\n";
+	//}
+	//if (defines.find("TRANSLATION") != std::string::npos)
+	//{
+	//	file << "#define TRANSLATIONDEF b" << std::to_string(TRANSLATION) << "\n";
+	//}
+	//if (defines.find("TRANSLATION_NAME") != std::string::npos)
+	//{
+	//	file << "#define TRANSLATION_NAMEDEF " << TRANSLATION_NAME << "\n";
+	//}
+	//if (defines.find("DIFFUSE_TINT") != std::string::npos)
+	//{
+	//	file << "#define DIFFUSE_TINTDEF b" << std::to_string(DIFFUSE_TINT) << "\n";
+	//}
+	//if (defines.find("DIFFUSE_TINT_NAME") != std::string::npos)
+	//{
+	//	file << "#define DIFFUSE_TINT_NAMEDEF " << DIFFUSE_TINT_NAME << "\n";
+	//}
+	//if (defines.find("DIFFUSE_SLOT") != std::string::npos)
+	//{
+	//	file << "#define DIFFUSE_SLOTDEF t" << std::to_string(DIFFUSE_SLOT) << "\n";
+	//}
+	file << defines;
 	//Close file
 	file.close();
 	return false;
@@ -201,50 +204,50 @@ std::vector<D3D_SHADER_MACRO> MaterialDX12::calculateMacros(std::string macros, 
 {
 	std::vector<D3D_SHADER_MACRO> shaderMacros;
 
-	if (macros.find("POSITION") != std::string::npos)
-	{
-		stringValues.push_back(std::to_string(POSITION));
-		shaderMacros.push_back(getMacro("POSITIONDEF", stringValues.back().data()));
-	}
-	if (macros.find("NORMAL") != std::string::npos)
-	{
-		stringValues.push_back(std::to_string(NORMAL));
-		shaderMacros.push_back(getMacro("NORMALDEF", stringValues.back().data()));
-	}
+	//if (macros.find("POSITION") != std::string::npos)
+	//{
+	//	stringValues.push_back(std::to_string(POSITION));
+	//	shaderMacros.push_back(getMacro("POSITIONDEF", stringValues.back().data()));
+	//}
+	//if (macros.find("NORMAL") != std::string::npos)
+	//{
+	//	stringValues.push_back(std::to_string(NORMAL));
+	//	shaderMacros.push_back(getMacro("NORMALDEF", stringValues.back().data()));
+	//}
 
-	if (macros.find("TEXTCOORD") != std::string::npos)
-	{
-		stringValues.push_back(std::to_string(TEXTCOORD));
-		shaderMacros.push_back(getMacro("TEXTCOORDDEF", stringValues.back().data()));
-	}
-	if (macros.find("INDEXBUFF") != std::string::npos)
-	{
-		stringValues.push_back(std::to_string(INDEXBUFF));
-		shaderMacros.push_back(getMacro("INDEXBUFFDEF", stringValues.back().data()));
-	}
-	if (macros.find("TRANSLATION") != std::string::npos)
-	{
-		stringValues.push_back(std::string("b") + std::to_string(TRANSLATION));
-		shaderMacros.push_back(getMacro("TRANSLATIONDEF", stringValues.back().data()));
-	}
+	//if (macros.find("TEXTCOORD") != std::string::npos)
+	//{
+	//	stringValues.push_back(std::to_string(TEXTCOORD));
+	//	shaderMacros.push_back(getMacro("TEXTCOORDDEF", stringValues.back().data()));
+	//}
+	//if (macros.find("INDEXBUFF") != std::string::npos)
+	//{
+	//	stringValues.push_back(std::to_string(INDEXBUFF));
+	//	shaderMacros.push_back(getMacro("INDEXBUFFDEF", stringValues.back().data()));
+	//}
+	//if (macros.find("TRANSLATION") != std::string::npos)
+	//{
+	//	stringValues.push_back(std::string("b") + std::to_string(TRANSLATION));
+	//	shaderMacros.push_back(getMacro("TRANSLATIONDEF", stringValues.back().data()));
+	//}
 
-	if (macros.find("TRANSLATION_NAME") != std::string::npos)
-		shaderMacros.push_back(getMacro("TRANSLATION_NAMEDEF", TRANSLATION_NAME));
+	//if (macros.find("TRANSLATION_NAME") != std::string::npos)
+	//	shaderMacros.push_back(getMacro("TRANSLATION_NAMEDEF", TRANSLATION_NAME));
 
-	if (macros.find("DIFFUSE_TINT") != std::string::npos)
-	{
-		stringValues.push_back(std::string("b") + std::to_string(DIFFUSE_TINT));
-		shaderMacros.push_back(getMacro("DIFFUSE_TINTDEF", stringValues.back().data()));
-	}
+	//if (macros.find("DIFFUSE_TINT") != std::string::npos)
+	//{
+	//	stringValues.push_back(std::string("b") + std::to_string(DIFFUSE_TINT));
+	//	shaderMacros.push_back(getMacro("DIFFUSE_TINTDEF", stringValues.back().data()));
+	//}
 
-	if (macros.find("DIFFUSE_TINT_NAME") != std::string::npos)
-		shaderMacros.push_back(getMacro("DIFFUSE_TINT_NAMEDEF", DIFFUSE_TINT_NAME));
+	//if (macros.find("DIFFUSE_TINT_NAME") != std::string::npos)
+	//	shaderMacros.push_back(getMacro("DIFFUSE_TINT_NAMEDEF", DIFFUSE_TINT_NAME));
 
-	if (macros.find("DIFFUSE_SLOT") != std::string::npos)
-	{
-		stringValues.push_back(std::string("t") + std::to_string(DIFFUSE_SLOT));
-		shaderMacros.push_back(getMacro("DIFFUSE_SLOTDEF", stringValues.back().data()));
-	}
+	//if (macros.find("DIFFUSE_SLOT") != std::string::npos)
+	//{
+	//	stringValues.push_back(std::string("t") + std::to_string(DIFFUSE_SLOT));
+	//	shaderMacros.push_back(getMacro("DIFFUSE_SLOTDEF", stringValues.back().data()));
+	//}
 
 	shaderMacros.push_back(getMacro(NULL, NULL));
 	return shaderMacros;

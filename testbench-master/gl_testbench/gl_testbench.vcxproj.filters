@@ -155,9 +155,6 @@
     <ClInclude Include="RenderState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IA.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="VertexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -246,6 +243,9 @@
       <Filter>Source Files\DirectX12</Filter>
     </ClInclude>
     <ClInclude Include="..\assets\DX5\Defines.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\assets\DX5\IA.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
   </ItemGroup>

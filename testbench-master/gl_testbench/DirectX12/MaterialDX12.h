@@ -5,7 +5,7 @@
 #include <d3dcompiler.h>
 #include <string>
 #include <wrl\client.h>
-#include "..\IA.h"
+#include "IA.h"
 #include "..\Renderer.h"
 #include "ConstantBufferDX12.h"
 #include "RootSignature.h"
