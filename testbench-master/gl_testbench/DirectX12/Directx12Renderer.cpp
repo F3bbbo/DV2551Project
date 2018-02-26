@@ -29,27 +29,27 @@ DirectX12Renderer::~DirectX12Renderer()
 	shutdown();
 }
 
-Material * DirectX12Renderer::makeMaterial(const std::string & name)
+std::shared_ptr<Material> DirectX12Renderer::makeMaterial(const std::string & name)
 {
-	return new MaterialDX12(name, commandList,getDevice(), getShaderPath(), &Root);
+	return std::make_shared<MaterialDX12>(name, commandList,getDevice(), getShaderPath(), &Root);
 }
 
-Mesh * DirectX12Renderer::makeMesh()
+std::shared_ptr<Mesh> DirectX12Renderer::makeMesh()
 {
 	
-	return new MeshDX12();
+	return std::make_shared<Mesh>();
 }
 
-VertexBuffer * DirectX12Renderer::makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage)
+std::shared_ptr<VertexBuffer> DirectX12Renderer::makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage)
 {
-	VertexBufferDX12* ptr = new VertexBufferDX12(device.Get(), commandList, &Root);
+	std::shared_ptr<VertexBufferDX12> ptr = std::make_shared<VertexBufferDX12>(device.Get(), commandList, &Root);
 	ptr->createBuffer(device.Get(), size);
 	return ptr;
 }
 
-Texture2D * DirectX12Renderer::makeTexture2D()
+std::shared_ptr<Texture2D> DirectX12Renderer::makeTexture2D()
 {	
-	Texture2DDX12* texture = new Texture2DDX12(getDevice().Get(), commandList.Get(), &Root);
+	std::shared_ptr<Texture2DDX12> texture = std::make_shared<Texture2DDX12>(getDevice().Get(), commandList.Get(), &Root);
 	commandList->Close();
 	executeCommandList(); // To transform the texture into a shader resource
 	waitForGPU();
@@ -57,14 +57,14 @@ Texture2D * DirectX12Renderer::makeTexture2D()
 	return texture;
 }
 
-Sampler2D * DirectX12Renderer::makeSampler2D()
+std::shared_ptr<Sampler2D> DirectX12Renderer::makeSampler2D()
 {
-	return new Sampler2DDX12();
+	return std::make_shared<Sampler2DDX12>();
 }
 
-RenderState * DirectX12Renderer::makeRenderState()
+std::shared_ptr<RenderState> DirectX12Renderer::makeRenderState()
 {
-	return new RenderStateDX12();
+	return std::make_shared<RenderStateDX12>();
 }
 
 std::string DirectX12Renderer::getShaderPath()
@@ -77,14 +77,14 @@ std::string DirectX12Renderer::getShaderExtension()
 	return std::string(".hlsl");
 }
 
-ConstantBuffer * DirectX12Renderer::makeConstantBuffer(std::string NAME, unsigned int location)
+std::shared_ptr<ConstantBuffer> DirectX12Renderer::makeConstantBuffer(std::string NAME, unsigned int location)
 {
-	return new ConstantBufferDX12(device.Get(), NAME, location, commandList.Get(), &Root);
+	return std::make_shared<ConstantBufferDX12>(device.Get(), NAME, location, commandList.Get(), &Root);
 }
 
-Technique * DirectX12Renderer::makeTechnique(Material *m, RenderState *r)
+std::shared_ptr<Technique> DirectX12Renderer::makeTechnique(std::shared_ptr<Material> m, std::shared_ptr<RenderState> r)
 {
-	return new TechniqueDX12(m, r);
+	return std::make_shared<TechniqueDX12>(m, r);
 }
 
 HWND DirectX12Renderer::InitWindow(HINSTANCE hInstance,int width,int height)
@@ -230,7 +230,7 @@ void DirectX12Renderer::setRenderState(RenderState * ps)
 void DirectX12Renderer::submit(Mesh * mesh)
 {
 	if (perMat) 
-		drawList2[mesh->technique].push_back(mesh);
+		drawList2[mesh->technique.get()].push_back(mesh);
 	else
 		drawList.push_back(mesh);
 }

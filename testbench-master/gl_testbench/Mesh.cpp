@@ -11,7 +11,7 @@ Mesh::Mesh()
 	inputStream: location of the binding in the VertexShader
 */
 void Mesh::addIAVertexBufferBinding(
-	VertexBuffer* buffer, 
+	std::shared_ptr<VertexBuffer> buffer,
 	size_t offset, 
 	size_t numElements, 
 	size_t sizeElement, 
@@ -30,7 +30,7 @@ void Mesh::bindIAVertexBuffer(unsigned int location)
 }
 
 // note, slot is a value set in the shader as well (registry, or binding)
-void Mesh::addTexture(Texture2D* texture, unsigned int slot)
+void Mesh::addTexture(std::shared_ptr<Texture2D> texture, unsigned int slot)
 {
 	// would override the slot if there is another pointer here.
 	textures[slot] = texture;

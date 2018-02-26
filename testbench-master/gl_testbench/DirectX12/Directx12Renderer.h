@@ -23,16 +23,16 @@ class DirectX12Renderer : public Renderer
 public:
 	DirectX12Renderer();
 	~DirectX12Renderer();
-	Material* makeMaterial(const std::string& name);
-	Mesh* makeMesh();
-	VertexBuffer* makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage);
-	Texture2D* makeTexture2D();
-	Sampler2D* makeSampler2D();
-	RenderState* makeRenderState();
+	std::shared_ptr<Material> makeMaterial(const std::string& name);
+	std::shared_ptr<Mesh> makeMesh();
+	std::shared_ptr<VertexBuffer> makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage);
+	std::shared_ptr<Texture2D> makeTexture2D();
+	std::shared_ptr<Sampler2D> makeSampler2D();
+	std::shared_ptr<RenderState> makeRenderState();
 	std::string getShaderPath();
 	std::string getShaderExtension();
-	ConstantBuffer* makeConstantBuffer(std::string NAME, unsigned int location);
-	Technique* makeTechnique(Material*, RenderState*);
+	std::shared_ptr<ConstantBuffer> makeConstantBuffer(std::string NAME, unsigned int location);
+	std::shared_ptr<Technique> makeTechnique(std::shared_ptr<Material>, std::shared_ptr<RenderState>);
 
 
 	 HWND InitWindow(HINSTANCE hInstance,int width, int height);

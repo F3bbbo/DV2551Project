@@ -4,7 +4,7 @@
 #include "Directx12Renderer.h"
 #include "MaterialDX12.h"
 
-TechniqueDX12::TechniqueDX12(Material* m, RenderState* r)
+TechniqueDX12::TechniqueDX12(std::shared_ptr<Material> m, std::shared_ptr<RenderState> r)
 	:Technique(m, r)
 {
 
@@ -17,8 +17,8 @@ TechniqueDX12::~TechniqueDX12()
 
 void TechniqueDX12::enable(Renderer * renderer)
 {
-	renderer->setRenderState(renderState);
-	MaterialDX12* pMaterialDX12 = dynamic_cast<MaterialDX12*>(material);
+	renderer->setRenderState(renderState.get());
+	MaterialDX12* pMaterialDX12 = dynamic_cast<MaterialDX12*>(material.get());
 	if (pMaterialDX12 != nullptr)
 	{
 		pMaterialDX12->enable(renderer);

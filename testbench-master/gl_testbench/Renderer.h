@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <Windows.h>
+#include <memory>
 
 #include "RenderState.h"
 #include "Technique.h"
@@ -30,16 +31,16 @@ public:
 	Return concrete objects of the BACKEND
 	*/
 	static Renderer* makeRenderer(BACKEND backend);
-	virtual Material* makeMaterial(const std::string& name) = 0;
-	virtual Mesh* makeMesh() = 0;
-	virtual VertexBuffer* makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage) = 0;
-	virtual Texture2D* makeTexture2D() = 0;
-	virtual Sampler2D* makeSampler2D() = 0;
-	virtual RenderState* makeRenderState() = 0;
+	virtual std::shared_ptr<Material> makeMaterial(const std::string& name) = 0;
+	virtual std::shared_ptr<Mesh> makeMesh() = 0;
+	virtual std::shared_ptr<VertexBuffer> makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage) = 0;
+	virtual std::shared_ptr<Texture2D> makeTexture2D() = 0;
+	virtual std::shared_ptr<Sampler2D> makeSampler2D() = 0;
+	virtual std::shared_ptr<RenderState> makeRenderState() = 0;
 	virtual std::string getShaderPath() = 0;
 	virtual std::string getShaderExtension() = 0;
-	virtual ConstantBuffer* makeConstantBuffer(std::string NAME, unsigned int location) = 0;
-	virtual Technique* makeTechnique(Material*, RenderState*) = 0;
+	virtual std::shared_ptr<ConstantBuffer> makeConstantBuffer(std::string NAME, unsigned int location) = 0;
+	virtual std::shared_ptr<Technique> makeTechnique(std::shared_ptr<Material>, std::shared_ptr<RenderState>) = 0;
 
 	Renderer() { /*InitializeCriticalSection(&protectHere);*/ };
 	virtual int initialize(unsigned int width = 800, unsigned int height = 600) = 0;

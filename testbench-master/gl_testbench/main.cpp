@@ -12,6 +12,7 @@
 #include "Mesh.h"
 #include "Texture2D.h"
 #include <math.h>
+#include <memory>
 
 #include "Grid.h"
 using namespace std;
@@ -20,15 +21,15 @@ Renderer* renderer;
 // do what ever you want in your renderer backend.
 // all these objects are loosely coupled, creation and destruction is responsibility
 // of the testbench, not of the container objects
-vector<Mesh*> scene;
-vector<Material*> materials;
-vector<Technique*> techniques;
-vector<Texture2D*> textures;
-vector<Sampler2D*> samplers;
+vector<std::shared_ptr<Mesh>> scene;
+vector<std::shared_ptr<Material>> materials;
+vector<std::shared_ptr<Technique>> techniques;
+vector<std::shared_ptr<Texture2D>> textures;
+vector<std::shared_ptr<Sampler2D>> samplers;
 
-VertexBuffer* pos;
-VertexBuffer* nor;
-VertexBuffer* uvs;
+std::shared_ptr<VertexBuffer> pos;
+std::shared_ptr<VertexBuffer> nor;
+std::shared_ptr<VertexBuffer> uvs;
 
 // forward decls
 void updateScene();
@@ -123,7 +124,7 @@ void renderScene()
 	renderer->clearBuffer(CLEAR_BUFFER_FLAGS::COLOR | CLEAR_BUFFER_FLAGS::DEPTH);
 	for (auto m : scene)
 	{
-		renderer->submit(m);
+		renderer->submit(m.get());
 	}
 	renderer->frame();
 	renderer->present();
@@ -144,7 +145,7 @@ int initialiseTestbench()
 	std::string shaderPath = renderer->getShaderPath();
 	std::string shaderExtension = renderer->getShaderExtension();
 
-	Material *m = renderer->makeMaterial(shaderPath + "VertexShader" + shaderExtension);
+	std::shared_ptr<Material> m = renderer->makeMaterial(shaderPath + "VertexShader" + shaderExtension);
 	
 	m->setShader(shaderPath + "VertexShader" + shaderExtension, Material::ShaderType::VS);
 	m->setShader(shaderPath + "FragmentShader" + shaderExtension, Material::ShaderType::PS);
@@ -154,9 +155,9 @@ int initialiseTestbench()
 
 	materials.push_back(m);
 
-	RenderState* rs = renderer->makeRenderState();
+	std::shared_ptr<RenderState> rs = renderer->makeRenderState();
 
-	Technique *t = renderer->makeTechnique(m, rs);
+	std::shared_ptr<Technique> t = renderer->makeTechnique(m, rs);
 
 	techniques.push_back(t);
 	//Allocate vertex buffers
@@ -165,7 +166,7 @@ int initialiseTestbench()
 	uvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
 
 	//Create mesh
-	Mesh *mesh = renderer->makeMesh();
+	std::shared_ptr<Mesh> mesh = renderer->makeMesh();
 	pos->setData(triPos, sizeof(triPos), 0);
 	mesh->addIAVertexBufferBinding(pos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
 	
@@ -175,7 +176,8 @@ int initialiseTestbench()
 	uvs->setData(triUV, sizeof(triUV), 0);
 	mesh->addIAVertexBufferBinding(uvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
 
-	mesh->technique = t;
+	mesh->technique
+		= t;
 
 	scene.push_back(mesh);
 
@@ -315,34 +317,34 @@ int initialiseTestbench()
 void shutdown() {
 	// shutdown.
 	// delete dynamic objects
-	for (auto m : materials)
-	{
-		delete(m);
-	}
-	for (auto t : techniques)
-	{
-		delete(t);
-	}
-	for (auto m : scene)
-	{
-		delete(m);
-	};
-	assert(pos->refCount() == 0);
-	delete pos;
-	assert(nor->refCount() == 0);
-	delete nor;
-	assert(uvs->refCount() == 0);
-	delete uvs;
-	
-	for (auto s : samplers)
-	{
-		delete s;
-	}
+	//for (auto m : materials)
+	//{
+	//	delete(m);
+	//}
+	//for (auto t : techniques)
+	//{
+	//	delete(t);
+	//}
+	//for (auto m : scene)
+	//{
+	//	delete(m);
+	//};
+	//assert(pos->refCount() == 0);
+	//delete pos;
+	//assert(nor->refCount() == 0);
+	//delete nor;
+	//assert(uvs->refCount() == 0);
+	//delete uvs;
+	//
+	//for (auto s : samplers)
+	//{
+	//	delete s;
+	//}
 
-	for (auto t : textures)
-	{
-		delete t;
-	}
+	//for (auto t : textures)
+	//{
+	//	delete t;
+	//}
 	renderer->shutdown();
 };
 
