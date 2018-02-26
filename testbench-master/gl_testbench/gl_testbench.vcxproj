@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
+    <ClCompile Include="DirectX12\CameraDX12.cpp" />
     <ClCompile Include="DirectX12\ConstantBufferDX12.cpp" />
     <ClCompile Include="DirectX12\d3dUtil.cpp" />
     <ClCompile Include="DirectX12\Directx12Renderer.cpp" />
@@ -189,6 +190,7 @@
     <ClInclude Include="..\include\stb_image.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="ConstantBuffer.h" />
+    <ClInclude Include="DirectX12\CameraDX12.h" />
     <ClInclude Include="DirectX12\ConstantBufferDX12.h" />
     <ClInclude Include="DirectX12\Defines.h" />
     <ClInclude Include="DirectX12\d3dUtil.h" />

@@ -99,6 +99,9 @@
     <ClCompile Include="DirectX12\ResourceDX12.cpp">
       <Filter>Source Files\DirectX12</Filter>
     </ClCompile>
+    <ClCompile Include="DirectX12\CameraDX12.cpp">
+      <Filter>Source Files\DirectX12</Filter>
+    </ClCompile>
     <ClCompile Include="Grid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -196,6 +199,9 @@
     </ClInclude>
     <ClInclude Include="..\assets\DX5\IA.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectX12\CameraDX12.h">
+      <Filter>Source Files\DirectX12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
