@@ -2,6 +2,7 @@
 #include <SDL_keyboard.h>
 #include <SDL_events.h>
 #include <SDL_timer.h>
+#pragma comment(lib,"SDL2.lib")
 #include <type_traits> 
 #include <assert.h>
 #include <assimp/Importer.hpp>
