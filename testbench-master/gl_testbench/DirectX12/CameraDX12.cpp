@@ -26,6 +26,11 @@ void CameraDX12::moveCamera(Vector3 translation, bool run)
 	position += translation * (run ? runSpeed : speed);
 }
 
+void CameraDX12::setCBuffer(std::shared_ptr<ConstantBuffer> cb)
+{
+	cBuffer = cb;
+}
+
 void CameraDX12::setViewMatrix(Matrix& matrix)
 {
 	viewMatrix = matrix;
@@ -51,6 +56,11 @@ void CameraDX12::setForward(Vector3 & vector)
 void CameraDX12::setUp(Vector3 & vector)
 {
 	upVector = vector;
+}
+
+void CameraDX12::update()
+{
+	
 }
 
 Matrix CameraDX12::getViewMatrix()

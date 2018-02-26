@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <d3d12.h>
 #include <dxgi1_5.h> //Only used for initialization of the device and swap chain.
+#include <memory>
 #include "../Renderer.h"
 #include "../Utilityfunctions.h"
 #pragma comment (lib, "d3d12.lib")
@@ -80,6 +81,7 @@ private:
 	void createViewPortScissor();
 	void createDescriptorHeaps();
 	void createDepthStencil();
+	void updateCamera();
 	ID3D12DescriptorHeap*	gDescriptorHeap[1];
 	Rootsignature Root;
 	//Device
