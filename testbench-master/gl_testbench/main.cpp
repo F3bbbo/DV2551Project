@@ -12,7 +12,7 @@
 #include "Texture2D.h"
 #include <math.h>
 
-#include "2D_Grid.h"
+#include "Grid.h"
 using namespace std;
 Renderer* renderer;
 // flat scene at the application level...we don't care about this here.
@@ -304,7 +304,7 @@ int main(int argc, char *argv[])
 {
 
 
-	twoDgrid test;
+	Grid test;
 	renderer = Renderer::makeRenderer(Renderer::BACKEND::DX12);
 	renderer->initialize(800,600);
 	renderer->setWinTitle("OpenGL");

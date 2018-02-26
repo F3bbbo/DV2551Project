@@ -1,15 +1,16 @@
-#include "2D_Grid.h"
+#include "Grid.h"
 
-twoDgrid::twoDgrid()
+Grid::Grid()
 {
-	createtwoDgrid(1, 1);
+	createGrid(1, 1);
 }
 
-twoDgrid::~twoDgrid()
+Grid::~Grid()
 {
+
 }
 
-void twoDgrid::createtwoDgrid(int height, int width)
+void Grid::createGrid(int height, int width)
 {
 	std::vector<Object> testting;
 	Object test;

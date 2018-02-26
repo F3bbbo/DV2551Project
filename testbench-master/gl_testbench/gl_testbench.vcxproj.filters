@@ -129,7 +129,7 @@
     <ClCompile Include="DirectX12\Sampler2DDX12.cpp">
       <Filter>Source Files\DirectX12</Filter>
     </ClCompile>
-    <ClCompile Include="2D_Grid.cpp">
+    <ClCompile Include="Grid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -251,7 +251,7 @@
     <ClInclude Include="..\assets\DX5\Defines.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="2D_Grid.h">
+    <ClInclude Include="Grid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

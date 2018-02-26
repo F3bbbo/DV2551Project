@@ -14,16 +14,16 @@ struct Object
 };
 
 
-class twoDgrid
+class Grid
 {
 
 private:
 //	std::vector<Object> test;
 	std::vector<std::vector<Object>> twodtest;
 public:
-	twoDgrid();
-	~twoDgrid();
-	void createtwoDgrid(int height, int width);
+	Grid();
+	~Grid();
+	void createGrid(int height, int width);
 
 };
 
