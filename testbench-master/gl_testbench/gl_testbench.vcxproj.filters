@@ -105,6 +105,9 @@
     <ClCompile Include="Grid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MeshReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer.h">
@@ -202,6 +205,9 @@
     </ClInclude>
     <ClInclude Include="DirectX12\CameraDX12.h">
       <Filter>Source Files\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshReader.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

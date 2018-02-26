@@ -170,6 +170,7 @@
     <ClCompile Include="DirectX12\TechniqueDX12.cpp" />
     <ClCompile Include="DirectX12\Texture2DDX12.cpp" />
     <ClCompile Include="DirectX12\VertexBufferDX12.cpp" />
+    <ClCompile Include="MeshReader.cpp" />
     <ClCompile Include="Sampler2D.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Utilityfunctions.cpp" />
@@ -205,6 +206,7 @@
     <ClInclude Include="DirectX12\TechniqueDX12.h" />
     <ClInclude Include="DirectX12\Texture2DDX12.h" />
     <ClInclude Include="DirectX12\VertexBufferDX12.h" />
+    <ClInclude Include="MeshReader.h" />
     <ClInclude Include="Sampler2D.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Utilityfunctions.h" />

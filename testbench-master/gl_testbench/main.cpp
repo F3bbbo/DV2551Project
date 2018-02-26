@@ -5,9 +5,7 @@
 #pragma comment(lib,"SDL2.lib")
 #include <type_traits> 
 #include <assert.h>
-#include <assimp/Importer.hpp>
-#include <assimp\cimport.h>
-#include <assimp/postprocess.h>
+
 #include "Renderer.h"
 #include "Mesh.h"
 #include "Texture2D.h"
