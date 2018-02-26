@@ -13,5 +13,5 @@ public:
 void MeshLoader(std::string MeshFileName,unsigned int Pflag);
 	MeshReader();
 	~MeshReader();
-	Mesh
+	
 };
