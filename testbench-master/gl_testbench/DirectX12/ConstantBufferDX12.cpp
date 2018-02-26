@@ -74,3 +74,10 @@ void ConstantBufferDX12::bind(Material *data)
 {
 	pRS->bindConstantBuffer(location, constantBuffer->getResource());
 }
+
+void ConstantBufferDX12::setCommandlist(ID3D12GraphicsCommandList * cmdList)
+{
+	commandList = cmdList;
+}
+
+

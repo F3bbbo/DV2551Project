@@ -55,6 +55,11 @@ Texture2DDX12::~Texture2DDX12()
 	delete texture;
 }
 
+void Texture2DDX12::setCommandlist(ID3D12GraphicsCommandList * cmdList)
+{
+	commandList = cmdList;
+}
+
 void Texture2DDX12::bind(unsigned int slot)
 {
 	pRS->bindTexture(slot, textureDescriptorHeap.Get());

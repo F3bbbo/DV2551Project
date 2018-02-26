@@ -40,6 +40,8 @@ Resource::~Resource()
 {
 }
 
+
+
 ID3D12Resource * Resource::getResource()
 {
 	return resource.Get();

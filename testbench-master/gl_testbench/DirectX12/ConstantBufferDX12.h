@@ -17,6 +17,7 @@ public:
 	~ConstantBufferDX12();
 	void setData(const void* data, size_t size, Material* m, unsigned int location);
 	void bind(Material*);
+	void setCommandlist(ID3D12GraphicsCommandList* cmdList);
 private:
 	Rootsignature * pRS;
 	ID3D12GraphicsCommandList* commandList;

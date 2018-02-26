@@ -84,6 +84,11 @@ void MaterialDX12::disable()
 {
 }
 
+void MaterialDX12::setCommandlist(ID3D12GraphicsCommandList * cmdList)
+{
+	commandList = cmdList;
+}
+
 void MaterialDX12::setDiffuse(DirectX::SimpleMath::Color c)
 {
 
