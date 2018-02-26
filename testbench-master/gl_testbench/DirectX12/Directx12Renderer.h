@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <d3d12.h>
 #include <dxgi1_5.h> //Only used for initialization of the device and swap chain.
+#include <memory>
 #include "../Renderer.h"
 #include "../Utilityfunctions.h"
 #pragma comment (lib, "d3d12.lib")
@@ -24,16 +25,16 @@ class DirectX12Renderer : public Renderer
 public:
 	DirectX12Renderer();
 	~DirectX12Renderer();
-	Material* makeMaterial(const std::string& name);
-	Mesh* makeMesh();
-	VertexBuffer* makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage);
-	Texture2D* makeTexture2D();
-	Sampler2D* makeSampler2D();
-	RenderState* makeRenderState();
+	std::shared_ptr<Material> makeMaterial(const std::string& name);
+	std::shared_ptr<Mesh> makeMesh();
+	std::shared_ptr<VertexBuffer> makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage);
+	std::shared_ptr<Texture2D> makeTexture2D();
+	std::shared_ptr<Sampler2D> makeSampler2D();
+	std::shared_ptr<RenderState> makeRenderState();
 	std::string getShaderPath();
 	std::string getShaderExtension();
-	ConstantBuffer* makeConstantBuffer(std::string NAME, unsigned int location);
-	Technique* makeTechnique(Material*, RenderState*);
+	std::shared_ptr<ConstantBuffer> makeConstantBuffer(std::string NAME, unsigned int location);
+	std::shared_ptr<Technique> makeTechnique(std::shared_ptr<Material>, std::shared_ptr<RenderState>);
 	CameraDX12* camera;
 
 	 HWND InitWindow(HINSTANCE hInstance,int width, int height);
@@ -53,6 +54,8 @@ public:
 	void submit(Mesh* mesh);
 	virtual void frame();
 	void waitForGPU();
+	void signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value);
+	void waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime);
 	Microsoft::WRL::ComPtr<ID3D12Device> getDevice();
 	void setMaterialState(MaterialDX12 *material);
 

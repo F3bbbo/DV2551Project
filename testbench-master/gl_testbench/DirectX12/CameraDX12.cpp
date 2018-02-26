@@ -26,7 +26,7 @@ void CameraDX12::moveCamera(Vector3 translation, bool run)
 	position += translation * (run ? runSpeed : speed);
 }
 
-void CameraDX12::setCBuffer(ConstantBufferDX12 * cb)
+void CameraDX12::setCBuffer(std::shared_ptr<ConstantBuffer> cb)
 {
 	cBuffer = cb;
 }

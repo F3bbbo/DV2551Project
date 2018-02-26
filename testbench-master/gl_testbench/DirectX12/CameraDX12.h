@@ -2,6 +2,7 @@
 #include <d3d12.h>
 #include <SimpleMath.h>
 #include "ConstantBufferDX12.h"
+#include <memory>
 
 using namespace DirectX::SimpleMath;
 
@@ -16,8 +17,7 @@ private:
 	Matrix viewMatrix;
 	Matrix projectionMatrix;
 	Matrix VPMatrix;
-
-	ConstantBufferDX12* cBuffer;
+	std::shared_ptr<ConstantBuffer> cBuffer;
 public:
 	CameraDX12(float width, float height, float rotationSpeed, float walkSpeed, float runSpeed);
 	~CameraDX12();
@@ -25,7 +25,7 @@ public:
 	float speed;
 	float runSpeed;
 	void moveCamera(Vector3 translation, bool run);
-	void setCBuffer(ConstantBufferDX12* cb);
+	void setCBuffer(std::shared_ptr<ConstantBuffer> cb);
 	void setViewMatrix(Matrix& matrix);
 	void setProjectionMatrix(Matrix& matrix);
 	void setRight(Vector3& vector);
