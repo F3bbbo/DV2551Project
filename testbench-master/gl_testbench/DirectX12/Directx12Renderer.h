@@ -9,6 +9,7 @@
 #pragma comment (lib, "d3dcompiler.lib")
 #include "RootSignature.h"
 #include "PipelineStateDX12.h"
+#include "CameraDX12.h"
 
 #include <SDL.h>
 #include <GL/glew.h>
@@ -33,7 +34,7 @@ public:
 	std::string getShaderExtension();
 	std::shared_ptr<ConstantBuffer> makeConstantBuffer(std::string NAME, unsigned int location);
 	std::shared_ptr<Technique> makeTechnique(std::shared_ptr<Material>, std::shared_ptr<RenderState>);
-
+	CameraDX12* camera;
 
 	 HWND InitWindow(HINSTANCE hInstance,int width, int height);
 
@@ -52,6 +53,8 @@ public:
 	void submit(Mesh* mesh);
 	virtual void frame();
 	void waitForGPU();
+	void signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value);
+	void waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime);
 	Microsoft::WRL::ComPtr<ID3D12Device> getDevice();
 	void setMaterialState(MaterialDX12 *material);
 

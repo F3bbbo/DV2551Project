@@ -22,10 +22,12 @@ DirectX12Renderer::DirectX12Renderer()
 	Root.CreateRootsignature(getDevice());
 	Root.bindRootSignature();
 
+	camera = new CameraDX12(width, height, 0.1f, 0.5f, 1.f);
 }
 
 DirectX12Renderer::~DirectX12Renderer()
 {
+	delete camera;
 	shutdown();
 }
 
@@ -52,7 +54,10 @@ std::shared_ptr<Texture2D> DirectX12Renderer::makeTexture2D()
 	std::shared_ptr<Texture2DDX12> texture = std::make_shared<Texture2DDX12>(getDevice().Get(), commandList.Get(), &Root);
 	commandList->Close();
 	executeCommandList(); // To transform the texture into a shader resource
-	waitForGPU();
+//	waitForGPU();
+	signalGPU(fence, fenceValue);
+	waitForGPU(fence, fenceValue, INFINITY);
+	fenceValue++;
 	commandList->Reset(commandAllocator.Get(), nullptr);
 	return texture;
 }
@@ -161,8 +166,11 @@ void DirectX12Renderer::setWinTitle(const char * title)
 void DirectX12Renderer::present()
 {
 	swapChain->Present(0, 0);
-	waitForGPU();
-	//Prep for next iteration
+//	waitForGPU();
+	signalGPU(fence, fenceValue);
+	waitForGPU(fence, fenceValue, INFINITY);
+	fenceValue++;
+//Prep for next iteration
 	commandAllocator->Reset();
 	commandList->Reset(commandAllocator.Get(), nullptr);
 	currBackBuffer = (currBackBuffer + 1) % SWAP_BUFFER_COUNT;
@@ -170,7 +178,10 @@ void DirectX12Renderer::present()
 
 int DirectX12Renderer::shutdown()
 {
-	waitForGPU();
+//	waitForGPU();
+	signalGPU(fence, fenceValue);
+	waitForGPU(fence, fenceValue, INFINITY);
+	fenceValue++;
 	return 0;
 }
 
@@ -298,6 +309,20 @@ void DirectX12Renderer::waitForGPU()
 	{
 		fence->SetEventOnCompletion(fenceVal, eventHandle);
 		WaitForSingleObject(eventHandle, INFINITY);
+	}
+}
+
+void DirectX12Renderer::signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value)
+{
+	commandQueue->Signal(fence.Get(), value);
+}
+
+void DirectX12Renderer::waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime)
+{
+	if (fence->GetCompletedValue() <= value)
+	{
+		fence->SetEventOnCompletion(value, eventHandle);
+		WaitForSingleObject(eventHandle, waittime);
 	}
 }
 

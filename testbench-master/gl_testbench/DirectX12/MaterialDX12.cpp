@@ -84,7 +84,7 @@ void MaterialDX12::disable()
 {
 }
 
-void MaterialDX12::setDiffuse(Color c)
+void MaterialDX12::setDiffuse(DirectX::SimpleMath::Color c)
 {
 
 }
