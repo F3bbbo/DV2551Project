@@ -12,6 +12,8 @@
 #include <math.h>
 #include <memory>
 
+
+#include "MeshReader.h"
 #include "Grid.h"
 using namespace std;
 Renderer* renderer;
@@ -133,6 +135,10 @@ void renderScene()
 
 int initialiseTestbench()
 {
+	//MeshReader TEST
+	MeshReader mr;
+	mr.MeshLoader("OBJ/SamsungLEDTV.obj");
+
 	// triangle geometry:
 	float4 triPos[3] = { { 0.0f,  0.05, 0.0f, 1.0f },{ 0.05, -0.05, 0.0f, 1.0f },{ -0.05, -0.05, 0.0f, 1.0f } };
 	float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
