@@ -8,7 +8,7 @@
 class TechniqueDX12 : public Technique
 {
 public:
-	TechniqueDX12(Material* m, RenderState* r);
+	TechniqueDX12(std::shared_ptr<Material> m, std::shared_ptr<RenderState> r);
 	~TechniqueDX12();
 	void enable(Renderer* renderer);
 

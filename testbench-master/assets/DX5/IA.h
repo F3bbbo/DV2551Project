@@ -1,3 +1,5 @@
+#define CONCAT(a, b) a ## b
+
 #define POS 0
 #define NORM 1
 #define UVCOORD 2

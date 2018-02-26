@@ -2,19 +2,20 @@
 #include <vector>
 #include "Material.h"
 #include "RenderState.h"
+#include <memory>
 
 class Renderer;
 
 class Technique
 {
 public:
-	Technique(Material* m, RenderState* r) : material(m), renderState(r) {};
+	Technique(std::shared_ptr<Material> m, std::shared_ptr<RenderState> r) : material(m), renderState(r) {};
 	virtual ~Technique();
-	Material* getMaterial() { return material; };
-	RenderState* getRenderState() { return renderState; };
+	Material* getMaterial() { return material.get(); };
+	RenderState* getRenderState() { return renderState.get(); };
 	virtual void enable(Renderer* renderer);
 protected:
-	Material* material = nullptr;
-	RenderState* renderState = nullptr;
+	std::shared_ptr<Material> material;
+	std::shared_ptr<RenderState> renderState;
 };
 
