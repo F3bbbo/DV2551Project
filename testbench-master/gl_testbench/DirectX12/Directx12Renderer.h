@@ -78,6 +78,7 @@ private:
 	void createViewPortScissor();
 	void createDescriptorHeaps();
 	void createDepthStencil();
+	void updateCamera();
 	ID3D12DescriptorHeap*	gDescriptorHeap[1];
 	Rootsignature Root;
 	//Device

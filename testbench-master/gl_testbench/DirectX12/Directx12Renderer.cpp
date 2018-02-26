@@ -21,8 +21,9 @@ DirectX12Renderer::DirectX12Renderer()
 	Root.setCommandList(commandList);
 	Root.CreateRootsignature(getDevice());
 	Root.bindRootSignature();
-
+	
 	camera = new CameraDX12(width, height, 0.1f, 0.5f, 1.f);
+	camera->setCBuffer(dynamic_cast<ConstantBufferDX12*>(makeConstantBuffer("Matrixes", 8)));
 }
 
 DirectX12Renderer::~DirectX12Renderer()
@@ -482,6 +483,24 @@ void DirectX12Renderer::createDepthStencil()
 		D3D12_RESOURCE_STATE_COMMON,
 		D3D12_RESOURCE_STATE_DEPTH_WRITE
 	);
+}
+
+void DirectX12Renderer::updateCamera()
+{
+	bool run = false;
+	if (GetAsyncKeyState(0xA0)) // Left shift
+		run = true;
+
+	if (GetAsyncKeyState(0x57)) //W
+		camera->moveCamera(camera->getForward(), run);
+	if (GetAsyncKeyState(0x41)) //A
+		camera->moveCamera(-camera->getRight(), run);
+	if (GetAsyncKeyState(0x53)) //S
+		camera->moveCamera(-camera->getForward(), run);
+	if (GetAsyncKeyState(0x44)) //D
+		camera->moveCamera(camera->getRight(), run);
+
+	camera->update();
 }
 
 void DirectX12Renderer::executeCommandList()
