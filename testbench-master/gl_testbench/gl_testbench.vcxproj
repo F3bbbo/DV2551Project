@@ -94,6 +94,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)assets\DX5\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -107,6 +108,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)assets\DX5\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -123,6 +125,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)assets\DX5\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,6 +143,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)assets\DX5\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,6 +156,7 @@
   <ItemGroup>
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
+    <ClCompile Include="DirectX12\CameraDX12.cpp" />
     <ClCompile Include="DirectX12\ConstantBufferDX12.cpp" />
     <ClCompile Include="DirectX12\d3dUtil.cpp" />
     <ClCompile Include="DirectX12\Directx12Renderer.cpp" />
@@ -165,16 +170,6 @@
     <ClCompile Include="DirectX12\TechniqueDX12.cpp" />
     <ClCompile Include="DirectX12\Texture2DDX12.cpp" />
     <ClCompile Include="DirectX12\VertexBufferDX12.cpp" />
-    <ClCompile Include="OpenGL\ConstantBufferGL.cpp" />
-    <ClCompile Include="OpenGL\MaterialGL.cpp" />
-    <ClCompile Include="OpenGL\MeshGL.cpp" />
-    <ClCompile Include="OpenGL\OpenGLRenderer.cpp" />
-    <ClCompile Include="OpenGL\RenderStateGL.cpp" />
-    <ClCompile Include="OpenGL\ResourceBindingGL.cpp" />
-    <ClCompile Include="OpenGL\Sampler2DGL.cpp" />
-    <ClCompile Include="OpenGL\Texture2DGL.cpp" />
-    <ClCompile Include="OpenGL\TransformGL.cpp" />
-    <ClCompile Include="OpenGL\VertexBufferGL.cpp" />
     <ClCompile Include="Sampler2D.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Utilityfunctions.cpp" />
@@ -191,9 +186,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\assets\DX5\Defines.h" />
+    <ClInclude Include="..\assets\DX5\IA.h" />
     <ClInclude Include="..\include\stb_image.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="ConstantBuffer.h" />
+    <ClInclude Include="DirectX12\CameraDX12.h" />
     <ClInclude Include="DirectX12\ConstantBufferDX12.h" />
     <ClInclude Include="DirectX12\Defines.h" />
     <ClInclude Include="DirectX12\d3dUtil.h" />
@@ -208,22 +205,11 @@
     <ClInclude Include="DirectX12\TechniqueDX12.h" />
     <ClInclude Include="DirectX12\Texture2DDX12.h" />
     <ClInclude Include="DirectX12\VertexBufferDX12.h" />
-    <ClInclude Include="OpenGL\ConstantBufferGL.h" />
-    <ClInclude Include="OpenGL\MaterialGL.h" />
-    <ClInclude Include="OpenGL\MeshGL.h" />
-    <ClInclude Include="OpenGL\OpenGLRenderer.h" />
-    <ClInclude Include="OpenGL\RenderStateGL.h" />
-    <ClInclude Include="OpenGL\ResourceBindingGL.h" />
-    <ClInclude Include="OpenGL\Sampler2DGL.h" />
-    <ClInclude Include="OpenGL\Texture2DGL.h" />
-    <ClInclude Include="OpenGL\TransformGL.h" />
-    <ClInclude Include="OpenGL\VertexBufferGL.h" />
     <ClInclude Include="Sampler2D.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Utilityfunctions.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="IA.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="RenderState.h" />

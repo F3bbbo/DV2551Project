@@ -2,6 +2,7 @@
 #include <SDL_keyboard.h>
 #include <SDL_events.h>
 #include <SDL_timer.h>
+#pragma comment(lib,"SDL2.lib")
 #include <type_traits> 
 #include <assert.h>
 #include <assimp/Importer.hpp>
@@ -166,13 +167,13 @@ int initialiseTestbench()
 	//Create mesh
 	Mesh *mesh = renderer->makeMesh();
 	pos->setData(triPos, sizeof(triPos), 0);
-	mesh->addIAVertexBufferBinding(pos, 0, ARRAYSIZE(triPos), sizeof(float4), POSITION);
+	mesh->addIAVertexBufferBinding(pos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
 	
 	nor->setData(triNor, sizeof(triNor), 0);
-	mesh->addIAVertexBufferBinding(nor, 0, ARRAYSIZE(triNor), sizeof(float4), NORMAL);
+	mesh->addIAVertexBufferBinding(nor, 0, ARRAYSIZE(triNor), sizeof(float4), NORM);
 
 	uvs->setData(triUV, sizeof(triUV), 0);
-	mesh->addIAVertexBufferBinding(uvs, 0, ARRAYSIZE(triUV), sizeof(float2), TEXTCOORD);
+	mesh->addIAVertexBufferBinding(uvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
 
 	mesh->technique = t;
 

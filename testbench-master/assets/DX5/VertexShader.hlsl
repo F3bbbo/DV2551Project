@@ -1,13 +1,5 @@
-//struct Input
-//{
-//	//float4 pos : POSITION;
-//	//float4 norm : NORMAL;
-//	//float2 texCoord : TEXCOORD;
-//	uint vertexID : SV_VertexID;
-//};
-
-
-
+#include "IA.h"
+//VertexBuffer
 StructuredBuffer<float4> pos : register(t0, space0);
 StructuredBuffer<float4> norm : register(t1, space0);
 StructuredBuffer<float2> texCoord : register(t2, space0);

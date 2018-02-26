@@ -9,6 +9,7 @@
 #pragma comment (lib, "d3dcompiler.lib")
 #include "RootSignature.h"
 #include "PipelineStateDX12.h"
+#include "CameraDX12.h"
 
 #include <SDL.h>
 #include <GL/glew.h>
@@ -33,7 +34,7 @@ public:
 	std::string getShaderExtension();
 	ConstantBuffer* makeConstantBuffer(std::string NAME, unsigned int location);
 	Technique* makeTechnique(Material*, RenderState*);
-
+	CameraDX12* camera;
 
 	 HWND InitWindow(HINSTANCE hInstance,int width, int height);
 

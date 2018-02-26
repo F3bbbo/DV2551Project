@@ -1,3 +1,4 @@
+#include "IA.h"
 struct Input
 {
 	float4 pos : SV_POSITION;

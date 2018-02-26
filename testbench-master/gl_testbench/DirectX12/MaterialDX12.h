@@ -5,7 +5,7 @@
 #include <d3dcompiler.h>
 #include <string>
 #include <wrl\client.h>
-#include "..\IA.h"
+#include "IA.h"
 #include "..\Renderer.h"
 #include "ConstantBufferDX12.h"
 #include "RootSignature.h"
@@ -30,7 +30,7 @@ public:
 	int enable(Renderer *renderer);
 	void disable();
 
-	void setDiffuse(Color c);
+	void setDiffuse(DirectX::SimpleMath::Color c);
 	void fillPSODesc(D3D12_GRAPHICS_PIPELINE_STATE_DESC &psoDesc);
 	// location identifies the constant buffer in a unique way
 	void updateConstantBuffer(const void* data, size_t size, unsigned int location);

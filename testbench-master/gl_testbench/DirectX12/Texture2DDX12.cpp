@@ -1,4 +1,5 @@
 #include "Texture2DDX12.h"
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "d3dUtil.h"
 
