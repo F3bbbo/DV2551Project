@@ -5,6 +5,7 @@
 #include <wrl\client.h>
 #include <windows.h>
 #include "RootSignature.h" // For defines
+#include "ResourceDX12.h"
 
 class Texture2DDX12 : public Texture2D
 {
@@ -24,9 +25,7 @@ private:
 	unsigned int location;
 	ID3D12Device* device;
 	ID3D12GraphicsCommandList* commandList;
-	D3D12_HEAP_PROPERTIES heapProperties;
-	Microsoft::WRL::ComPtr<ID3D12Resource> imageTexture;
-	Microsoft::WRL::ComPtr<ID3D12Resource> uploadHeap;
+	Resource* texture;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> textureDescriptorHeap;
 	Rootsignature* pRS;
 	HRESULT hr; //debugger

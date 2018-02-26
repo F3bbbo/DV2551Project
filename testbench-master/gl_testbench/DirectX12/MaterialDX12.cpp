@@ -104,7 +104,7 @@ void MaterialDX12::updateConstantBuffer(const void * data, size_t size, unsigned
 
 void MaterialDX12::addConstantBuffer(std::string name, unsigned int location)
 {
-	constantBuffers[location] = new ConstantBufferDX12(device.Get(),name, location, commandList, pRS);
+	constantBuffers[location] = new ConstantBufferDX12(device.Get(),name, location, commandList.Get(), pRS);
 }
 
 int MaterialDX12::compileShader(ShaderType type)

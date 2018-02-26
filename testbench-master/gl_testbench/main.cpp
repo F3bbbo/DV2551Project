@@ -4,11 +4,15 @@
 #include <SDL_timer.h>
 #include <type_traits> 
 #include <assert.h>
-
+#include <assimp/Importer.hpp>
+#include <assimp\cimport.h>
+#include <assimp/postprocess.h>
 #include "Renderer.h"
 #include "Mesh.h"
 #include "Texture2D.h"
 #include <math.h>
+
+#include "Grid.h"
 using namespace std;
 Renderer* renderer;
 // flat scene at the application level...we don't care about this here.
@@ -344,6 +348,9 @@ void shutdown() {
 
 int main(int argc, char *argv[])
 {
+
+
+	Grid test;
 	renderer = Renderer::makeRenderer(Renderer::BACKEND::DX12);
 	renderer->initialize(800,600);
 	renderer->setWinTitle("DirectX12 - Dynamic scene loader test");

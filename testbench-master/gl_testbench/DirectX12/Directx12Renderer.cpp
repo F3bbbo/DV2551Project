@@ -79,7 +79,7 @@ std::string DirectX12Renderer::getShaderExtension()
 
 ConstantBuffer * DirectX12Renderer::makeConstantBuffer(std::string NAME, unsigned int location)
 {
-	return new ConstantBufferDX12(device.Get(), NAME, location, commandList, &Root);
+	return new ConstantBufferDX12(device.Get(), NAME, location, commandList.Get(), &Root);
 }
 
 Technique * DirectX12Renderer::makeTechnique(Material *m, RenderState *r)
