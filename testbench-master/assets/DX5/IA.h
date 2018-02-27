@@ -12,3 +12,6 @@
 #define DIFFUSE_TINT_NAME "DiffuseColor"
 
 #define DIFFUSE_SLOT 0
+
+#define WORLDMATRIX_SLOT 8
+#define VPMATRIX_SLOT 9

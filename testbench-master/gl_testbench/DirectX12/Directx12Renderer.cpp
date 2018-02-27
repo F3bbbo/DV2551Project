@@ -9,6 +9,7 @@
 #include "d3dUtil.h"
 #include "pch.h"
 #include "Sampler2DDX12.h"
+#include "IA.h"
 
 DirectX12Renderer::DirectX12Renderer()
 {
@@ -23,7 +24,7 @@ DirectX12Renderer::DirectX12Renderer()
 	Root.bindRootSignature();
 	
 	camera = new CameraDX12(width, height, 0.1f, 0.5f, 1.f);
-	camera->setCBuffer(makeConstantBuffer("Matrixes", 8));
+	camera->setCBuffer(makeConstantBuffer("VPMatrix", VPMATRIX_SLOT));
 }
 
 DirectX12Renderer::~DirectX12Renderer()
@@ -264,6 +265,7 @@ void DirectX12Renderer::frame()
 		for (auto work : drawList2)
 		{
 			work.first->enable(this);
+			updateCamera();
 			for (auto mesh : work.second)
 			{
 				//Render meshes
@@ -278,7 +280,9 @@ void DirectX12Renderer::frame()
 				{
 					mesh->bindIAVertexBuffer(ele.first);
 				}
-				//mesh->txBuffer->bind(work.first->getMaterial());
+				Matrix tmp = mesh->getWorldmatrix();
+				mesh->WMBuffer->setData(&tmp, sizeof(tmp), nullptr, WORLDMATRIX_SLOT);
+				mesh->WMBuffer->bind();
 				//Bind the table
 				Root.setRootTableData();
 				//Draw

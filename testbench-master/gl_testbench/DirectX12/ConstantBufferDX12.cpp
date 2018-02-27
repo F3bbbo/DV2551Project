@@ -70,7 +70,7 @@ void ConstantBufferDX12::setData(const void * data, size_t size, Material * m, u
 	);*/
 }
 
-void ConstantBufferDX12::bind(Material *data)
+void ConstantBufferDX12::bind()
 {
 	pRS->bindConstantBuffer(location, constantBuffer->getResource());
 }

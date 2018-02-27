@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "Grid.h"
+#include "IA.h"
 using namespace std;
 Renderer* renderer;
 // flat scene at the application level...we don't care about this here.
@@ -134,7 +135,7 @@ void renderScene()
 int initialiseTestbench()
 {
 	// triangle geometry:
-	float4 triPos[3] = { { 0.0f,  0.05, 0.0f, 1.0f },{ 0.05, -0.05, 0.0f, 1.0f },{ -0.05, -0.05, 0.0f, 1.0f } };
+	float4 triPos[3] = { { 0.0f,  1.0, 0.0f, 1.0f },{ 1.0, -1.0, 0.0f, 1.0f },{ -1.0, -1.0, 0.0f, 1.0f } };
 	float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
 	float2 triUV[3] =  { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
 
@@ -174,9 +175,9 @@ int initialiseTestbench()
 	uvs->setData(triUV, sizeof(triUV), 0);
 	mesh->addIAVertexBufferBinding(uvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
 
-	mesh->technique
-		= t;
+	mesh->technique = t;
 
+	mesh->setCBuffer(renderer->makeConstantBuffer("WorldMatrixBuf", WORLDMATRIX_SLOT));
 	scene.push_back(mesh);
 
 	//std::string definePos = "#define POSITION " + std::to_string(POSITION) + "\n";

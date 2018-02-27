@@ -262,6 +262,6 @@ void MaterialDX12::bindConstBuffers()
 {
 	for (auto const& cBuff : constantBuffers)
 	{
-		cBuff.second->bind(this);
+		cBuff.second->bind();
 	}
 }

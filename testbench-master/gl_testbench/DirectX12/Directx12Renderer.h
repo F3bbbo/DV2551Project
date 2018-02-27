@@ -58,6 +58,7 @@ public:
 	void waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime);
 	Microsoft::WRL::ComPtr<ID3D12Device> getDevice();
 	void setMaterialState(MaterialDX12 *material);
+	void updateCamera();
 
 private:
 	//Window vars
@@ -81,7 +82,6 @@ private:
 	void createViewPortScissor();
 	void createDescriptorHeaps();
 	void createDepthStencil();
-	void updateCamera();
 	ID3D12DescriptorHeap*	gDescriptorHeap[1];
 	Rootsignature Root;
 	//Device
