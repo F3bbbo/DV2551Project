@@ -45,7 +45,7 @@ public:
 	std::shared_ptr<Technique> makeTechnique(std::shared_ptr<Material>, std::shared_ptr<RenderState>);
 	CameraDX12* camera;
 	std::map<int, ClAcFc> Thread;
-	void CreateClAcFcThread(int ID);
+	void CreateClAcFcThread();
 	 HWND InitWindow(HINSTANCE hInstance,int width, int height);
 
 
