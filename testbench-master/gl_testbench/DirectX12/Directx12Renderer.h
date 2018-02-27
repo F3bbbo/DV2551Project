@@ -44,7 +44,8 @@ public:
 	std::shared_ptr<ConstantBuffer> makeConstantBuffer(std::string NAME, unsigned int location);
 	std::shared_ptr<Technique> makeTechnique(std::shared_ptr<Material>, std::shared_ptr<RenderState>);
 	CameraDX12* camera;
-
+	std::map<int, ClAcFc> Thread;
+	void CreateClAcFcThread(int ID);
 	 HWND InitWindow(HINSTANCE hInstance,int width, int height);
 
 
@@ -77,7 +78,7 @@ private:
 	//Fence vars
 	HANDLE eventHandle = nullptr;
 	UINT64 fenceValue = 0;
-	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
+//	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
 	//PipelineState
 	PipelineStateDX12 pipelineState;
 	int frameindex;
@@ -96,8 +97,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 	//Command list/queue
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+//	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
+//	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
 	void executeCommandList();
 	//Swap Chain
 	D3D12_CPU_DESCRIPTOR_HANDLE currDescHandle;
