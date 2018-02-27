@@ -15,6 +15,7 @@ public:
 	virtual void bind(size_t offset, size_t size, unsigned int location);
 	virtual void bind(size_t offset, size_t numElements, size_t elementSize, unsigned int location);
 	virtual void unbind();
+	void setCommandlist(ID3D12GraphicsCommandList* cmdList);
 	virtual size_t getSize();
 	void createBuffer(ID3D12Device *device, size_t size);
 private:

@@ -8,10 +8,10 @@
 class MeshReader
 {
 private:
-	const aiScene* Mesh;
+
 public:
 void MeshLoader(std::string MeshFileName,unsigned int Pflag);
 	MeshReader();
 	~MeshReader();
-	
+	const aiScene* Mesh;
 };

@@ -13,6 +13,7 @@ public:
 	int loadFromFile(std::string filename);
 	Texture2DDX12(ID3D12Device* device, ID3D12GraphicsCommandList* list, Rootsignature* rs);
 	~Texture2DDX12();
+	void setCommandlist(ID3D12GraphicsCommandList* cmdList);
 	// bind texture to be used in the pipeline, binding to
 	// slot "slot" in the active fragment shader.
 	// slot can have different interpretation depending on the API.

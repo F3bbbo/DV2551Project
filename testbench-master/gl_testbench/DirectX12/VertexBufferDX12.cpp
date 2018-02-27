@@ -67,6 +67,11 @@ void VertexBufferDX12::unbind()
 	//commandList->IASetVertexBuffers(location, 1, nullptr);
 }
 
+void VertexBufferDX12::setCommandlist(ID3D12GraphicsCommandList * cmdList)
+{
+	commandList = cmdList;
+}
+
 size_t VertexBufferDX12::getSize()
 {
 	return byteSize;
