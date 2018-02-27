@@ -61,7 +61,7 @@ void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_
 		std::shared_ptr<Mesh> outMesh = renderer->makeMesh();
 		outMesh->addIAVertexBufferBinding(vPos, 0, pos.size(), sizeof(pos[0]), POS);
 		outMesh->addIAVertexBufferBinding(vNorm, 0, norm.size(), sizeof(norm[0]), NORM);
-		outMesh->addIAVertexBufferBinding(vPos, 0, pos.size(), sizeof(pos[0]), UVCOORD);
+		outMesh->addIAVertexBufferBinding(vTexCoords, 0, texCoords.size(), sizeof(texCoords[0]), UVCOORD);
 
 		meshes.push_back(outMesh);
 	}
