@@ -12,12 +12,20 @@
 #include "PipelineStateDX12.h"
 #include "CameraDX12.h"
 
+
 #include <SDL.h>
 #include <GL/glew.h>
 
 
 #include <iostream>
 #include <wrl\client.h>
+struct ClAcFc //Commandlist Allocator Fence struct
+{
+	Microsoft::WRL::ComPtr<ID3D12Fence> Fence;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+};
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 #include "Defines.h"
 class DirectX12Renderer : public Renderer
