@@ -1,4 +1,5 @@
 #include "CameraDX12.h"
+#include "IA.h"
 
 CameraDX12::CameraDX12(float width, float height, float rotationSpeed, float walkSpeed, float runSpeed)
 {
@@ -6,13 +7,13 @@ CameraDX12::CameraDX12(float width, float height, float rotationSpeed, float wal
 	speed = walkSpeed;
 	this->runSpeed = runSpeed;
 
-	position = Vector3(0.f, 0.f, 0.f);
+	position = Vector3(0.f, 0.f, -1.f);
 	rightVector = Vector3(1.f, 0.f, 0.f);
 	upVector = Vector3(0.f, 1.f, 0.f);
 	forwardVector = Vector3(0.f, 0.f, 1.f);
 
-	viewMatrix = Matrix::CreateLookAt(position, forwardVector + position, upVector);
-	projectionMatrix = Matrix::CreatePerspectiveFieldOfView(3.141592f * 0.5f, width / height, 0.1f, 1000.f);
+	viewMatrix = DirectX::XMMatrixLookAtLH(position, forwardVector + position, upVector);
+	projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(3.141592f * 0.5f, width / height, 0.1f, 1000.f);
 	VPMatrix = viewMatrix * projectionMatrix;
 }
 
@@ -60,7 +61,12 @@ void CameraDX12::setUp(Vector3 & vector)
 
 void CameraDX12::update()
 {
+	viewMatrix = DirectX::XMMatrixLookAtLH(position, forwardVector + position, upVector);
+	VPMatrix = viewMatrix * projectionMatrix;
+	VPMatrix = VPMatrix.Transpose();
 	
+	cBuffer->setData(&VPMatrix, sizeof(VPMatrix), nullptr, VPMATRIX_SLOT);
+	cBuffer->bind();
 }
 
 Matrix CameraDX12::getViewMatrix()

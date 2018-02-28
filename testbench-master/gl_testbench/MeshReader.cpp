@@ -41,9 +41,9 @@ void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_
 		for (unsigned int j = 0; j < aiMesh->mNumVertices; j++)
 		{
 			//Pos
-			pos.push_back(DXVector4(aiMesh->mVertices[j], 0.0f));
+			pos.push_back(DXVector4(aiMesh->mVertices[j], 1.0f));
 			//Norm
-			norm.push_back(DXVector4(aiMesh->mNormals[j], 1.0f));
+			norm.push_back(DXVector4(aiMesh->mNormals[j], 0.0f));
 			//TexCoords
 			texCoords.push_back(DXVector2((aiMesh->mTextureCoords[0])[j]));
 		}
@@ -72,7 +72,7 @@ bool MeshReader::LoadFromFile(std::string MeshFileName, unsigned int key, std::v
 	//Get the threads importer
 	Assimp::Importer &importer = getImporter(key);
 	//Import the scene from file
-	const aiScene* scene = importer.ReadFile(MeshFileName.c_str(), aiProcess_Triangulate);
+	const aiScene* scene = importer.ReadFile(MeshFileName.c_str(), aiProcess_Triangulate | aiProcess_GenNormals);
 	//Check if successful import of file
 	if (!scene)
 	{

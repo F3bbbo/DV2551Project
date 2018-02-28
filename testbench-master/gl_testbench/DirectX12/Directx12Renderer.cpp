@@ -9,6 +9,7 @@
 #include "d3dUtil.h"
 #include "pch.h"
 #include "Sampler2DDX12.h"
+#include "IA.h"
 
 DirectX12Renderer::DirectX12Renderer()
 {
@@ -23,7 +24,7 @@ DirectX12Renderer::DirectX12Renderer()
 	Root.bindRootSignature();
 	
 	camera = new CameraDX12(width, height, 0.1f, 0.5f, 1.f);
-	camera->setCBuffer(makeConstantBuffer("Matrixes", 8));
+	camera->setCBuffer(makeConstantBuffer("VPMatrix", VPMATRIX_SLOT));
 }
 
 DirectX12Renderer::~DirectX12Renderer()
@@ -39,8 +40,9 @@ std::shared_ptr<Material> DirectX12Renderer::makeMaterial(const std::string & na
 
 std::shared_ptr<Mesh> DirectX12Renderer::makeMesh()
 {
-	
-	return std::make_shared<Mesh>();
+	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
+	mesh->WMBuffer = makeConstantBuffer("WorldMatrix", WORLDMATRIX_SLOT);
+	return mesh;
 }
 
 std::shared_ptr<VertexBuffer> DirectX12Renderer::makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage)
@@ -264,6 +266,7 @@ void DirectX12Renderer::frame()
 		for (auto work : drawList2)
 		{
 			work.first->enable(this);
+			updateCamera();
 			for (auto mesh : work.second)
 			{
 				//Render meshes
@@ -278,7 +281,9 @@ void DirectX12Renderer::frame()
 				{
 					mesh->bindIAVertexBuffer(ele.first);
 				}
-				//mesh->txBuffer->bind(work.first->getMaterial());
+				Matrix tmp = mesh->getWorldmatrix();
+				mesh->WMBuffer->setData(&tmp, sizeof(tmp), nullptr, WORLDMATRIX_SLOT);
+				mesh->WMBuffer->bind();
 				//Bind the table
 				Root.setRootTableData();
 				//Draw
