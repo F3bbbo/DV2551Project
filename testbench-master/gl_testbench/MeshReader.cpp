@@ -50,13 +50,13 @@ void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_
 		//Create Vertex buffers
 		//Position
 		std::shared_ptr<VertexBuffer> vPos = renderer->makeVertexBuffer(sizeof(pos[0]) * pos.size(), VertexBuffer::DATA_USAGE::DONTCARE);
-		vPos->setData(pos.data(), pos.size(), 0);
+		vPos->setData(pos.data(), sizeof(pos[0]) * pos.size(), 0);
 		//Normal
 		std::shared_ptr<VertexBuffer> vNorm = renderer->makeVertexBuffer(sizeof(norm[0]) * norm.size(), VertexBuffer::DATA_USAGE::DONTCARE);
-		vNorm->setData(norm.data(), norm.size(), 0);
+		vNorm->setData(norm.data(), sizeof(norm[0]) * norm.size(), 0);
 		//Texture Coordinates
 		std::shared_ptr<VertexBuffer> vTexCoords = renderer->makeVertexBuffer(sizeof(texCoords[0]) * texCoords.size(), VertexBuffer::DATA_USAGE::DONTCARE);
-		vTexCoords->setData(texCoords.data(), texCoords.size(), 0);
+		vTexCoords->setData(texCoords.data(), sizeof(texCoords[0]) * texCoords.size(), 0);
 
 		std::shared_ptr<Mesh> outMesh = renderer->makeMesh();
 		outMesh->addIAVertexBufferBinding(vPos, 0, pos.size(), sizeof(pos[0]), POS);
