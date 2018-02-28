@@ -42,3 +42,29 @@ Mesh::~Mesh()
 		g.second.buffer->decRef();
 	}
 }
+
+void Mesh::setTranslation(Vector3 translation)
+{
+	translationMatrix = Matrix::CreateTranslation(translation);
+}
+
+void Mesh::setRotation(Vector3 rotation)
+{
+	rotationMatrix = Matrix::CreateRotationX(rotation.x) * Matrix::CreateRotationY(rotation.y) * Matrix::CreateRotationZ(rotation.z);
+}
+
+void Mesh::setScale(Vector3 scale)
+{
+	scaleMatrix = Matrix::CreateScale(scale);
+}
+
+Matrix Mesh::getWorldmatrix()
+{
+	return translationMatrix * rotationMatrix * scaleMatrix;
+}
+
+void Mesh::setCBuffer(std::shared_ptr<ConstantBuffer> cb)
+{
+	WMBuffer = cb;
+}
+

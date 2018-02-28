@@ -16,8 +16,8 @@ public:
 	ConstantBufferDX12(ID3D12Device* device, std::string NAME, unsigned int location, ID3D12GraphicsCommandList* cmdList, Rootsignature* rs);
 	~ConstantBufferDX12();
 	void setData(const void* data, size_t size, Material* m, unsigned int location);
-	void bind(Material*);
 	void setCommandlist(ID3D12GraphicsCommandList* cmdList);
+	void bind();
 private:
 	Rootsignature * pRS;
 	ID3D12GraphicsCommandList* commandList;

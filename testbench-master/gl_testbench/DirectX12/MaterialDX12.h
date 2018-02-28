@@ -20,6 +20,7 @@ class MaterialDX12 :
 
 public:
 	MaterialDX12(const std::string& name, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>& cmdList, Microsoft::WRL::ComPtr<ID3D12Device>& device, std::string shaderPath, Rootsignature* rs );
+	MaterialDX12() {};
 	~MaterialDX12();
 	static int indexCounter;
 	int ID;

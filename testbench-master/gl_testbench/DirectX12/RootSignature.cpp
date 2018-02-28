@@ -1,4 +1,5 @@
 #include "RootSignature.h"
+#include "pch.h"
 
 void Rootsignature::bindConstantBuffer(int slot, ID3D12Resource * resource)
 {
@@ -138,11 +139,11 @@ void Rootsignature::CreateRootsignature(Microsoft::WRL::ComPtr<ID3D12Device> gDe
 		sBlob.GetAddressOf(),
 		nullptr);
 
-	hr = gDevice->CreateRootSignature(
+	DX::ThrowIfFailed(gDevice->CreateRootSignature(
 		0,
 		sBlob->GetBufferPointer(),
 		sBlob->GetBufferSize(),
-		IID_PPV_ARGS(gRootSignature.GetAddressOf()));
+		IID_PPV_ARGS(gRootSignature.GetAddressOf())));
 }
 
 void Rootsignature::bindRootSignature()

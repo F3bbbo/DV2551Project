@@ -1,8 +1,12 @@
 #include "MeshDX12.h"
 #include "VertexBufferDX12.h"
+#include "ConstantBufferDX12.h"
 
 MeshDX12::MeshDX12()
 {
+	setTranslation(Vector3(0, 0, 0));
+	setRotation(Vector3(0, 0, 0));
+	setScale(Vector3(1, 1, 1));
 }
 
 MeshDX12::~MeshDX12()

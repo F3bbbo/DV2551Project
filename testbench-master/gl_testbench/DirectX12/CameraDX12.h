@@ -2,6 +2,7 @@
 #include <d3d12.h>
 #include <SimpleMath.h>
 #include "ConstantBufferDX12.h"
+#include "MaterialDX12.h"
 #include <memory>
 
 using namespace DirectX::SimpleMath;
