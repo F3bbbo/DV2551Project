@@ -7,15 +7,18 @@
 #include <assert.h>
 
 #include "Renderer.h"
+#include "DirectX12/Directx12Renderer.h"
 #include "Mesh.h"
 #include "Texture2D.h"
 #include <math.h>
 #include <memory>
 
+//#include "DirectX12/MeshDX12.h"
+#include "MeshReader.h"
 #include "Grid.h"
 #include "IA.h"
 using namespace std;
-Renderer* renderer;
+DirectX12Renderer* renderer;
 // flat scene at the application level...we don't care about this here.
 // do what ever you want in your renderer backend.
 // all these objects are loosely coupled, creation and destruction is responsibility
@@ -134,6 +137,9 @@ void renderScene()
 
 int initialiseTestbench()
 {
+	//MeshReader TEST
+	MeshReader mr(renderer);
+	mr.LoadFromFile("Models/SamsungLEDTV.FBX", scene);
 	// triangle geometry:
 	float4 triPos[3] = { { 0.0f,  1.0, 0.0f, 1.0f },{ 1.0, -1.0, 0.0f, 1.0f },{ -1.0, -1.0, 0.0f, 1.0f } };
 	float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
@@ -159,26 +165,32 @@ int initialiseTestbench()
 	std::shared_ptr<Technique> t = renderer->makeTechnique(m, rs);
 
 	techniques.push_back(t);
+
+	for (unsigned int i = 0; i < scene.size(); i++)
+	{
+		scene[i]->technique = t;
+	}
+
 	//Allocate vertex buffers
-	pos = renderer->makeVertexBuffer(sizeof(triPos), VertexBuffer::DATA_USAGE::DONTCARE);
-	nor = renderer->makeVertexBuffer(sizeof(triNor), VertexBuffer::DATA_USAGE::DONTCARE);
-	uvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
+	//pos = renderer->makeVertexBuffer(sizeof(triPos), VertexBuffer::DATA_USAGE::DONTCARE);
+	//nor = renderer->makeVertexBuffer(sizeof(triNor), VertexBuffer::DATA_USAGE::DONTCARE);
+	//uvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
 
 	//Create mesh
-	std::shared_ptr<Mesh> mesh = renderer->makeMesh();
-	pos->setData(triPos, sizeof(triPos), 0);
-	mesh->addIAVertexBufferBinding(pos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
-	
-	nor->setData(triNor, sizeof(triNor), 0);
-	mesh->addIAVertexBufferBinding(nor, 0, ARRAYSIZE(triNor), sizeof(float4), NORM);
+	//std::shared_ptr<Mesh> mesh = renderer->makeMesh();
+	//pos->setData(triPos, sizeof(triPos), 0);
+	//mesh->addIAVertexBufferBinding(pos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
+	//
+	//nor->setData(triNor, sizeof(triNor), 0);
+	//mesh->addIAVertexBufferBinding(nor, 0, ARRAYSIZE(triNor), sizeof(float4), NORM);
 
-	uvs->setData(triUV, sizeof(triUV), 0);
-	mesh->addIAVertexBufferBinding(uvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
+	//uvs->setData(triUV, sizeof(triUV), 0);
+	//mesh->addIAVertexBufferBinding(uvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
 
-	mesh->technique = t;
+	//mesh->technique = t;
 
-	mesh->setCBuffer(renderer->makeConstantBuffer("WorldMatrixBuf", WORLDMATRIX_SLOT));
-	scene.push_back(mesh);
+	//scene.push_back(mesh);
+
 
 	//std::string definePos = "#define POSITION " + std::to_string(POSITION) + "\n";
 	//std::string defineNor = "#define NORMAL " + std::to_string(NORMAL) + "\n";
@@ -347,13 +359,14 @@ void shutdown() {
 	renderer->shutdown();
 };
 
+#undef main
 
 int main(int argc, char *argv[])
 {
 
 
 	Grid test;
-	renderer = Renderer::makeRenderer(Renderer::BACKEND::DX12);
+	renderer = static_cast<DirectX12Renderer*>(Renderer::makeRenderer(Renderer::BACKEND::DX12));
 	renderer->initialize(800,600);
 	renderer->setWinTitle("DirectX12 - Dynamic scene loader test");
 	renderer->setClearColor(0.0, 0.1, 0.1, 1.0);

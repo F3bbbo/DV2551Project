@@ -40,8 +40,9 @@ std::shared_ptr<Material> DirectX12Renderer::makeMaterial(const std::string & na
 
 std::shared_ptr<Mesh> DirectX12Renderer::makeMesh()
 {
-	
-	return std::make_shared<Mesh>();
+	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
+	mesh->WMBuffer = makeConstantBuffer("WorldMatrix", WORLDMATRIX_SLOT);
+	return mesh;
 }
 
 std::shared_ptr<VertexBuffer> DirectX12Renderer::makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage)
