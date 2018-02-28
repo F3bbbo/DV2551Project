@@ -10,15 +10,14 @@ Grid::~Grid()
 
 }
 
-void Grid::createGrid(int height, int width)
+void Grid::createGrid(int gridHeight, int gridWidth)
 {
-
 	std::vector<std::vector<Object>> Xaxel;
 	std::vector<Object> Yaxel;
-	for (int i = 0; i < width;i++)
+	for (int i = 0; i < gridWidth; i++)
 	{
 		ObjectGrid.push_back(Xaxel);
-		for (int j = 0; j < height; j++)
+		for (int j = 0; j < gridHeight; j++)
 		{
 			ObjectGrid[i].push_back(Yaxel);
 		}

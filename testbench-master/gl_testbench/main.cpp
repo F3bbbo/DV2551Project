@@ -15,10 +15,14 @@
 #include "Grid.h"
 using namespace std;
 Renderer* renderer;
+Grid* grid;
 // flat scene at the application level...we don't care about this here.
 // do what ever you want in your renderer backend.
 // all these objects are loosely coupled, creation and destruction is responsibility
 // of the testbench, not of the container objects
+map<int, vector<Object>> object;
+
+
 vector<std::shared_ptr<Mesh>> scene;
 vector<std::shared_ptr<Material>> materials;
 vector<std::shared_ptr<Technique>> techniques;
@@ -35,6 +39,10 @@ void renderScene();
 
 char gTitleBuff[256];
 double gLastDelta = 0.0;
+
+std::shared_ptr<Material> triangleMaterial;
+std::shared_ptr<RenderState> triangleRS;
+std::shared_ptr<Technique> triangleT;
 
 void updateDelta()
 {
@@ -174,8 +182,7 @@ int initialiseTestbench()
 	uvs->setData(triUV, sizeof(triUV), 0);
 	mesh->addIAVertexBufferBinding(uvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
 
-	mesh->technique
-		= t;
+	mesh->technique = t;
 
 	scene.push_back(mesh);
 
@@ -346,17 +353,84 @@ void shutdown() {
 	renderer->shutdown();
 };
 
+void fillCell(int x, int y, int amount)
+{
+	float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
+	float2 triUV[3] = { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
+
+	for (int i = 0; i < amount; i++)
+	{
+		// triangle geometry:
+		float4 triPos[3] = { { x * cellWidth,  0.05, y * cellHeight, 1.0f },{ x * cellWidth + 0.05, -0.05, y * cellHeight, 1.0f },{ x * cellWidth - 0.05, -0.05, y * cellHeight, 1.0f } };
+
+		std::shared_ptr<VertexBuffer> trianglePos = renderer->makeVertexBuffer(sizeof(triPos), VertexBuffer::DATA_USAGE::DONTCARE);
+		std::shared_ptr<VertexBuffer> triangleNor = renderer->makeVertexBuffer(sizeof(triNor), VertexBuffer::DATA_USAGE::DONTCARE);
+		std::shared_ptr<VertexBuffer> triangleUvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
+
+		//Create mesh
+		std::shared_ptr<Mesh> mesh = renderer->makeMesh();
+		trianglePos->setData(triPos, sizeof(triPos), 0);
+		mesh->addIAVertexBufferBinding(trianglePos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
+
+		triangleNor->setData(triNor, sizeof(triNor), 0);
+		mesh->addIAVertexBufferBinding(triangleNor, 0, ARRAYSIZE(triNor), sizeof(float4), NORM);
+
+		triangleUvs->setData(triUV, sizeof(triUV), 0);
+		mesh->addIAVertexBufferBinding(triangleUvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
+
+		mesh->technique = triangleT;
+
+		scene.push_back(mesh);
+	}
+}
+
+void fillGrid()
+{
+	for (int x = 0; x < 10; x++)
+	{
+		for (int y = 0; y < 10; y++)
+		{
+			for (int triangles = 0; triangles < 2; triangles++)
+				fillCell(x, y, triangles);
+		}
+		cout << x << endl;
+	}
+}
+
+void createGlobalData()
+{
+	std::string shaderPath = renderer->getShaderPath();
+	std::string shaderExtension = renderer->getShaderExtension();
+
+	triangleMaterial = renderer->makeMaterial(shaderPath + "VertexShader" + shaderExtension);
+
+	triangleMaterial->setShader(shaderPath + "VertexShader" + shaderExtension, Material::ShaderType::VS);
+	triangleMaterial->setShader(shaderPath + "FragmentShader" + shaderExtension, Material::ShaderType::PS);
+
+	std::string err;
+	triangleMaterial->compileMaterial(err);
+
+	materials.push_back(triangleMaterial);
+
+	triangleRS = renderer->makeRenderState();
+	triangleT = renderer->makeTechnique(triangleMaterial, triangleRS);
+
+	techniques.push_back(triangleT);
+}
 
 int main(int argc, char *argv[])
 {
-
-
-	Grid test;
 	renderer = Renderer::makeRenderer(Renderer::BACKEND::DX12);
-	renderer->initialize(800,600);
+	renderer->initialize(800, 600);
 	renderer->setWinTitle("DirectX12 - Dynamic scene loader test");
 	renderer->setClearColor(0.0, 0.1, 0.1, 1.0);
-	initialiseTestbench();
+
+	createGlobalData();
+	grid = new Grid();
+	grid->createGrid(100, 100);
+	fillGrid();
+
+	//initialiseTestbench();
 	run();
 	shutdown();
 	return 0;

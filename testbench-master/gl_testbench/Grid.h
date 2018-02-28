@@ -2,15 +2,18 @@
 #include <iostream>
 #include <d3d12.h>
 #include <dxgi1_5.h>
-#include <DirectXMath.h>
+#include <SimpleMath.h>
 #include <vector>
+
+#define cellWidth 1
+#define cellHeight 1
+
 struct Object
 {
 	std::string Name; //Object Name 
-	DirectX::XMFLOAT3 Position; // Object Position
-	DirectX::XMFLOAT3 Scale; // Object Scale
-	float rotation; // Object rotation
-
+	DirectX::SimpleMath::Vector3 Position; // Object Position
+	DirectX::SimpleMath::Vector3 Scale; // Object Scale
+	DirectX::SimpleMath::Vector3 rotation; // Object rotation
 };
 
 
@@ -23,7 +26,7 @@ private:
 public:
 	Grid();
 	~Grid();
-	void createGrid(int height, int width);
+	void createGrid(int gridHeight, int gridWidth);
 
 };
 
