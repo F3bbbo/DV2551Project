@@ -12,8 +12,9 @@
 
 DirectX12Renderer::DirectX12Renderer()
 {
-	CreateClAcFcThread();
+	
 	createDevice();
+	CreateClAcFcThread();
 	createFenceAndDescriptorSizes();
 	createDescriptorHeaps();
 	createCommandObject();
@@ -99,7 +100,15 @@ void DirectX12Renderer::CreateClAcFcThread()
 	for(int i=0;i<NUMBER_OF_THREADS;i++)
 	{
 	Thread[i] = ClAcFc{ nullptr,nullptr,nullptr };//newThread;
+	device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[i].Fence));
+	
+	if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&Thread[i].commandAllocator))))
+		std::cout << "Failed to create command allocator." << std::endl;
+
+	if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, Thread[i].commandAllocator.Get(), nullptr, IID_PPV_ARGS(&Thread[THREAD_ID].commandList))))
+		std::cout << "Failed to create command list." << std::endl;
 	}
+
 }
 
 HWND DirectX12Renderer::InitWindow(HINSTANCE hInstance,int width,int height)
@@ -375,8 +384,8 @@ void DirectX12Renderer::createDevice()
 
 void DirectX12Renderer::createFenceAndDescriptorSizes()
 {
-	if (FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[THREAD_ID].Fence))))
-		std::cout << "Failed to create fence." << std::endl;
+//	if (FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[THREAD_ID].Fence))))
+//		std::cout << "Failed to create fence." << std::endl;
 
 	RTVDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	DSVDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
