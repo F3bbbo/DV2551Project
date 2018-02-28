@@ -36,6 +36,7 @@ void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_
 		std::vector<DirectX::SimpleMath::Vector4> pos;
 		std::vector<DirectX::SimpleMath::Vector4> norm;
 		std::vector<DirectX::SimpleMath::Vector2> texCoords;
+		std::vector<int> index;
 
 		//Extract vertex data
 		for (unsigned int j = 0; j < aiMesh->mNumVertices; j++)
@@ -46,6 +47,17 @@ void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_
 			norm.push_back(DXVector4(aiMesh->mNormals[j], 0.0f));
 			//TexCoords
 			texCoords.push_back(DXVector2((aiMesh->mTextureCoords[0])[j]));
+			//IndexBuffer
+		}
+		//Create indexbuffer with faces
+		for (unsigned int j = 0; j < aiMesh->mNumFaces; j++)
+		{
+			aiFace* face = &aiMesh->mFaces[j];
+			unsigned int* indices = face->mIndices;
+			for (unsigned int k = 0; k < face->mNumIndices; k++)
+			{
+				index.push_back(indices[k]);
+			}
 		}
 		//Create Vertex buffers
 		//Position
@@ -57,11 +69,16 @@ void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_
 		//Texture Coordinates
 		std::shared_ptr<VertexBuffer> vTexCoords = renderer->makeVertexBuffer(sizeof(texCoords[0]) * texCoords.size(), VertexBuffer::DATA_USAGE::DONTCARE);
 		vTexCoords->setData(texCoords.data(), sizeof(texCoords[0]) * texCoords.size(), 0);
+		//Index buffer
+		std::shared_ptr<VertexBuffer> vIndex = renderer->makeVertexBuffer(sizeof(index[0]) * index.size(), VertexBuffer::DATA_USAGE::DONTCARE);
+		vIndex->setData(index.data(), sizeof(index[0]) * index.size(), 0);
+		
 
 		std::shared_ptr<Mesh> outMesh = renderer->makeMesh();
 		outMesh->addIAVertexBufferBinding(vPos, 0, pos.size(), sizeof(pos[0]), POS);
 		outMesh->addIAVertexBufferBinding(vNorm, 0, norm.size(), sizeof(norm[0]), NORM);
 		outMesh->addIAVertexBufferBinding(vTexCoords, 0, texCoords.size(), sizeof(texCoords[0]), UVCOORD);
+		outMesh->addIAVertexBufferBinding(vIndex, 0, index.size(), sizeof(index[0]), INDEXBUFF);
 
 		meshes.push_back(outMesh);
 	}

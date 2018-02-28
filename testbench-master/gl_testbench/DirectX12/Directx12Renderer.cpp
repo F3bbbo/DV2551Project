@@ -270,7 +270,7 @@ void DirectX12Renderer::frame()
 			for (auto mesh : work.second)
 			{
 				//Render meshes
-				size_t numOfVertices = mesh->geometryBuffers[0].numElements;
+				size_t numOfVertices = mesh->geometryBuffers[INDEXBUFF].numElements;
 				//TODO bind textures
 				for (auto t : mesh->textures)
 				{

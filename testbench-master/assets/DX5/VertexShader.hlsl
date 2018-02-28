@@ -4,6 +4,7 @@
 StructuredBuffer<float4> pos : register(CONCAT(t, POS), space0);
 StructuredBuffer<float4> norm : register(CONCAT(t, NORM), space0);
 StructuredBuffer<float2> texCoord : register(CONCAT(t, UVCOORD), space0);
+StructuredBuffer<int> indexBuffer : register(CONCAT(t, INDEXBUFF), space0);
 
 cbuffer WMatrixBuf : register(CONCAT(b, WORLDMATRIX_SLOT), space0)
 {
@@ -26,9 +27,10 @@ struct Output
 Output main(uint vertexID : SV_VertexID)
 {
 	Output output;
-	output.pos = mul(pos[vertexID], VPMatrix);
-	output.norm = norm[vertexID];
-	output.texCoord = texCoord[vertexID];
+	int index = indexBuffer[vertexID];
+	output.pos = mul(pos[index], VPMatrix);
+	output.norm = norm[index];
+	output.texCoord = texCoord[index];
 	return output;
 }
 
