@@ -367,8 +367,11 @@ void shutdown() {
 	renderer->shutdown();
 };
 
-#undef main
-
+void fillCell(int x, int y, int amount)
+{
+	float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
+	int triInd[3] = { 0, 1, 2 };
+	float2 triUV[3] = { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
 	for (int i = 0; i < amount; i++)
 	{
 		// triangle geometry:
@@ -377,6 +380,7 @@ void shutdown() {
 		std::shared_ptr<VertexBuffer> trianglePos = renderer->makeVertexBuffer(sizeof(triPos), VertexBuffer::DATA_USAGE::DONTCARE);
 		std::shared_ptr<VertexBuffer> triangleNor = renderer->makeVertexBuffer(sizeof(triNor), VertexBuffer::DATA_USAGE::DONTCARE);
 		std::shared_ptr<VertexBuffer> triangleUvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
+		std::shared_ptr<VertexBuffer> triangleInd = renderer->makeVertexBuffer(sizeof(triInd), VertexBuffer::DATA_USAGE::DONTCARE);
 
 		//Create mesh
 		std::shared_ptr<Mesh> mesh = renderer->makeMesh();
@@ -388,6 +392,9 @@ void shutdown() {
 
 		triangleUvs->setData(triUV, sizeof(triUV), 0);
 		mesh->addIAVertexBufferBinding(triangleUvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
+
+		triangleInd->setData(triInd, sizeof(triInd), 0);
+		mesh->addIAVertexBufferBinding(triangleInd, 0, ARRAYSIZE(triInd), sizeof(float), INDEXBUFF);
 
 		mesh->technique = triangleT;
 
@@ -429,6 +436,7 @@ void createGlobalData()
 	techniques.push_back(triangleT);
 }
 
+#undef main
 int main(int argc, char *argv[])
 {
 	renderer = static_cast<DirectX12Renderer*>(Renderer::makeRenderer(Renderer::BACKEND::DX12));
