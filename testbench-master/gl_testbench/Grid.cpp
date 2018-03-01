@@ -1,5 +1,10 @@
 #include "Grid.h"
 
+void Grid::addMesh(int x, int y, Object * mesh)
+{
+	this->ObjectGrid[x][y].push_back(mesh);
+}
+
 Grid::Grid()
 {
 	createGrid(1, 1);
@@ -7,13 +12,19 @@ Grid::Grid()
 
 Grid::~Grid()
 {
-
+	for (int x = 0; x < width; x++)
+		for (int y = 0; y < height; y++)
+			for (int i = 0; i < ObjectGrid.size(); i++)
+				delete ObjectGrid[x][y][i];
 }
 
 void Grid::createGrid(int gridHeight, int gridWidth)
 {
-	std::vector<std::vector<Object>> Xaxel;
-	std::vector<Object> Yaxel;
+	width = gridWidth;
+	height = gridHeight;
+
+	std::vector<std::vector<Object*>> Xaxel;
+	std::vector<Object*> Yaxel;
 	for (int i = 0; i < gridWidth; i++)
 	{
 		ObjectGrid.push_back(Xaxel);

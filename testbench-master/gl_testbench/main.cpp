@@ -17,6 +17,11 @@
 #include "MeshReader.h"
 #include "Grid.h"
 #include "IA.h"
+
+//testing includes
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>
+
 using namespace std;
 DirectX12Renderer* renderer;
 Grid* grid;
@@ -369,37 +374,49 @@ void shutdown() {
 
 void fillCell(int x, int y, int amount)
 {
-	float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
-	int triInd[3] = { 0, 1, 2 };
-	float2 triUV[3] = { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
+	srand(time(NULL));
+
+	float randNumb;
 	for (int i = 0; i < amount; i++)
 	{
-		// triangle geometry:
-		float4 triPos[3] = { { x * cellWidth,  0.05, y * cellHeight, 1.0f },{ x * cellWidth + 0.05, -0.05, y * cellHeight, 1.0f },{ x * cellWidth - 0.05, -0.05, y * cellHeight, 1.0f } };
-
-		std::shared_ptr<VertexBuffer> trianglePos = renderer->makeVertexBuffer(sizeof(triPos), VertexBuffer::DATA_USAGE::DONTCARE);
-		std::shared_ptr<VertexBuffer> triangleNor = renderer->makeVertexBuffer(sizeof(triNor), VertexBuffer::DATA_USAGE::DONTCARE);
-		std::shared_ptr<VertexBuffer> triangleUvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
-		std::shared_ptr<VertexBuffer> triangleInd = renderer->makeVertexBuffer(sizeof(triInd), VertexBuffer::DATA_USAGE::DONTCARE);
-
-		//Create mesh
-		std::shared_ptr<Mesh> mesh = renderer->makeMesh();
-		trianglePos->setData(triPos, sizeof(triPos), 0);
-		mesh->addIAVertexBufferBinding(trianglePos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
-
-		triangleNor->setData(triNor, sizeof(triNor), 0);
-		mesh->addIAVertexBufferBinding(triangleNor, 0, ARRAYSIZE(triNor), sizeof(float4), NORM);
-
-		triangleUvs->setData(triUV, sizeof(triUV), 0);
-		mesh->addIAVertexBufferBinding(triangleUvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
-
-		triangleInd->setData(triInd, sizeof(triInd), 0);
-		mesh->addIAVertexBufferBinding(triangleInd, 0, ARRAYSIZE(triInd), sizeof(float), INDEXBUFF);
-
-		mesh->technique = triangleT;
-
-		scene.push_back(mesh);
+		randNumb = (float)(rand() % 1000) / 1000.f;
+		float pos[3] = { x * cellWidth + randNumb, 1, y * cellWidth + randNumb };
+		float scale[3] = { 1, 1, 1 };
+		float rot[3] = { 0, 0, 0 };
+		Object* object = new Object(pos, scale, rot);
+		grid->addMesh(x, y, object);
 	}
+	//float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
+	//int triInd[3] = { 0, 1, 2 };
+	//float2 triUV[3] = { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
+	//for (int i = 0; i < amount; i++)
+	//{
+	//	// triangle geometry:
+	//	float4 triPos[3] = { { x * cellWidth,  0.05, y * cellHeight, 1.0f },{ x * cellWidth + 0.05, -0.05, y * cellHeight, 1.0f },{ x * cellWidth - 0.05, -0.05, y * cellHeight, 1.0f } };
+
+	//	std::shared_ptr<VertexBuffer> trianglePos = renderer->makeVertexBuffer(sizeof(triPos), VertexBuffer::DATA_USAGE::DONTCARE);
+	//	std::shared_ptr<VertexBuffer> triangleNor = renderer->makeVertexBuffer(sizeof(triNor), VertexBuffer::DATA_USAGE::DONTCARE);
+	//	std::shared_ptr<VertexBuffer> triangleUvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
+	//	std::shared_ptr<VertexBuffer> triangleInd = renderer->makeVertexBuffer(sizeof(triInd), VertexBuffer::DATA_USAGE::DONTCARE);
+
+	//	//Create mesh
+	//	std::shared_ptr<Mesh> mesh = renderer->makeMesh();
+	//	trianglePos->setData(triPos, sizeof(triPos), 0);
+	//	mesh->addIAVertexBufferBinding(trianglePos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
+
+	//	triangleNor->setData(triNor, sizeof(triNor), 0);
+	//	mesh->addIAVertexBufferBinding(triangleNor, 0, ARRAYSIZE(triNor), sizeof(float4), NORM);
+
+	//	triangleUvs->setData(triUV, sizeof(triUV), 0);
+	//	mesh->addIAVertexBufferBinding(triangleUvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
+
+	//	triangleInd->setData(triInd, sizeof(triInd), 0);
+	//	mesh->addIAVertexBufferBinding(triangleInd, 0, ARRAYSIZE(triInd), sizeof(float), INDEXBUFF);
+
+	//	mesh->technique = triangleT;
+
+	//	scene.push_back(mesh);
+	//}
 }
 
 void fillGrid()
