@@ -10,7 +10,7 @@ DirectX::SimpleMath::Vector4 DXVector4(aiVector3D vec, float w)
 {
 	return DirectX::SimpleMath::Vector4(vec.x, vec.y, vec.z, w);
 }
-DirectX::SimpleMath::Vector2 DXVector2(aiVector3D vec)
+DirectX::SimpleMath::Vector2 ExtractUVCoords(aiVector3D vec)
 {
 	return DirectX::SimpleMath::Vector2(vec.x, 1 - vec.y);
 }
@@ -46,7 +46,7 @@ void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_
 			//Norm
 			norm.push_back(DXVector4(aiMesh->mNormals[j], 0.0f));
 			//TexCoords
-			texCoords.push_back(DXVector2((aiMesh->mTextureCoords[0])[j]));
+			texCoords.push_back(ExtractUVCoords((aiMesh->mTextureCoords[0])[j]));
 			//IndexBuffer
 		}
 		//Create indexbuffer with faces
