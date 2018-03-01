@@ -55,13 +55,6 @@ std::shared_ptr<VertexBuffer> DirectX12Renderer::makeVertexBuffer(size_t size, V
 std::shared_ptr<Texture2D> DirectX12Renderer::makeTexture2D()
 {	
 	std::shared_ptr<Texture2DDX12> texture = std::make_shared<Texture2DDX12>(getDevice().Get(), commandList.Get(), &Root);
-	commandList->Close();
-	executeCommandList(); // To transform the texture into a shader resource
-//	waitForGPU();
-	signalGPU(fence, fenceValue);
-	waitForGPU(fence, fenceValue, INFINITY);
-	fenceValue++;
-	commandList->Reset(commandAllocator.Get(), nullptr);
 	return texture;
 }
 
