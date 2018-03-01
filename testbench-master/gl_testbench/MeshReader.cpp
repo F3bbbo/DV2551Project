@@ -106,7 +106,7 @@ bool MeshReader::LoadFromFile(std::string MeshFileName, std::string TextureFileN
 
 	//Extract meshes
 	extractMeshes(scene, meshes, texture);
-	
+	importer.FreeScene();
 	return true;
 }
 
