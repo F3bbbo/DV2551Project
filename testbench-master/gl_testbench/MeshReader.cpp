@@ -26,7 +26,7 @@ Assimp::Importer& MeshReader::getImporter(unsigned int key)
 	return *importers[key];
 }
 
-void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_ptr<Mesh>>& meshes)
+void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_ptr<Mesh>>& meshes, std::shared_ptr<Texture2D> texture)
 {
 	aiMesh **aiMeshes = aiScene->mMeshes;
 	//Creating Meshes
@@ -79,12 +79,15 @@ void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_
 		outMesh->addIAVertexBufferBinding(vNorm, 0, norm.size(), sizeof(norm[0]), NORM);
 		outMesh->addIAVertexBufferBinding(vTexCoords, 0, texCoords.size(), sizeof(texCoords[0]), UVCOORD);
 		outMesh->addIAVertexBufferBinding(vIndex, 0, index.size(), sizeof(index[0]), INDEXBUFF);
+		
+		//Set texture
+		outMesh->textures[DIFFUSETEX_SLOT] = texture;
 
 		meshes.push_back(outMesh);
 	}
 }
 
-bool MeshReader::LoadFromFile(std::string MeshFileName, unsigned int key, std::vector<std::shared_ptr<Mesh>> &meshes)
+bool MeshReader::LoadFromFile(std::string MeshFileName, std::string TextureFileName, std::vector<std::shared_ptr<Mesh>> &meshes, unsigned int key)
 {
 	//Get the threads importer
 	Assimp::Importer &importer = getImporter(key);
@@ -97,16 +100,20 @@ bool MeshReader::LoadFromFile(std::string MeshFileName, unsigned int key, std::v
 		OutputDebugStringA(err.c_str());
 		return false;
 	}
+	//Create and load texture
+	std::shared_ptr<Texture2D> texture = renderer->makeTexture2D();
+	texture->loadFromFile(TextureFileName);
 
-	extractMeshes(scene, meshes);
-
+	//Extract meshes
+	extractMeshes(scene, meshes, texture);
+	
 	return true;
 }
 
-bool MeshReader::LoadFromFile(std::string MeshFileName, std::vector<std::shared_ptr<Mesh>> &meshes)
+bool MeshReader::LoadFromFile(std::string MeshFileName, std::string TextureFileName, std::vector<std::shared_ptr<Mesh>> &meshes)
 {
 	//Main thread function
-	return LoadFromFile(MeshFileName, 0, meshes);
+	return LoadFromFile(MeshFileName, TextureFileName, meshes, 0);
 }
 
 MeshReader::MeshReader(DirectX12Renderer *renderer)

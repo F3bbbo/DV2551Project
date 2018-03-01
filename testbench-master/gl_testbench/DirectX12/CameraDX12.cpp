@@ -13,7 +13,7 @@ CameraDX12::CameraDX12(float width, float height, float rotationSpeed, float wal
 	forwardVector = Vector3(0.f, 0.f, 1.f);
 
 	viewMatrix = DirectX::XMMatrixLookAtLH(position, forwardVector + position, upVector);
-	projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(3.141592f * 0.5f, width / height, 0.1f, 1000.f);
+	projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(3.141592f * 0.5f, width / height, 0.1f, 10000.f);
 	VPMatrix = viewMatrix * projectionMatrix;
 }
 

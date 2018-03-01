@@ -1,6 +1,9 @@
 #include "IA.h"
 
 
+texture2D DiffuseTex : register(CONCAT(t, DIFFUSETEX_SLOT), space1);
+sampler colorSampler : register(s0);
+
 struct Input
 {
 	float4 pos : SV_POSITION;
@@ -10,7 +13,8 @@ struct Input
 
 float4 main(Input input) : SV_TARGET
 {
-	return float4(0.0f, 1.0f, 0.0f, 1.0f);
+	float4 color = DiffuseTex.Sample(colorSampler, input.texCoord);
+	return color;
 }
 
 

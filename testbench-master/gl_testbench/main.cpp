@@ -139,7 +139,7 @@ int initialiseTestbench()
 {
 	//MeshReader TEST
 	MeshReader mr(renderer);
-	mr.LoadFromFile("Models/SamsungLEDTV.FBX", scene);
+	mr.LoadFromFile("Models/NewLowPolyTree.fbx","Models/PolyTreeTexture.png", scene);
 	// triangle geometry:
 	float4 triPos[3] = { { 0.0f,  1.0, 0.0f, 1.0f },{ 1.0, -1.0, 0.0f, 1.0f },{ -1.0, -1.0, 0.0f, 1.0f } };
 	float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
