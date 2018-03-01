@@ -7,7 +7,7 @@ void Grid::addMesh(int x, int y, Object * mesh)
 
 Grid::Grid()
 {
-	createGrid(1, 1);
+
 }
 
 Grid::~Grid()
