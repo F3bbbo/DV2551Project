@@ -12,7 +12,7 @@ DirectX::SimpleMath::Vector4 DXVector4(aiVector3D vec, float w)
 }
 DirectX::SimpleMath::Vector2 DXVector2(aiVector3D vec)
 {
-	return DirectX::SimpleMath::Vector2(vec.x, vec.y);
+	return DirectX::SimpleMath::Vector2(vec.x, 1 - vec.y);
 }
 
 Assimp::Importer& MeshReader::getImporter(unsigned int key)
