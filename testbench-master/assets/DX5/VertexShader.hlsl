@@ -29,7 +29,7 @@ Output main(uint vertexID : SV_VertexID)
 	Output output;
 	int index = indexBuffer[vertexID];
 	output.pos = mul(mul(pos[index], WMatrix), VPMatrix);
-	output.norm = norm[index];
+	output.norm = mul(norm[index],  WMatrix);
 	output.texCoord = texCoord[index];
 	return output;
 }
