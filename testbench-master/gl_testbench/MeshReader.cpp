@@ -26,7 +26,7 @@ Assimp::Importer& MeshReader::getImporter(unsigned int key)
 	return *importers[key];
 }
 
-void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_ptr<Mesh>>& meshes, std::shared_ptr<Texture2D> texture)
+void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_ptr<Mesh>>& meshes, std::shared_ptr<Texture2D> texture, unsigned int key)
 {
 	aiMesh **aiMeshes = aiScene->mMeshes;
 	//Creating Meshes
@@ -61,20 +61,20 @@ void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_
 		}
 		//Create Vertex buffers
 		//Position
-		std::shared_ptr<VertexBuffer> vPos = renderer->makeVertexBuffer(sizeof(pos[0]) * pos.size(), VertexBuffer::DATA_USAGE::DONTCARE);
+		std::shared_ptr<VertexBuffer> vPos = renderer->makeVertexBuffer(sizeof(pos[0]) * pos.size(), VertexBuffer::DATA_USAGE::DONTCARE, key);
 		vPos->setData(pos.data(), sizeof(pos[0]) * pos.size(), 0);
 		//Normal
-		std::shared_ptr<VertexBuffer> vNorm = renderer->makeVertexBuffer(sizeof(norm[0]) * norm.size(), VertexBuffer::DATA_USAGE::DONTCARE);
+		std::shared_ptr<VertexBuffer> vNorm = renderer->makeVertexBuffer(sizeof(norm[0]) * norm.size(), VertexBuffer::DATA_USAGE::DONTCARE, key);
 		vNorm->setData(norm.data(), sizeof(norm[0]) * norm.size(), 0);
 		//Texture Coordinates
-		std::shared_ptr<VertexBuffer> vTexCoords = renderer->makeVertexBuffer(sizeof(texCoords[0]) * texCoords.size(), VertexBuffer::DATA_USAGE::DONTCARE);
+		std::shared_ptr<VertexBuffer> vTexCoords = renderer->makeVertexBuffer(sizeof(texCoords[0]) * texCoords.size(), VertexBuffer::DATA_USAGE::DONTCARE, key);
 		vTexCoords->setData(texCoords.data(), sizeof(texCoords[0]) * texCoords.size(), 0);
 		//Index buffer
-		std::shared_ptr<VertexBuffer> vIndex = renderer->makeVertexBuffer(sizeof(index[0]) * index.size(), VertexBuffer::DATA_USAGE::DONTCARE);
+		std::shared_ptr<VertexBuffer> vIndex = renderer->makeVertexBuffer(sizeof(index[0]) * index.size(), VertexBuffer::DATA_USAGE::DONTCARE, key);
 		vIndex->setData(index.data(), sizeof(index[0]) * index.size(), 0);
 		
 
-		std::shared_ptr<Mesh> outMesh = renderer->makeMesh();
+		std::shared_ptr<Mesh> outMesh = renderer->makeMesh(key);
 		outMesh->addIAVertexBufferBinding(vPos, 0, pos.size(), sizeof(pos[0]), POS);
 		outMesh->addIAVertexBufferBinding(vNorm, 0, norm.size(), sizeof(norm[0]), NORM);
 		outMesh->addIAVertexBufferBinding(vTexCoords, 0, texCoords.size(), sizeof(texCoords[0]), UVCOORD);
@@ -101,11 +101,11 @@ bool MeshReader::LoadFromFile(std::string MeshFileName, std::string TextureFileN
 		return false;
 	}
 	//Create and load texture
-	std::shared_ptr<Texture2D> texture = renderer->makeTexture2D();
+	std::shared_ptr<Texture2D> texture = renderer->makeTexture2D(key);
 	texture->loadFromFile(TextureFileName);
 
 	//Extract meshes
-	extractMeshes(scene, meshes, texture);
+	extractMeshes(scene, meshes, texture, key);
 	importer.FreeScene();
 	return true;
 }
@@ -113,7 +113,7 @@ bool MeshReader::LoadFromFile(std::string MeshFileName, std::string TextureFileN
 bool MeshReader::LoadFromFile(std::string MeshFileName, std::string TextureFileName, std::vector<std::shared_ptr<Mesh>> &meshes)
 {
 	//Main thread function
-	return LoadFromFile(MeshFileName, TextureFileName, meshes, 0);
+	return LoadFromFile(MeshFileName, TextureFileName, meshes, MAIN_THREAD);
 }
 
 MeshReader::MeshReader(DirectX12Renderer *renderer)
