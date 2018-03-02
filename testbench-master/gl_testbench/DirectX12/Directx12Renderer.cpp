@@ -70,13 +70,6 @@ std::shared_ptr<Texture2D> DirectX12Renderer::makeTexture2D()
 std::shared_ptr<Texture2D> DirectX12Renderer::makeTexture2D(int ThreadID)
 {	
 	std::shared_ptr<Texture2DDX12> texture = std::make_shared<Texture2DDX12>(getDevice().Get(), Thread[ThreadID].commandList.Get(), &Root);
-	Thread[ThreadID].commandList->Close();
-	executeCommandList(); // To transform the texture into a shader resource
-//	waitForGPU();
-	signalGPU(Thread[ThreadID].Fence, fenceValue);
-	waitForGPU(Thread[ThreadID].Fence, fenceValue, INFINITY);
-	fenceValue++;
-	Thread[ThreadID].commandList->Reset(Thread[ThreadID].commandAllocator.Get(), nullptr);
 	return texture;
 }
 
