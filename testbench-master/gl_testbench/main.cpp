@@ -383,7 +383,7 @@ void fillCell(int x, int y, int amount)
 		float pos[3] = { x * cellWidth + randNumb, 1, y * cellWidth + randNumb };
 		float scale[3] = { 1, 1, 1 };
 		float rot[3] = { 0, 0, 0 };
-		Object* object = new Object(pos, scale, rot);
+		Object* object = new Object(pos, scale, rot, "Models/PolyTreeTexture.png");
 		grid->addMesh(x, y, object);
 	}
 	//float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };

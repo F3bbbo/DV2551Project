@@ -73,8 +73,8 @@ public:
 	void waitForGPU(int ThreadID);
 	void signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value);
 	void signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, int ThreadID);
-	void waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime);
-	void waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime,int ThreadID);
+	bool waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime);
+	bool waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime,int ThreadID);
 	Microsoft::WRL::ComPtr<ID3D12Device> getDevice();
 	void setMaterialState(MaterialDX12 *material);
 	void updateCamera();
@@ -107,6 +107,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 	//Command list/queue
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueueCopy = nullptr;
 //	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
 //	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
 	void executeCommandList();

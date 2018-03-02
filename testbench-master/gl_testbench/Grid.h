@@ -12,13 +12,15 @@ using namespace DirectX::SimpleMath;
 
 struct Object
 {
-	Object(float* pos, float* scale, float* rot)
+	Object(float* pos, float* scale, float* rot, std::string texture)
 	{
 		position = Vector3(pos);
 		this->scale = Vector3(scale);
 		rotation = Vector3(rot);
+		textureFileName = texture;
 	}
 	std::string Name; //Object Name 
+	std::string textureFileName;
 	DirectX::SimpleMath::Vector3 position; // Object Position
 	DirectX::SimpleMath::Vector3 scale; // Object Scale
 	DirectX::SimpleMath::Vector3 rotation; // Object rotation

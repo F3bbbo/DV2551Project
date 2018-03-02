@@ -5,9 +5,6 @@
 #define UVCOORD 2
 #define INDEXBUFF 4
 
-
-#define DIFFUSE_SLOT 0
-
 #define WORLDMATRIX_SLOT 8
 #define VPMATRIX_SLOT 9
 
