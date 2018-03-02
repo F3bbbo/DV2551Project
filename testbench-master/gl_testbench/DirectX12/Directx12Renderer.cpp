@@ -206,7 +206,7 @@ void DirectX12Renderer::setWinTitle(const char * title)
 }
 void DirectX12Renderer::present()
 {
-	present(0);
+	present(MAIN_THREAD);
 }
 void DirectX12Renderer::present(int ThreadID)
 {
@@ -214,7 +214,7 @@ void DirectX12Renderer::present(int ThreadID)
 //	waitForGPU();
 	signalGPU(Thread[ThreadID].Fence, fenceValue);
 	bool isCompleted = false;
-	while (isCompleted)
+	while (!isCompleted)
 		isCompleted = waitForGPU(Thread[ThreadID].Fence, fenceValue, 0);
 	fenceValue = (fenceValue + 1) % 2;
 //Prep for next iteration
@@ -356,24 +356,6 @@ void DirectX12Renderer::frame(int ThreadID)
 	Thread[ThreadID].commandList->Close();
 	//Execute commandList
 	executeCommandList();
-}
-
-void DirectX12Renderer::waitForGPU()
-{
-	waitForGPU(MAIN_THREAD);
-}
-
-void DirectX12Renderer::waitForGPU(int ThreadID)
-{
-	const UINT64 fenceVal = fenceValue;
-	commandQueue->Signal(Thread[ThreadID].Fence.Get(), fenceVal);
-	fenceValue++;
-
-	if (Thread[ThreadID].Fence->GetCompletedValue() < fenceVal)
-	{
-		Thread[ThreadID].Fence->SetEventOnCompletion(fenceVal, eventHandle);
-		WaitForSingleObject(eventHandle, INFINITY);
-	}
 }
 
 void DirectX12Renderer::signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value)
@@ -579,7 +561,7 @@ void DirectX12Renderer::createDepthStencil()
 	device->CreateDepthStencilView(depthStencilBuffer.Get(), nullptr, getDepthView());
 	//Transition the resource from its initial state to be used as a depth buffer
 	d3dUtil::SetResourceTransitionBarrier(
-		Thread[THREAD_ID].commandList.Get(),
+		Thread[MAIN_THREAD].commandList.Get(),
 		depthStencilBuffer.Get(),
 		D3D12_RESOURCE_STATE_COMMON,
 		D3D12_RESOURCE_STATE_DEPTH_WRITE
