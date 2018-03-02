@@ -36,6 +36,7 @@ public:
 	std::shared_ptr<Material> makeMaterial(const std::string& name);
 	std::shared_ptr<Material> makeMaterial(const std::string& name, int Thread);
 	std::shared_ptr<Mesh> makeMesh();
+	std::shared_ptr<Mesh> makeMesh(unsigned int key);
 	std::shared_ptr<VertexBuffer> makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage);
 	std::shared_ptr<VertexBuffer> makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage,int ThreadID);
 	std::shared_ptr<Texture2D> makeTexture2D();

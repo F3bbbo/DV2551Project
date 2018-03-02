@@ -47,8 +47,13 @@ std::shared_ptr<Material> DirectX12Renderer::makeMaterial(const std::string & na
 
 std::shared_ptr<Mesh> DirectX12Renderer::makeMesh()
 {
+	return makeMesh(MAIN_THREAD);
+}
+
+std::shared_ptr<Mesh> DirectX12Renderer::makeMesh(unsigned int key)
+{
 	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
-	mesh->WMBuffer = makeConstantBuffer("WorldMatrix", WORLDMATRIX_SLOT);
+	mesh->WMBuffer = makeConstantBuffer("WorldMatrix", WORLDMATRIX_SLOT, key);
 	return mesh;
 }
 
