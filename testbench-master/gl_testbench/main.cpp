@@ -54,8 +54,13 @@ std::shared_ptr<Material> triangleMaterial;
 std::shared_ptr<RenderState> triangleRS;
 std::shared_ptr<Technique> triangleT;
 
-std::queue<int> idleThreads;
+struct int2
+{
+	int x, y;
+};
 
+std::queue<int> idleThreads;
+std::list<int2> gridCellsToBeLoaded;
 void updateDelta()
 {
 	#define WINDOW_SIZE 10
@@ -442,8 +447,7 @@ void fillGrid()
 	{
 		for (int y = 0; y < 10; y++)
 		{
-			for (int triangles = 0; triangles < 2; triangles++)
-				fillCell(x, y, triangles);
+			fillCell(x, y, 2);
 		}
 		cout << x << endl;
 	}
@@ -474,7 +478,7 @@ void createGlobalData()
 int main(int argc, char *argv[])
 {
 	renderer = static_cast<DirectX12Renderer*>(Renderer::makeRenderer(Renderer::BACKEND::DX12));
-	renderer->initialize(800,600);
+	renderer->initialize(800, 600);
 	renderer->setWinTitle("DirectX12 - Dynamic scene loader test");
 	renderer->setClearColor(0.0, 0.1, 0.1, 1.0);
 
@@ -483,6 +487,8 @@ int main(int argc, char *argv[])
 	grid->createGrid(100, 100);
 	fillGrid();
 
+	//(*grid)[0].size();
+	//(*grid)[0][0][0]->position;
 	//initialiseTestbench();
 	run();
 	shutdown();

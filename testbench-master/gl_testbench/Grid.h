@@ -36,6 +36,8 @@ private:
 	int width, height;
 public:
 	void addMesh(int x, int y, Object* mesh);
+	std::vector < std::vector<Object*>>operator [](int y) const { return ObjectGrid[y];}
+	std::vector < std::vector<Object*>>&operator [](int y) { return ObjectGrid[y]; }
 	Grid();
 	~Grid();
 	void createGrid(int gridHeight, int gridWidth);
