@@ -40,6 +40,7 @@ public:
 	std::vector < std::vector<Object*>>&operator [](int y) { return ObjectGrid[y]; }
 	Grid();
 	~Grid();
+	std::vector<Object*> getObject(int width, int height);
 	void createGrid(int gridHeight, int gridWidth);
 
 };

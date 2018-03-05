@@ -119,6 +119,7 @@ void run() {
 */
 void updateScene()
 {
+
 	// Check if new grids needs to be loaded and add them to a grid list.
 	// Check if the list associated to a thread previously launched had finished by checking a fence, if the fence has been reached, add integers to the "idleThreads" queue indicating that a new thread can be launched with that command list.
 	// Launch threads. Each thread is responisble for loading one grid cell, launch as many threads as available
@@ -129,7 +130,6 @@ void updateScene()
 			// Upload the vertex data and texture to the GPU
 			// When the mesh is uploaded, change the command list pointer that he mesh hold to the main threads command list.
 			
-	
 
 
 
@@ -393,7 +393,10 @@ void shutdown() {
 	//}
 	renderer->shutdown();
 };
-
+void threadfunctionloadingdata()
+{
+	std::cout << grid->getObject(2, 2).size() << std::endl;
+}
 void fillCell(int x, int y, int amount)
 {
 	srand(time(NULL));
@@ -481,10 +484,10 @@ int main(int argc, char *argv[])
 	renderer->initialize(800, 600);
 	renderer->setWinTitle("DirectX12 - Dynamic scene loader test");
 	renderer->setClearColor(0.0, 0.1, 0.1, 1.0);
-
+	
 	createGlobalData();
 	grid = new Grid();
-	grid->createGrid(100, 100);
+	grid->createGrid(WWidth, HHeight);
 	fillGrid();
 
 	//(*grid)[0].size();
