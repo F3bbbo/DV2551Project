@@ -530,7 +530,7 @@ void createGlobalData()
 
 void updateGridList()
 {
-	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().y };
+	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
 	for (int x = 0; x < WWidth; x++)
 	{
 		for (int y = 0; y < HHeight; y++)
