@@ -12,6 +12,7 @@
 #include "Texture2D.h"
 #include <math.h>
 #include <memory>
+#include <queue>
 
 //#include "DirectX12/MeshDX12.h"
 #include "MeshReader.h"
@@ -52,6 +53,8 @@ double gLastDelta = 0.0;
 std::shared_ptr<Material> triangleMaterial;
 std::shared_ptr<RenderState> triangleRS;
 std::shared_ptr<Technique> triangleT;
+
+std::queue<int> idleThreads;
 
 void updateDelta()
 {
@@ -111,6 +114,20 @@ void run() {
 */
 void updateScene()
 {
+	// Check if new grids needs to be loaded and add them to a grid list.
+	// Check if the list associated to a thread previously launched had finished by checking a fence, if the fence has been reached, add integers to the "idleThreads" queue indicating that a new thread can be launched with that command list.
+	// Launch threads. Each thread is responisble for loading one grid cell, launch as many threads as available
+		// A thread is given a vector of objects to be loaded. For each mesh the thread should:
+			// Load the data from the file.
+			// Create position, index , UVs and Normal vertex buffers with the appropriate resource state.
+			// Each file to be loaded has a texture associated with it which needs to be loaded.
+			// Upload the vertex data and texture to the GPU
+			// When the mesh is uploaded, change the command list pointer that he mesh hold to the main threads command list.
+			
+	
+
+
+
 	/*
 	    For each mesh in scene list, update their position 
 	*/

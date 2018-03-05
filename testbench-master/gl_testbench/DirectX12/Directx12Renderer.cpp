@@ -377,7 +377,8 @@ bool DirectX12Renderer::waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, co
 	if (Thread[ThreadID].Fence->GetCompletedValue() != value)
 	{
 		Thread[ThreadID].Fence->SetEventOnCompletion(value, eventHandle);
-		WaitForSingleObject(eventHandle, waittime);
+		if (WAIT_OBJECT_0 == WaitForSingleObject(eventHandle, waittime))
+			return true;
 		return false;
 	}
 	return true;
