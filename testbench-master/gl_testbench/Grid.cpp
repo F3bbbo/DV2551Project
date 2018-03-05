@@ -30,13 +30,13 @@ void Grid::createGrid(int gridHeight, int gridWidth)
 	height = gridHeight;
 
 	std::vector<cellInfo*> Xaxel;
-	cellInfo* Yaxel = new cellInfo();
-	Yaxel->status = 0;
 	for (int i = 0; i < gridWidth; i++)
 	{
 		ObjectGrid.push_back(Xaxel);
 		for (int j = 0; j < gridHeight; j++)
 		{
+			cellInfo* Yaxel = new cellInfo();
+			Yaxel->status = 0;
 			ObjectGrid[i].push_back(Yaxel);
 		}
 	}
