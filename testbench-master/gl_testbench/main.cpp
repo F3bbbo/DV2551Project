@@ -58,11 +58,17 @@ std::shared_ptr<Technique> triangleT;
 
 struct int2
 {
+	int2(int x, int y) { this->x = x; this->y = y; };
 	int x, y;
 };
 
 std::queue<int> idleThreads;
-std::list<int2> gridCellsToBeLoaded;
+std::vector<int2> gridCellsToBeLoaded;
+
+const int2 gridStart = { -5, -5 };
+#define XOFFSET -5 + 0.5f * cellWidth
+#define YOFFSET -5 + 0.5f * cellHeight
+
 void updateDelta()
 {
 	#define WINDOW_SIZE 10
@@ -111,6 +117,11 @@ void run() {
 			if (windowEvent.type == SDL_QUIT) break;
 			if (windowEvent.type == SDL_KEYUP && windowEvent.key.keysym.sym == SDLK_ESCAPE) break;
 		}
+		//updateGridList();
+
+		/*for (int i = 0; i < gridCellsToBeLoaded.size(); i++)
+			cout << gridCellsToBeLoaded[i].x << " " << gridCellsToBeLoaded[i].y << ", ";
+		cout << endl;*/
 		updateScene();
 		renderScene();
 	}
@@ -479,11 +490,31 @@ void createGlobalData()
 	techniques.push_back(triangleT);
 }
 
-//void updateGridList()
-//{
-//	Vector3 camPos = renderer->camera->getPosition();
-//	
-//}
+void updateGridList()
+{
+	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().y };
+	for (int x = 0; x < WWidth; x++)
+	{
+		for (int y = 0; y < HHeight; y++)
+		{
+			//Check if the camera is close enough to the center of the cell
+			if (Vector2(camPos - Vector2(cellWidth * x + XOFFSET, cellHeight * y + YOFFSET)).LengthSquared() < LOADINGTHRESHOLD * LOADINGTHRESHOLD && (*grid)[x][y]->status == NOT_LOADED)
+			{
+				(*grid)[x][y]->status = PENDING_LOAD;
+				gridCellsToBeLoaded.push_back(int2(x, y));
+			}
+		}
+	}
+	
+	for (int i = 0; i < gridCellsToBeLoaded.size(); i++)
+	{
+		if (Vector2(camPos - Vector2(cellWidth * gridCellsToBeLoaded[i].x + XOFFSET, cellHeight * gridCellsToBeLoaded[i].y + YOFFSET)).LengthSquared() > LOADINGTHRESHOLD * LOADINGTHRESHOLD)
+		{
+			(*grid)[gridCellsToBeLoaded[i].x][gridCellsToBeLoaded[i].y]->status = NOT_LOADED;
+			gridCellsToBeLoaded.erase(gridCellsToBeLoaded.begin() + i);
+		}
+	}
+}
 #undef main
 int main(int argc, char *argv[])
 {
@@ -498,7 +529,7 @@ int main(int argc, char *argv[])
 	fillGrid();
 
 	//(*grid)[0].size();
-	//(*grid)[0][0]->objectList[0]->position;
+	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
 	//initialiseTestbench();
 	run();
 	shutdown();

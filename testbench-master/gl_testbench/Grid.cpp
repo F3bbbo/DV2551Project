@@ -36,7 +36,7 @@ void Grid::createGrid(int gridHeight, int gridWidth)
 		for (int j = 0; j < gridHeight; j++)
 		{
 			cellInfo* Yaxel = new cellInfo();
-			Yaxel->status = 0;
+			Yaxel->status = NOT_LOADED;
 			ObjectGrid[i].push_back(Yaxel);
 		}
 	}

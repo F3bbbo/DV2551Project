@@ -10,6 +10,14 @@
 
 using namespace DirectX::SimpleMath;
 
+enum cellStatus
+{
+	NOT_LOADED = 0,
+	PENDING_LOAD = 1,
+	LOADING = 2,
+	LOADED = 3
+};
+
 struct Object
 {
 	Object(float* pos, float* scale, float* rot, std::string texture)
@@ -29,7 +37,7 @@ struct Object
 struct cellInfo
 {
 	std::vector<Object*> objectList;
-	int status; // 0: not loaded, 1: loading, 2: loaded and ready to draw
+	cellStatus status; // 0: not loaded, 1: needs to be loaded, pending loading 2: loading, 3: loaded and ready to draw
 };
 class Grid
 {
