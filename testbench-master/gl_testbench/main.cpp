@@ -22,6 +22,7 @@
 //testing includes
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>
+#include <SimpleMath.h>
 
 #include <process.h>
 #include <mutex>
@@ -49,6 +50,7 @@ std::shared_ptr<VertexBuffer> uvs;
 void updateScene();
 void renderScene();
 
+void updateGridList();
 char gTitleBuff[256];
 double gLastDelta = 0.0;
 
@@ -492,6 +494,11 @@ void createGlobalData()
 	techniques.push_back(triangleT);
 }
 
+//void updateGridList()
+//{
+//	Vector3 camPos = renderer->camera->getPosition();
+//	
+//}
 #undef main
 int main(int argc, char *argv[])
 {
@@ -506,7 +513,7 @@ int main(int argc, char *argv[])
 	fillGrid();
 	createThreads();
 	//(*grid)[0].size();
-	//(*grid)[0][0][0]->position;
+	//(*grid)[0][0]->objectList[0]->position;
 	//initialiseTestbench();
 	run();
 	shutdown();
