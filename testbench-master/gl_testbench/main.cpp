@@ -24,6 +24,8 @@
 #include <time.h>
 #include <SimpleMath.h>
 
+#include <process.h>
+#include <mutex>
 using namespace std;
 DirectX12Renderer* renderer;
 Grid* grid;
@@ -51,6 +53,12 @@ void renderScene();
 void updateGridList();
 char gTitleBuff[256];
 double gLastDelta = 0.0;
+
+struct threadinfo
+{
+	int size;
+	Object** data;
+};
 
 std::shared_ptr<Material> triangleMaterial;
 std::shared_ptr<RenderState> triangleRS;
@@ -406,9 +414,52 @@ void shutdown() {
 	//}
 	renderer->shutdown();
 };
-void threadfunctionloadingdata()
+unsigned int __stdcall  threadfunctionloadingdata(void* data)
 {
-	std::cout << grid->getObject(2, 2).size() << std::endl;
+	int i = 0;
+	threadinfo * threadinformation = (threadinfo*) data;
+	//	std::cout << threadinformation->data[i]->position.x << std::endl;
+	//	Object** testdata = (Object**)data;
+//	std::cout << testdata[0]->position.x << std::endl;
+	int x = 0;
+	int y = 0;
+	float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
+	int triInd[3] = { 0, 1, 2 };
+	float2 triUV[3] = { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
+	int amount = threadinformation->size;
+	for (int i = 0; i < amount; i++)
+	{
+		std::shared_ptr<ConstantBuffer> cbmesh;
+		// triangle geometry:
+		float4 triPos[3] = { { x * cellWidth,  0.05, y * cellHeight, 1.0f },{ x * cellWidth + 0.05, -0.05, y * cellHeight, 1.0f },{ x * cellWidth - 0.05, -0.05, y * cellHeight, 1.0f } };
+
+		std::shared_ptr<VertexBuffer> trianglePos = renderer->makeVertexBuffer(sizeof(triPos), VertexBuffer::DATA_USAGE::DONTCARE);
+		std::shared_ptr<VertexBuffer> triangleNor = renderer->makeVertexBuffer(sizeof(triNor), VertexBuffer::DATA_USAGE::DONTCARE);
+		std::shared_ptr<VertexBuffer> triangleUvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
+		std::shared_ptr<VertexBuffer> triangleInd = renderer->makeVertexBuffer(sizeof(triInd), VertexBuffer::DATA_USAGE::DONTCARE);
+
+		//Create mesh
+		std::shared_ptr<Mesh> mesh = renderer->makeMesh();
+		trianglePos->setData(triPos, sizeof(triPos), 0);
+		mesh->addIAVertexBufferBinding(trianglePos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
+
+		triangleNor->setData(triNor, sizeof(triNor), 0);
+		mesh->addIAVertexBufferBinding(triangleNor, 0, ARRAYSIZE(triNor), sizeof(float4), NORM);
+
+		triangleUvs->setData(triUV, sizeof(triUV), 0);
+		mesh->addIAVertexBufferBinding(triangleUvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
+
+		triangleInd->setData(triInd, sizeof(triInd), 0);
+		mesh->addIAVertexBufferBinding(triangleInd, 0, ARRAYSIZE(triInd), sizeof(float), INDEXBUFF);
+
+		mesh->technique = triangleT;
+		mesh->setRotation(threadinformation->data[i]->rotation);
+		mesh->setScale(threadinformation->data[i]->scale);
+		mesh->setTranslation(threadinformation->data[i]->position);
+	//	mesh->setCBuffer(cbmesh);
+		scene.push_back(mesh);
+	}
+		return 1;
 }
 void fillCell(int x, int y, int amount)
 {
@@ -424,39 +475,26 @@ void fillCell(int x, int y, int amount)
 		Object* object = new Object(pos, scale, rot, "Models/PolyTreeTexture.png");
 		grid->addMesh(x, y, object);
 	}
-	//float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
-	//int triInd[3] = { 0, 1, 2 };
-	//float2 triUV[3] = { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
-	//for (int i = 0; i < amount; i++)
-	//{
-	//	// triangle geometry:
-	//	float4 triPos[3] = { { x * cellWidth,  0.05, y * cellHeight, 1.0f },{ x * cellWidth + 0.05, -0.05, y * cellHeight, 1.0f },{ x * cellWidth - 0.05, -0.05, y * cellHeight, 1.0f } };
 
-	//	std::shared_ptr<VertexBuffer> trianglePos = renderer->makeVertexBuffer(sizeof(triPos), VertexBuffer::DATA_USAGE::DONTCARE);
-	//	std::shared_ptr<VertexBuffer> triangleNor = renderer->makeVertexBuffer(sizeof(triNor), VertexBuffer::DATA_USAGE::DONTCARE);
-	//	std::shared_ptr<VertexBuffer> triangleUvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
-	//	std::shared_ptr<VertexBuffer> triangleInd = renderer->makeVertexBuffer(sizeof(triInd), VertexBuffer::DATA_USAGE::DONTCARE);
-
-	//	//Create mesh
-	//	std::shared_ptr<Mesh> mesh = renderer->makeMesh();
-	//	trianglePos->setData(triPos, sizeof(triPos), 0);
-	//	mesh->addIAVertexBufferBinding(trianglePos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
-
-	//	triangleNor->setData(triNor, sizeof(triNor), 0);
-	//	mesh->addIAVertexBufferBinding(triangleNor, 0, ARRAYSIZE(triNor), sizeof(float4), NORM);
-
-	//	triangleUvs->setData(triUV, sizeof(triUV), 0);
-	//	mesh->addIAVertexBufferBinding(triangleUvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
-
-	//	triangleInd->setData(triInd, sizeof(triInd), 0);
-	//	mesh->addIAVertexBufferBinding(triangleInd, 0, ARRAYSIZE(triInd), sizeof(float), INDEXBUFF);
-
-	//	mesh->technique = triangleT;
-
-	//	scene.push_back(mesh);
-	//}
 }
 
+
+void createThreads()
+{
+
+	//    std::cout << (*grid)[0][0]->objectList.size(); 
+	//    std::cout << (*grid)[0][1]->objectList.size(); 
+	//    std::cout << (*grid)[0][2]->objectList.size(); 
+//	std::vector<Object*> data1 = (*grid)[0][0]->objectList;
+//	std::vector<Object*> data2 = (*grid)[0][1]->objectList;
+//	std::vector<Object*> data3 = (*grid)[0][2]->objectList;
+	//    std::cout << (*grid)[0][0]->objectList[0]->position.x << std::endl; 
+	threadinfo data1 = { (*grid)[0][0]->objectList.size(),(*grid)[0][0]->objectList.data() };
+	HANDLE Thread1;
+	Thread1 = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &data1, 0, 0);
+	WaitForSingleObject(Thread1, INFINITE);
+	CloseHandle(Thread1);
+}
 void fillGrid()
 {
 	for (int x = 0; x < 10; x++)
@@ -527,7 +565,7 @@ int main(int argc, char *argv[])
 	grid = new Grid();
 	grid->createGrid(WWidth, HHeight);
 	fillGrid();
-
+	createThreads();
 	//(*grid)[0].size();
 	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
 	//initialiseTestbench();
