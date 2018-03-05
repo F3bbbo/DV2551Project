@@ -54,6 +54,12 @@ void updateGridList();
 char gTitleBuff[256];
 double gLastDelta = 0.0;
 
+struct threadinfo
+{
+	int size;
+	Object** data;
+};
+
 std::shared_ptr<Material> triangleMaterial;
 std::shared_ptr<RenderState> triangleRS;
 std::shared_ptr<Technique> triangleT;
@@ -399,17 +405,20 @@ void shutdown() {
 };
 unsigned int __stdcall  threadfunctionloadingdata(void* data)
 {
-	std::cout << (*grid)[2][2].size();
-
+	int i = 0;
+	threadinfo * threadinformation = (threadinfo*) data;
+	//	std::cout << threadinformation->data[i]->position.x << std::endl;
+	//	Object** testdata = (Object**)data;
+//	std::cout << testdata[0]->position.x << std::endl;
 	int x = 0;
 	int y = 0;
-	int width = 2;
-	int height = 2;
 	float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
 	int triInd[3] = { 0, 1, 2 };
 	float2 triUV[3] = { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
-//	for (int i = 0; i < amount; i++)
-//	{
+	int amount = threadinformation->size;
+	for (int i = 0; i < amount; i++)
+	{
+		std::shared_ptr<ConstantBuffer> cbmesh;
 		// triangle geometry:
 		float4 triPos[3] = { { x * cellWidth,  0.05, y * cellHeight, 1.0f },{ x * cellWidth + 0.05, -0.05, y * cellHeight, 1.0f },{ x * cellWidth - 0.05, -0.05, y * cellHeight, 1.0f } };
 
@@ -433,9 +442,12 @@ unsigned int __stdcall  threadfunctionloadingdata(void* data)
 		mesh->addIAVertexBufferBinding(triangleInd, 0, ARRAYSIZE(triInd), sizeof(float), INDEXBUFF);
 
 		mesh->technique = triangleT;
-
+		mesh->setRotation(threadinformation->data[i]->rotation);
+		mesh->setScale(threadinformation->data[i]->scale);
+		mesh->setTranslation(threadinformation->data[i]->position);
+	//	mesh->setCBuffer(cbmesh);
 		scene.push_back(mesh);
-//	}
+	}
 		return 1;
 }
 void fillCell(int x, int y, int amount)
@@ -454,10 +466,21 @@ void fillCell(int x, int y, int amount)
 	}
 
 }
+
+
 void createThreads()
 {
+
+	//    std::cout << (*grid)[0][0]->objectList.size(); 
+	//    std::cout << (*grid)[0][1]->objectList.size(); 
+	//    std::cout << (*grid)[0][2]->objectList.size(); 
+//	std::vector<Object*> data1 = (*grid)[0][0]->objectList;
+//	std::vector<Object*> data2 = (*grid)[0][1]->objectList;
+//	std::vector<Object*> data3 = (*grid)[0][2]->objectList;
+	//    std::cout << (*grid)[0][0]->objectList[0]->position.x << std::endl; 
+	threadinfo data1 = { (*grid)[0][0]->objectList.size(),(*grid)[0][0]->objectList.data() };
 	HANDLE Thread1;
-	Thread1 = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, 0, 0, 0);
+	Thread1 = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &data1, 0, 0);
 	WaitForSingleObject(Thread1, INFINITE);
 	CloseHandle(Thread1);
 }
