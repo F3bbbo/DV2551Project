@@ -38,6 +38,7 @@ public:
 	void addMesh(int x, int y, Object* mesh);
 	Grid();
 	~Grid();
+	std::vector<Object*> getObject(int width, int height);
 	void createGrid(int gridHeight, int gridWidth);
 
 };

@@ -5,3 +5,5 @@
 #define NUMBER_OF_THREADS 4
 #define MAIN_THREAD NUMBER_OF_THREADS - 1
 #define THREAD_ID 0
+#define WWidth 100
+#define HHeight 100

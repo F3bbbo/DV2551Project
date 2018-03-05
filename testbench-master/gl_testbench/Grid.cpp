@@ -18,6 +18,12 @@ Grid::~Grid()
 				delete ObjectGrid[x][y][i];
 }
 
+std::vector<Object*> Grid::getObject(int width, int height)
+{
+	
+	return ObjectGrid[width][height];
+}
+
 void Grid::createGrid(int gridHeight, int gridWidth)
 {
 	width = gridWidth;
