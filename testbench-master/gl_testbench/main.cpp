@@ -406,8 +406,8 @@ unsigned int __stdcall  threadfunctionloadingdata(void* data)
 	float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
 	int triInd[3] = { 0, 1, 2 };
 	float2 triUV[3] = { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
-	//for (int i = 0; i < amount; i++)
-	//{
+//	for (int i = 0; i < amount; i++)
+//	{
 		// triangle geometry:
 		float4 triPos[3] = { { x * cellWidth,  0.05, y * cellHeight, 1.0f },{ x * cellWidth + 0.05, -0.05, y * cellHeight, 1.0f },{ x * cellWidth - 0.05, -0.05, y * cellHeight, 1.0f } };
 
@@ -433,7 +433,7 @@ unsigned int __stdcall  threadfunctionloadingdata(void* data)
 		mesh->technique = triangleT;
 
 		scene.push_back(mesh);
-	//}
+//	}
 		return 1;
 }
 void fillCell(int x, int y, int amount)
@@ -504,7 +504,7 @@ int main(int argc, char *argv[])
 	grid = new Grid();
 	grid->createGrid(WWidth, HHeight);
 	fillGrid();
-//	createThreads();
+	createThreads();
 	//(*grid)[0].size();
 	//(*grid)[0][0][0]->position;
 	//initialiseTestbench();
