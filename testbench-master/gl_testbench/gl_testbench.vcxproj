@@ -173,6 +173,7 @@
     <ClCompile Include="MeshReader.cpp" />
     <ClCompile Include="Sampler2D.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="ThreadFunctions.cpp" />
     <ClCompile Include="Utilityfunctions.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -209,6 +210,7 @@
     <ClInclude Include="MeshReader.h" />
     <ClInclude Include="Sampler2D.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="ThreadFunctions.h" />
     <ClInclude Include="Utilityfunctions.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="Camera.h" />
