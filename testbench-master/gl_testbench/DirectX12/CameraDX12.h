@@ -32,6 +32,7 @@ public:
 	void setRight(Vector3& vector);
 	void setForward(Vector3& vector);
 	void setUp(Vector3& vector);
+	void bind();
 	void update();
 	Matrix getViewMatrix();
 	Matrix getProjectionMatrix();
