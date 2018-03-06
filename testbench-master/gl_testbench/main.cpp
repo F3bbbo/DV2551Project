@@ -58,13 +58,13 @@ void updateGridList();
 char gTitleBuff[256];
 double gLastDelta = 0.0;
 
-float deltatime=0;
+float deltatimeGlobale=0.0000011;
 
 struct threadinfo
 {
 	int size;
 	Object** data;
-	int key;
+	int key; 
 	std::vector<std::shared_ptr<Mesh>>* meshes;
 	MeshReader *reader;
 	DirectX12Renderer* renderer;
@@ -99,7 +99,7 @@ void updateDelta()
 	last = start;
 	start = SDL_GetPerformanceCounter();
 	double deltaTime = (double)((start - last) * 1000.0 / SDL_GetPerformanceFrequency());
-	deltatime = deltaTime;
+	deltatimeGlobale = deltaTime;
 	// moving average window of WINDOWS_SIZE
 	lastSum -= avg[loop];
 	lastSum += deltaTime;
@@ -119,12 +119,12 @@ typedef union {
 	struct { float x, y, z, w; };
 	struct { float r, g, b, a; };
 } float4;
-
+/*
 typedef union { 
 	struct { float x, y; };
 	struct { float u, v; };
 } float2;
-
+*/
 
 void run() {
 
@@ -149,10 +149,12 @@ void run() {
 /*
  update positions of triangles in the screen changing a translation only
 */
+
+
 void updateScene()
 {
 	
-	renderer->updateCamera(deltatime);
+	renderer->updateCamera(deltatimeGlobale);
 	// Check if new grids needs to be loaded and add them to a grid list.
 	// Check if the list associated to a thread previously launched had finished by checking a fence, if the fence has been reached, add integers to the "idleThreads" queue indicating that a new thread can be launched with that command list.
 	// Launch threads. Each thread is responisble for loading one grid cell, launch as many threads as available
@@ -480,7 +482,7 @@ int main(int argc, char *argv[])
 	scene = *meshes;
 	//(*grid)[0].size();
 	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
-//	initialiseTestbench();
+	initialiseTestbench();
 	run();
 	shutdown();
 	return 0;
