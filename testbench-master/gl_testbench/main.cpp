@@ -125,7 +125,7 @@ void run() {
 			if (windowEvent.type == SDL_QUIT) break;
 			if (windowEvent.type == SDL_KEYUP && windowEvent.key.keysym.sym == SDLK_ESCAPE) break;
 		}
-		//updateGridList();
+		updateGridList();
 
 		/*for (int i = 0; i < gridCellsToBeLoaded.size(); i++)
 			cout << gridCellsToBeLoaded[i].x << " " << gridCellsToBeLoaded[i].y << ", ";
@@ -531,12 +531,17 @@ void createGlobalData()
 void updateGridList()
 {
 	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
-	for (int x = 0; x < WWidth; x++)
+	int xStartDist = min(max(0, (int)camPos.x - LOADINGTHRESHOLD), WWidth);
+	int yStartDist = min(max(0, (int)camPos.y - LOADINGTHRESHOLD), WWidth);
+	int xEndDist = min(max(0, (int)camPos.x + LOADINGTHRESHOLD), WWidth);
+	int yEndDist = min(max(0, (int)camPos.y + LOADINGTHRESHOLD), WWidth);
+
+	//Check if cells needs to be loaded
+	for (int x = xStartDist; x < xEndDist; x++)
 	{
-		for (int y = 0; y < HHeight; y++)
+		for (int y = yStartDist; y < yEndDist; y++)
 		{
-			//Check if the camera is close enough to the center of the cell
-			if (Vector2(camPos - Vector2(cellWidth * x + XOFFSET, cellHeight * y + YOFFSET)).LengthSquared() < LOADINGTHRESHOLD * LOADINGTHRESHOLD && (*grid)[x][y]->status == NOT_LOADED)
+			if ((*grid)[x][y]->status == NOT_LOADED)
 			{
 				(*grid)[x][y]->status = PENDING_LOAD;
 				gridCellsToBeLoaded.push_back(int2(x, y));
@@ -544,9 +549,10 @@ void updateGridList()
 		}
 	}
 	
+	//Remove cells that should had been loaded but didn't even start loading in time.
 	for (int i = 0; i < gridCellsToBeLoaded.size(); i++)
 	{
-		if (Vector2(camPos - Vector2(cellWidth * gridCellsToBeLoaded[i].x + XOFFSET, cellHeight * gridCellsToBeLoaded[i].y + YOFFSET)).LengthSquared() > LOADINGTHRESHOLD * LOADINGTHRESHOLD)
+		if (gridCellsToBeLoaded[i].x < xStartDist || gridCellsToBeLoaded[i].x > xEndDist || gridCellsToBeLoaded[i].y < yStartDist || gridCellsToBeLoaded[i].y > yEndDist)
 		{
 			(*grid)[gridCellsToBeLoaded[i].x][gridCellsToBeLoaded[i].y]->status = NOT_LOADED;
 			gridCellsToBeLoaded.erase(gridCellsToBeLoaded.begin() + i);
