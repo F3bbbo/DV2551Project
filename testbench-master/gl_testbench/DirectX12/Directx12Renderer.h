@@ -11,7 +11,7 @@
 #include "RootSignature.h"
 #include "PipelineStateDX12.h"
 #include "CameraDX12.h"
-
+#include <mutex>
 
 #include <SDL.h>
 #include <GL/glew.h>
@@ -83,6 +83,7 @@ public:
 	void setMaterialState(MaterialDX12 *material);
 	void updateCamera(float delta);
 	void updateCamera() {};
+	void executeCopyCommandList(int threadID);
 
 private:
 	//Window vars
@@ -138,4 +139,6 @@ private:
 	std::unordered_map<Technique*, std::vector<Mesh*>> drawList2;
 
 	float clearColor[4] = { 0,0,0,0 };
+
+	std::mutex copyLock;
 };

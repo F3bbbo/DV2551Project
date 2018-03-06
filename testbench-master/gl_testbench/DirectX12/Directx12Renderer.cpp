@@ -629,6 +629,13 @@ void DirectX12Renderer::updateCamera(float delta)
 
 	camera->update();
 }
+void DirectX12Renderer::executeCopyCommandList(int threadID)
+{
+	std::lock_guard<std::mutex> guard(copyLock);
+
+	ID3D12CommandList* cmdList[] = { Thread[threadID].copyCommandList.Get() };
+	commandQueueCopy->ExecuteCommandLists(ARRAYSIZE(cmdList), cmdList);
+}
 void DirectX12Renderer::executeCommandList(ID3D12CommandQueue* cmdQueue, int ThreadID)
 {
 	ID3D12CommandList* cmdList[] = { Thread[ThreadID].directCommandList.Get() };
