@@ -66,6 +66,10 @@ void CameraDX12::update()
 	VPMatrix = VPMatrix.Transpose();
 	
 	cBuffer->setData(&VPMatrix, sizeof(VPMatrix), nullptr, VPMATRIX_SLOT);
+}
+
+void CameraDX12::bind()
+{
 	cBuffer->bind();
 }
 

@@ -332,7 +332,7 @@ void DirectX12Renderer::frame(int ThreadID)
 		for (auto work : drawList2)
 		{
 			work.first->enable(this);
-			updateCamera();
+			void bind();
 			for (auto mesh : work.second)
 			{
 				//Render meshes
