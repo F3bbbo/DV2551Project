@@ -322,6 +322,7 @@ void createThread(HANDLE &threadHandle, std::vector<Object*> &objectList, std::v
 	data1.key = threadKey;
 	data1.meshes = meshes;
 	data1.reader = meshReader;
+	data1.renderer = renderer;
 	data1.technique = &triangleT;
 
 
@@ -393,6 +394,21 @@ void updateGridList()
 		}
 	}
 }
+void ThreadTest()
+{
+	std::vector<std::shared_ptr<Mesh>>* meshes = new std::vector<std::shared_ptr<Mesh>>();
+	HANDLE thread1;
+	createThread(thread1, (*grid)[0][0]->objectList, meshes, 1);
+	for (unsigned int i = 0; i < (*meshes).size(); i++)
+	{
+		renderer->setDirectList((*meshes)[i].get(), MAIN_THREAD);
+	}
+	renderer->executeDirectCommandList(1);
+	renderer->signalDirect(1, 1);
+	renderer->waitForDirect(1, INFINITY, 1);
+	scene = *meshes;
+}
+
 #undef main
 int main(int argc, char *argv[])
 {
@@ -405,13 +421,10 @@ int main(int argc, char *argv[])
 	grid = new Grid();
 	grid->createGrid(WWidth, HHeight);
 	fillGrid();
-	std::vector<std::shared_ptr<Mesh>>* meshes = new std::vector<std::shared_ptr<Mesh>>();
-	HANDLE thread1;
-	createThread(thread1, (*grid)[0][0]->objectList, meshes, 1);
-	scene = *meshes;
+	//ThreadTest();
 	//(*grid)[0].size();
 	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
-	initialiseTestbench();
+	//initialiseTestbench();
 	run();
 	shutdown();
 	return 0;

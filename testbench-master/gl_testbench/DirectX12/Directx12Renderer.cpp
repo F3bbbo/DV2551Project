@@ -52,7 +52,7 @@ std::shared_ptr<Mesh> DirectX12Renderer::makeMesh()
 
 std::shared_ptr<Mesh> DirectX12Renderer::makeMesh(unsigned int key)
 {
-	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
+	std::shared_ptr<Mesh> mesh = std::make_shared<MeshDX12>();
 	mesh->WMBuffer = makeConstantBuffer("WorldMatrix", WORLDMATRIX_SLOT, key);
 	return mesh;
 }
@@ -130,6 +130,7 @@ void DirectX12Renderer::CreateClAcFcThread()
 	{
 		Thread[i] = ClAcFc{ nullptr,nullptr,nullptr }; //newThread;
 		device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[i].fenceDirect));
+		device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[i].fenceCopy));
 	
 		if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY, IID_PPV_ARGS(&Thread[i].copyCommandAllocator))))
 			std::cout << "Failed to create command allocator." << std::endl;
@@ -146,6 +147,32 @@ void DirectX12Renderer::CreateClAcFcThread()
 
 	}
 
+}
+
+void DirectX12Renderer::setCopyList(Mesh * mesh, int ThreadID)
+{
+	MeshDX12* m = dynamic_cast<MeshDX12*>(mesh);
+	if (m == nullptr)
+	{
+		OutputDebugStringA("Error: Mesh not of type MeshDX12.\n");
+	}
+	else
+	{
+		m->setCommandList(Thread[ThreadID].copyCommandList.Get());
+	}
+}
+
+void DirectX12Renderer::setDirectList(Mesh* mesh, int ThreadID)
+{
+	MeshDX12* m = dynamic_cast<MeshDX12*>(mesh);
+	if (m == nullptr)
+	{
+		OutputDebugStringA("Error: Mesh not of type MeshDX12.\n");
+	}
+	else
+	{
+		m->setCommandList(Thread[ThreadID].directCommandList.Get());
+	}
 }
 
 HWND DirectX12Renderer::InitWindow(HINSTANCE hInstance,int width,int height)
@@ -350,7 +377,7 @@ void DirectX12Renderer::frame(int ThreadID)
 				{
 					mesh->bindIAVertexBuffer(ele.first);
 				}
-				Matrix tmp = mesh->getWorldmatrix();
+				Matrix tmp = mesh->getWorldmatrix().Transpose();
 				mesh->WMBuffer->setData(&tmp, sizeof(tmp), nullptr, WORLDMATRIX_SLOT);
 				mesh->WMBuffer->bind();
 				//Bind the table
@@ -391,12 +418,12 @@ bool DirectX12Renderer::waitForDirect(int Value, float waitTime, int ThreadID)
 
 void DirectX12Renderer::signalCopy(int Value, int ThreadID)
 {
-	signalGPU(commandQueueCopy.Get(), Thread[ThreadID].fenceDirect, Value);
+	signalGPU(commandQueueCopy.Get(), Thread[ThreadID].fenceCopy, Value);
 }
 
 bool DirectX12Renderer::waitForCopy(int Value, float waitTime)
 {
-	return waitForCopy(Value, waitTime);
+	return waitForCopy(Value, waitTime, MAIN_THREAD);
 }
 
 bool DirectX12Renderer::waitForCopy(int Value, float waitTime, int ThreadID)
@@ -411,12 +438,13 @@ void DirectX12Renderer::signalGPU(ID3D12CommandQueue* cmdQueue, Microsoft::WRL::
 }
 void DirectX12Renderer::signalGPU(ID3D12CommandQueue* cmdQueue, Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value,int ThreadID)
 {
-	commandQueue->Signal(Thread[ThreadID].fenceDirect.Get(), value);
+	cmdQueue->Signal(Fence.Get(), value);
 }
 
 bool DirectX12Renderer::waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime)
 {
-	if (Fence->GetCompletedValue() != value)
+	UINT64 val = Fence->GetCompletedValue();
+	if (val != value)
 	{
 		Fence->SetEventOnCompletion(value, eventHandle);
 		if (WAIT_OBJECT_0 == WaitForSingleObject(eventHandle, waittime))
@@ -631,10 +659,24 @@ void DirectX12Renderer::updateCamera(float delta)
 }
 void DirectX12Renderer::executeCopyCommandList(int threadID)
 {
-	std::lock_guard<std::mutex> guard(copyLock);
-
+	//std::lock_guard<std::mutex> guard(copyLock);
+	Thread[threadID].copyCommandList->Close();
 	ID3D12CommandList* cmdList[] = { Thread[threadID].copyCommandList.Get() };
 	commandQueueCopy->ExecuteCommandLists(ARRAYSIZE(cmdList), cmdList);
+}
+void DirectX12Renderer::executeDirectCommandList(int threadID)
+{
+	Thread[threadID].directCommandList->Close();
+	ID3D12CommandList* cmdList[] = { Thread[threadID].directCommandList.Get() };
+	commandQueue->ExecuteCommandLists(ARRAYSIZE(cmdList), cmdList);
+}
+void DirectX12Renderer::resetCopyCommandList(int threadID)
+{
+	Thread[threadID].copyCommandList->Reset(Thread[threadID].copyCommandAllocator.Get(), nullptr);
+}
+void DirectX12Renderer::resetDirectCommandList(int threadID)
+{ 
+	Thread[threadID].directCommandList->Reset(Thread[threadID].directCommandAllocator.Get(), nullptr);
 }
 void DirectX12Renderer::executeCommandList(ID3D12CommandQueue* cmdQueue, int ThreadID)
 {

@@ -54,6 +54,8 @@ public:
 	CameraDX12* camera;
 	std::map<int, ClAcFc> Thread;
 	void CreateClAcFcThread();
+	void setCopyList(Mesh *mesh, int ThreadID);
+	void setDirectList(Mesh* mesh, int ThreadID);
 	 HWND InitWindow(HINSTANCE hInstance,int width, int height);
 
 
@@ -84,6 +86,9 @@ public:
 	void updateCamera(float delta);
 	void updateCamera() {};
 	void executeCopyCommandList(int threadID);
+	void executeDirectCommandList(int threadID);
+	void resetCopyCommandList(int threadID);
+	void resetDirectCommandList(int threadID);
 
 private:
 	//Window vars

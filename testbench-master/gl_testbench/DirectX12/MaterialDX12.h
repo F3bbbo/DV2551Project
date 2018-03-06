@@ -40,6 +40,8 @@ public:
 	// slower version using a string
 	void addConstantBuffer(std::string name, unsigned int location);
 	std::map<unsigned int, ConstantBufferDX12*> constantBuffers;
+
+	
 private:
 	int compileShader(ShaderType type);
 	std::string shaderPath;

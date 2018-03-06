@@ -1,6 +1,8 @@
 #include "MeshDX12.h"
 #include "VertexBufferDX12.h"
 #include "ConstantBufferDX12.h"
+#include "TechniqueDX12.h"
+#include "Texture2DDX12.h"
 
 MeshDX12::MeshDX12()
 {
@@ -21,6 +23,27 @@ void MeshDX12::bindIAVertexBuffer(unsigned int location)
 		buff->bind(vb.offset, vb.numElements, vb.sizeElement, location);
 	else
 		std::printf("Error: Wrong type of VertexBuffer");
+}
+
+void MeshDX12::setCommandList(ID3D12GraphicsCommandList* cmdList)
+{
+	TechniqueDX12* tec = static_cast<TechniqueDX12*>(technique.get());
+	tec->setCommandList(cmdList);
+
+	ConstantBufferDX12* cBuff = static_cast<ConstantBufferDX12*>(WMBuffer.get());
+	cBuff->setCommandlist(cmdList);
+
+	for (auto vertexBind : geometryBuffers)
+	{
+		VertexBufferDX12* vBuff = static_cast<VertexBufferDX12*>(vertexBind.second.buffer.get());
+		vBuff->setCommandlist(cmdList);
+	}
+	for (auto texture : textures)
+	{
+		Texture2DDX12* tex = static_cast<Texture2DDX12*>(texture.second.get());
+		tex->setCommandlist(cmdList);
+	}
+
 }
 
 

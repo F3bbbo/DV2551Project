@@ -1,8 +1,5 @@
 #include "ThreadFunctions.h"
 
-extern 
-
-
 unsigned int __stdcall  threadfunctionloadingdata(void* data)
 {
 	int i = 0;
@@ -18,6 +15,7 @@ unsigned int __stdcall  threadfunctionloadingdata(void* data)
 	int amount = threadInfo->size;
 	int key = threadInfo->key;
 	std::vector<std::shared_ptr<Mesh>>* outMeshList = threadInfo->meshes;
+	DirectX12Renderer *renderer = threadInfo->renderer;
 	for (int i = 0; i < amount; i++)
 	{
 		//Load the meshes
@@ -64,6 +62,27 @@ unsigned int __stdcall  threadfunctionloadingdata(void* data)
 		//	scene.push_back(mesh);
 
 	}
+	//Execute copy the data
+	renderer->executeCopyCommandList(key);
+	renderer->signalCopy(FENCEDONE, key);
+	//Change state of the textures
+	for (unsigned int i = 0; i < (*outMeshList).size(); i++)
+	{
+		//Mesh commandlists to directCommandList
+		(*outMeshList)[i].get();
+		Mesh* m = ((*outMeshList)[i]).get();
+		renderer->setDirectList(m, key);
+		Texture2DDX12* texture = dynamic_cast<Texture2DDX12*>((*outMeshList)[i]->textures[DIFFUSETEX_SLOT].get());
+		if (texture == nullptr)
+		{
+			OutputDebugStringA("Error: Texture not of type Texture2DDX12.");
+			return -1;
+		}
+		texture->setBindState();
+	}
 
+	//Wait until copy queue is done before exiting.
+	renderer->waitForCopy(FENCEDONE, INFINITY, key);
+	renderer->resetCopyCommandList(key);
 	return 1;
 }

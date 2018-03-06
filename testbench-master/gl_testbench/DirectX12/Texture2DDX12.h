@@ -17,7 +17,9 @@ public:
 	// bind texture to be used in the pipeline, binding to
 	// slot "slot" in the active fragment shader.
 	// slot can have different interpretation depending on the API.
-void bind(unsigned int slot);
+	void bind(unsigned int slot);
+	void setState(D3D12_RESOURCE_STATES state);
+	void setBindState();
 
 private:
 	bool isReadyForDraw;

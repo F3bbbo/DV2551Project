@@ -1,11 +1,15 @@
 #pragma once
 #ifndef THREADFUNCTIONS_H
+#include <Windows.h>
+#include <process.h>
 #include "Grid.h"
 #include "Mesh.h"
 #include "MeshReader.h"
 #include "DirectX12\Directx12Renderer.h"
+#include "DirectX12\Texture2DDX12.h"
 #include "Technique.h"
 
+#define FENCEDONE 1
 struct threadinfo
 {
 	int size;
