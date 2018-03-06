@@ -123,12 +123,13 @@ void DirectX12Renderer::CreateClAcFcThread()
 		std::cout << "Failed to create command list." << std::endl;
 
 
-	device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[MAIN_THREAD].fence));
+	device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[MAIN_THREAD].fenceDirect));
+	device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[MAIN_THREAD].fenceCopy));
 
 	for(int i = 0; i < NUMBER_OF_THREADS - 1; i++)
 	{
 		Thread[i] = ClAcFc{ nullptr,nullptr,nullptr }; //newThread;
-		device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[i].fence));
+		device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[i].fenceDirect));
 	
 		if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY, IID_PPV_ARGS(&Thread[i].copyCommandAllocator))))
 			std::cout << "Failed to create command allocator." << std::endl;
@@ -225,10 +226,11 @@ void DirectX12Renderer::present(int ThreadID)
 {
 	swapChain->Present(0, 0);
 //	waitForGPU();
-	signalGPU(Thread[ThreadID].fence, fenceValue);
+	signalDirect(fenceValue, ThreadID);
+	//signalGPU(Thread[ThreadID].fenceDirect, fenceValue);
 	bool isCompleted = false;
 	while (!isCompleted)
-		isCompleted = waitForGPU(Thread[ThreadID].fence, fenceValue, 0);
+		isCompleted = waitForGPU(Thread[ThreadID].fenceDirect, fenceValue, 0);
 	fenceValue = (fenceValue + 1) % 2;
 //Prep for next iteration
 	Thread[ThreadID].directCommandAllocator->Reset();
@@ -242,8 +244,8 @@ int DirectX12Renderer::shutdown()
 int DirectX12Renderer::shutdown(int ThreadID)
 {
 //	waitForGPU();
-	signalGPU(Thread[ThreadID].fence, fenceValue);
-	waitForGPU(Thread[ThreadID].fence, fenceValue, INFINITY);
+	signalGPU(commandQueue.Get(), Thread[ThreadID].fenceDirect, fenceValue);
+	waitForGPU(Thread[ThreadID].fenceDirect, fenceValue, INFINITY);
 	return 0;
 }
 
@@ -369,23 +371,54 @@ void DirectX12Renderer::frame(int ThreadID)
 	//End of recording
 	Thread[ThreadID].directCommandList->Close();
 	//Execute commandList
-	executeCommandList();
+	executeCommandList(commandQueue.Get());
 }
 
-void DirectX12Renderer::signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value)
+void DirectX12Renderer::signalDirect(int Value, int ThreadID)
 {
-	signalGPU(Fence, value, MAIN_THREAD);
-}
-void DirectX12Renderer::signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value,int ThreadID)
-{
-	commandQueue->Signal(Thread[ThreadID].fence.Get(), value);
+	signalGPU(commandQueue.Get(), Thread[ThreadID].fenceDirect, Value);
 }
 
-bool DirectX12Renderer::waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime, int ThreadID)
+bool DirectX12Renderer::waitForDirect(int Value, float waitTime)
 {
-	if (Thread[ThreadID].fence->GetCompletedValue() != value)
+	return waitForDirect(Value, waitTime, MAIN_THREAD);
+}
+
+bool DirectX12Renderer::waitForDirect(int Value, float waitTime, int ThreadID)
+{
+	return waitForGPU(Thread[ThreadID].fenceDirect, Value, waitTime);
+}
+
+void DirectX12Renderer::signalCopy(int Value, int ThreadID)
+{
+	signalGPU(commandQueueCopy.Get(), Thread[ThreadID].fenceDirect, Value);
+}
+
+bool DirectX12Renderer::waitForCopy(int Value, float waitTime)
+{
+	return waitForCopy(Value, waitTime);
+}
+
+bool DirectX12Renderer::waitForCopy(int Value, float waitTime, int ThreadID)
+{
+	return waitForGPU(Thread[ThreadID].fenceCopy, Value, waitTime);
+}
+
+
+void DirectX12Renderer::signalGPU(ID3D12CommandQueue* cmdQueue, Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value)
+{
+	signalGPU(cmdQueue, Fence, value, MAIN_THREAD);
+}
+void DirectX12Renderer::signalGPU(ID3D12CommandQueue* cmdQueue, Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value,int ThreadID)
+{
+	commandQueue->Signal(Thread[ThreadID].fenceDirect.Get(), value);
+}
+
+bool DirectX12Renderer::waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime)
+{
+	if (Fence->GetCompletedValue() != value)
 	{
-		Thread[ThreadID].fence->SetEventOnCompletion(value, eventHandle);
+		Fence->SetEventOnCompletion(value, eventHandle);
 		if (WAIT_OBJECT_0 == WaitForSingleObject(eventHandle, waittime))
 			return true;
 		return false;
@@ -393,10 +426,6 @@ bool DirectX12Renderer::waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, co
 	return true;
 }
 
-bool DirectX12Renderer::waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime)
-{
-	return waitForGPU(Fence, value, waittime, MAIN_THREAD);
-}
 
 Microsoft::WRL::ComPtr<ID3D12Device> DirectX12Renderer::getDevice()
 {
@@ -600,15 +629,15 @@ void DirectX12Renderer::updateCamera(float delta)
 
 	camera->update();
 }
-void DirectX12Renderer::executeCommandList(int ThreadID)
+void DirectX12Renderer::executeCommandList(ID3D12CommandQueue* cmdQueue, int ThreadID)
 {
 	ID3D12CommandList* cmdList[] = { Thread[ThreadID].directCommandList.Get() };
-	commandQueue->ExecuteCommandLists(ARRAYSIZE(cmdList), cmdList);
+	cmdQueue->ExecuteCommandLists(ARRAYSIZE(cmdList), cmdList);
 }
 
-void DirectX12Renderer::executeCommandList()
+void DirectX12Renderer::executeCommandList(ID3D12CommandQueue* cmdQueue)
 {
-	executeCommandList(MAIN_THREAD);
+	executeCommandList(cmdQueue, MAIN_THREAD);
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DirectX12Renderer::getCurrBackBuffView()

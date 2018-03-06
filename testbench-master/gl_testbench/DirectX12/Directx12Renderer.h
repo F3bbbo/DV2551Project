@@ -21,9 +21,10 @@
 #include <wrl\client.h>
 struct ClAcFc //Commandlist Allocator Fence struct
 {
-	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fenceCopy;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> copyCommandAllocator;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> copyCommandList;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fenceDirect;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> directCommandList;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> directCommandAllocator;
 };
@@ -72,12 +73,12 @@ public:
 	void submit(Mesh* mesh);
 	virtual void frame();
 	void frame(int ThreadID);
-	void waitForGPU();
-	void waitForGPU(int ThreadID);
-	void signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value);
-	void signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, int ThreadID);
-	bool waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime);
-	bool waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime,int ThreadID);
+	void signalDirect(int Value, int ThreadID);
+	bool waitForDirect(int Value, float waitTime);
+	bool waitForDirect(int Value, float waitTime, int ThreadID);
+	void signalCopy(int Value, int ThreadID);
+	bool waitForCopy(int Value, float waitTime);
+	bool waitForCopy(int Value, float waitTime, int ThreadID);
 	Microsoft::WRL::ComPtr<ID3D12Device> getDevice();
 	void setMaterialState(MaterialDX12 *material);
 	void updateCamera(float delta);
@@ -114,8 +115,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueueCopy = nullptr;
 //	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
 //	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
-	void executeCommandList();
-	void executeCommandList(int ThreadID);
+	void executeCommandList(ID3D12CommandQueue* cmdQueue);
+	void executeCommandList(ID3D12CommandQueue* cmdQueue, int ThreadID);
+	void signalGPU(ID3D12CommandQueue* cmdQueue, Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value);
+	void signalGPU(ID3D12CommandQueue* cmdQueue, Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, int ThreadID);
+	bool waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime);
 	//Swap Chain
 	D3D12_CPU_DESCRIPTOR_HANDLE currDescHandle;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> RTVHeap;

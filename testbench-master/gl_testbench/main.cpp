@@ -476,11 +476,11 @@ int main(int argc, char *argv[])
 	grid->createGrid(WWidth, HHeight);
 	fillGrid();
 	std::vector<std::shared_ptr<Mesh>>* meshes = new std::vector<std::shared_ptr<Mesh>>();
-	createThread((*grid)[0][0]->objectList, meshes, 1);
+	//createThread((*grid)[0][0]->objectList, meshes, 1);
 	scene = *meshes;
 	//(*grid)[0].size();
 	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
-//	initialiseTestbench();
+	initialiseTestbench();
 	run();
 	shutdown();
 	return 0;
