@@ -24,6 +24,8 @@ struct ClAcFc //Commandlist Allocator Fence struct
 	Microsoft::WRL::ComPtr<ID3D12Fence> Fence;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> DirectCommandlist;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> DirectcommandAllocator;
 };
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

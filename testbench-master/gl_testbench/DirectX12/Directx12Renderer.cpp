@@ -135,6 +135,14 @@ void DirectX12Renderer::CreateClAcFcThread()
 
 		if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_COPY, Thread[i].commandAllocator.Get(), nullptr, IID_PPV_ARGS(&Thread[i].commandList))))
 			std::cout << "Failed to create command list." << std::endl;
+
+
+		if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&Thread[i].DirectcommandAllocator))))
+			std::cout << "Failed to create command allocator." << std::endl;
+
+		if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, Thread[i].DirectcommandAllocator.Get(), nullptr, IID_PPV_ARGS(&Thread[i].DirectCommandlist))))
+			std::cout << "Failed to create command list." << std::endl;
+
 	}
 
 }

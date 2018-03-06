@@ -429,7 +429,7 @@ unsigned int __stdcall  threadfunctionloadingdata(void* data)
 	int amount = threadinformation->size;
 	for (int i = 0; i < amount; i++)
 	{
-		std::shared_ptr<ConstantBuffer> cbmesh;
+	//	std::shared_ptr<ConstantBuffer> cbmesh;
 		// triangle geometry:
 		float4 triPos[3] = { { x * cellWidth,  0.05, y * cellHeight, 1.0f },{ x * cellWidth + 0.05, -0.05, y * cellHeight, 1.0f },{ x * cellWidth - 0.05, -0.05, y * cellHeight, 1.0f } };
 
@@ -439,7 +439,7 @@ unsigned int __stdcall  threadfunctionloadingdata(void* data)
 		std::shared_ptr<VertexBuffer> triangleInd = renderer->makeVertexBuffer(sizeof(triInd), VertexBuffer::DATA_USAGE::DONTCARE);
 
 		//Create mesh
-		std::shared_ptr<Mesh> mesh = renderer->makeMesh();
+		std::shared_ptr<Mesh> mesh = renderer->makeMesh(1);
 		trianglePos->setData(triPos, sizeof(triPos), 0);
 		mesh->addIAVertexBufferBinding(trianglePos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
 
@@ -459,6 +459,7 @@ unsigned int __stdcall  threadfunctionloadingdata(void* data)
 	//	mesh->setCBuffer(cbmesh);
 		scene.push_back(mesh);
 	}
+	
 		return 1;
 }
 void fillCell(int x, int y, int amount)
