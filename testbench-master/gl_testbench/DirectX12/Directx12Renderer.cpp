@@ -37,17 +37,19 @@ DirectX12Renderer::~DirectX12Renderer()
 
 std::shared_ptr<Material> DirectX12Renderer::makeMaterial(const std::string & name)
 {
-	return makeMaterial(name, MAIN_THREAD);
+	return std::make_shared<MaterialDX12>(name, Thread[MAIN_THREAD].directCommandList, getDevice(), getShaderPath(), &Root);
 }
 
 std::shared_ptr<Material> DirectX12Renderer::makeMaterial(const std::string & name, int ThreadID)
 {
-	return std::make_shared<MaterialDX12>(name, Thread[ThreadID].directCommandList, getDevice(), getShaderPath(), &Root);
+	return std::make_shared<MaterialDX12>(name, Thread[ThreadID].copyCommandList, getDevice(), getShaderPath(), &Root);
 }
 
 std::shared_ptr<Mesh> DirectX12Renderer::makeMesh()
 {
-	return makeMesh(MAIN_THREAD);
+	std::shared_ptr<Mesh> mesh = std::make_shared<MeshDX12>();
+	mesh->WMBuffer = makeConstantBuffer("WorldMatrix", WORLDMATRIX_SLOT);
+	return mesh;
 }
 
 std::shared_ptr<Mesh> DirectX12Renderer::makeMesh(unsigned int key)
@@ -59,22 +61,25 @@ std::shared_ptr<Mesh> DirectX12Renderer::makeMesh(unsigned int key)
 
 std::shared_ptr<VertexBuffer> DirectX12Renderer::makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage)
 {
-	return makeVertexBuffer(size, usage, MAIN_THREAD);
+	std::shared_ptr<VertexBufferDX12> ptr = std::make_shared<VertexBufferDX12>(device.Get(), Thread[MAIN_THREAD].directCommandList, &Root);
+	ptr->createBuffer(device.Get(), size);
+	return ptr;
 }
 
 std::shared_ptr<VertexBuffer> DirectX12Renderer::makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage, int ThreadID)
 {
-	std::shared_ptr<VertexBufferDX12> ptr = std::make_shared<VertexBufferDX12>(device.Get(), Thread[ThreadID].directCommandList, &Root);
+	std::shared_ptr<VertexBufferDX12> ptr = std::make_shared<VertexBufferDX12>(device.Get(), Thread[ThreadID].copyCommandList, &Root);
 	ptr->createBuffer(device.Get(), size);
 	return ptr;
 }
 std::shared_ptr<Texture2D> DirectX12Renderer::makeTexture2D()
 {
-	return makeTexture2D(MAIN_THREAD);
+	std::shared_ptr<Texture2DDX12> texture = std::make_shared<Texture2DDX12>(getDevice().Get(), Thread[MAIN_THREAD].directCommandList.Get(), &Root);
+	return texture;
 }
 std::shared_ptr<Texture2D> DirectX12Renderer::makeTexture2D(int ThreadID)
 {	
-	std::shared_ptr<Texture2DDX12> texture = std::make_shared<Texture2DDX12>(getDevice().Get(), Thread[ThreadID].directCommandList.Get(), &Root);
+	std::shared_ptr<Texture2DDX12> texture = std::make_shared<Texture2DDX12>(getDevice().Get(), Thread[ThreadID].copyCommandList.Get(), &Root);
 	return texture;
 }
 
@@ -100,12 +105,12 @@ std::string DirectX12Renderer::getShaderExtension()
 
 std::shared_ptr<ConstantBuffer> DirectX12Renderer::makeConstantBuffer(std::string NAME, unsigned int location, int ThreadID)
 {
-	return std::make_shared<ConstantBufferDX12>(device.Get(), NAME, location, Thread[ThreadID].directCommandList.Get(), &Root);
+	return std::make_shared<ConstantBufferDX12>(device.Get(), NAME, location, Thread[ThreadID].copyCommandList.Get(), &Root);
 }
 
 std::shared_ptr<ConstantBuffer> DirectX12Renderer::makeConstantBuffer(std::string NAME, unsigned int location)
 {
-	return makeConstantBuffer(NAME, location, MAIN_THREAD);
+	return std::make_shared<ConstantBufferDX12>(device.Get(), NAME, location, Thread[MAIN_THREAD].directCommandList.Get(), &Root);
 }
 
 std::shared_ptr<Technique> DirectX12Renderer::makeTechnique(std::shared_ptr<Material> m, std::shared_ptr<RenderState> r)

@@ -423,7 +423,7 @@ int main(int argc, char *argv[])
 	grid = new Grid();
 	grid->createGrid(WWidth, HHeight);
 	fillGrid();
-	//ThreadTest();
+	ThreadTest();
 	//(*grid)[0].size();
 	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
 	//initialiseTestbench();
