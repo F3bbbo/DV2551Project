@@ -13,7 +13,7 @@
 
 DirectX12Renderer::DirectX12Renderer()
 {
-	
+	createwalkingpath();
 	createDevice();
 	CreateClAcFcThread();
 	createFenceAndDescriptorSizes();
@@ -640,6 +640,8 @@ void DirectX12Renderer::createDepthStencil()
 	);
 }
 
+
+
 void DirectX12Renderer::updateCamera(float delta)
 {
 	bool run = false;
@@ -655,13 +657,33 @@ void DirectX12Renderer::updateCamera(float delta)
 	if (GetAsyncKeyState(0x44)) //D
 		camera->moveCamera(camera->getRight(), run, delta);
 
+//	camera->getposition();
+	/*
+		Vector3 lengthofvector =	camera->getPosition() - Vector3(walkingpath[0].x, walkingpath[0].y, -200);
+		float lengthDist = lengthofvector.Length();
+	//	std::cout << lengthDist <<"  "<< delta<<std::endl;
+		if (delta > 2)
+		delta = 2;
+		float movespeed =0.001;
+		bool reached = movespeed > lengthDist;
+		Vector3 move = (Vector3(walkingpath[0].x, walkingpath[0].y, -200) - camera->getPosition());
+		if(lengthDist>0.1)
+		camera->moveCamera(camera->getPosition() + (move*movespeed* delta));
+		*/
 	camera->update();
 }
-void DirectX12Renderer::executeCopyCommandList(int threadID)
+void DirectX12Renderer::createwalkingpath()
 {
-	//std::lock_guard<std::mutex> guard(copyLock);
-	Thread[threadID].copyCommandList->Close();
-	ID3D12CommandList* cmdList[] = { Thread[threadID].copyCommandList.Get() };
+	walkingpath.push_back({ 0, 0 });
+	walkingpath.push_back({10, 2 });
+	walkingpath.push_back({ 2, 10 });
+	walkingpath.push_back({ 2, 2 });
+}
+void DirectX12Renderer::executeCopyCommandList(int ThreadID)
+{
+	std::lock_guard<std::mutex> guard(copyLock);
+	Thread[ThreadID].copyCommandList->Close();
+	ID3D12CommandList* cmdList[] = { Thread[ThreadID].copyCommandList.Get() };
 	commandQueueCopy->ExecuteCommandLists(ARRAYSIZE(cmdList), cmdList);
 }
 void DirectX12Renderer::executeDirectCommandList(int threadID)

@@ -28,6 +28,10 @@ struct ClAcFc //Commandlist Allocator Fence struct
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> directCommandList;
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> directCommandAllocator;
 };
+typedef union {
+	struct { float x, y; };
+	struct { float u, v; };
+} float2;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 #include "Defines.h"
@@ -84,13 +88,14 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12Device> getDevice();
 	void setMaterialState(MaterialDX12 *material);
 	void updateCamera(float delta);
-	void updateCamera() {};
-	void executeCopyCommandList(int threadID);
+	void createwalkingpath();
+	void executeCopyCommandList(int ThreadID);
 	void executeDirectCommandList(int threadID);
 	void resetCopyCommandList(int threadID);
 	void resetDirectCommandList(int threadID);
 
 private:
+	std::vector<float2> walkingpath;
 	//Window vars
 	MSG msg;
 	HWND wndHandle;			//1. Create Window
