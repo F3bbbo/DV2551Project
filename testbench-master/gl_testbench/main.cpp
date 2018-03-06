@@ -140,7 +140,7 @@ void run() {
 */
 void updateScene()
 {
-
+	renderer->updateCamera();
 	// Check if new grids needs to be loaded and add them to a grid list.
 	// Check if the list associated to a thread previously launched had finished by checking a fence, if the fence has been reached, add integers to the "idleThreads" queue indicating that a new thread can be launched with that command list.
 	// Launch threads. Each thread is responisble for loading one grid cell, launch as many threads as available
@@ -575,7 +575,7 @@ int main(int argc, char *argv[])
 	createThreads();
 	//(*grid)[0].size();
 	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
-	//initialiseTestbench();
+	initialiseTestbench();
 	run();
 	shutdown();
 	return 0;

@@ -59,6 +59,11 @@ void CameraDX12::setUp(Vector3 & vector)
 	upVector = vector;
 }
 
+void CameraDX12::bind()
+{
+	cBuffer->bind();
+}
+
 void CameraDX12::update()
 {
 	viewMatrix = DirectX::XMMatrixLookAtLH(position, forwardVector + position, upVector);
@@ -66,7 +71,7 @@ void CameraDX12::update()
 	VPMatrix = VPMatrix.Transpose();
 	
 	cBuffer->setData(&VPMatrix, sizeof(VPMatrix), nullptr, VPMATRIX_SLOT);
-	cBuffer->bind();
+//	cBuffer->bind();
 }
 
 Matrix CameraDX12::getViewMatrix()
