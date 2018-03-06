@@ -20,11 +20,12 @@ enum cellStatus
 
 struct Object
 {
-	Object(float* pos, float* scale, float* rot, std::string texture)
+	Object(float* pos, float* scale, float* rot, std::string meshName, std::string texture)
 	{
 		position = Vector3(pos);
 		this->scale = Vector3(scale);
 		rotation = Vector3(rot);
+		Name = meshName;
 		textureFileName = texture;
 	}
 	std::string Name; //Object Name 

@@ -44,6 +44,8 @@ vector<std::shared_ptr<Technique>> techniques;
 vector<std::shared_ptr<Texture2D>> textures;
 vector<std::shared_ptr<Sampler2D>> samplers;
 
+MeshReader *meshReader = nullptr;
+
 std::shared_ptr<VertexBuffer> pos;
 std::shared_ptr<VertexBuffer> nor;
 std::shared_ptr<VertexBuffer> uvs;
@@ -62,6 +64,10 @@ struct threadinfo
 {
 	int size;
 	Object** data;
+	int key;
+	std::vector<std::shared_ptr<Mesh>>* meshes;
+	MeshReader *reader;
+	DirectX12Renderer* renderer;
 };
 
 std::shared_ptr<Material> triangleMaterial;
@@ -252,138 +258,6 @@ int initialiseTestbench()
 	//mesh->technique = t;
 
 	//scene.push_back(mesh);
-
-
-	//std::string definePos = "#define POSITION " + std::to_string(POSITION) + "\n";
-	//std::string defineNor = "#define NORMAL " + std::to_string(NORMAL) + "\n";
-	//std::string defineUV = "#define TEXTCOORD " + std::to_string(TEXTCOORD) + "\n";
-
-	//std::string defineTX = "#define TRANSLATION " + std::to_string(TRANSLATION) + "\n";
-	//std::string defineTXName = "#define TRANSLATION_NAME " + std::string(TRANSLATION_NAME) + "\n";
-	//
-	//std::string defineDiffCol = "#define DIFFUSE_TINT " + std::to_string(DIFFUSE_TINT) + "\n";
-	//std::string defineDiffColName = "#define DIFFUSE_TINT_NAME " + std::string(DIFFUSE_TINT_NAME) + "\n";
-
-	//std::string defineDiffuse = "#define DIFFUSE_SLOT " + std::to_string(DIFFUSE_SLOT) + "\n";
-
-	//std::vector<std::vector<std::string>> materialDefs = {
-	//	// vertex shader, fragment shader, defines
-	//	// shader filename extension must be asked to the renderer
-	//	// these strings should be constructed from the IA.h file!!!
-
-	//	{ "VertexShader", "FragmentShader", definePos + defineNor + defineUV + defineTX + 
-	//	   defineTXName + defineDiffCol + defineDiffColName }, 
-
-	//	{ "VertexShader", "FragmentShader", definePos + defineNor + defineUV + defineTX + 
-	//	   defineTXName + defineDiffCol + defineDiffColName }, 
-
-	//	{ "VertexShader", "FragmentShader", definePos + defineNor + defineUV + defineTX + 
-	//	   defineTXName + defineDiffCol + defineDiffColName + defineDiffuse	},
-
-	//	{ "VertexShader", "FragmentShader", definePos + defineNor + defineUV + defineTX + 
-	//	   defineTXName + defineDiffCol + defineDiffColName }, 
-	//};
-
-	//float degToRad = M_PI / 180.0;
-	//float scale = (float)TOTAL_PLACES / 359.9;
-	//for (int a = 0; a < TOTAL_PLACES; a++)
-	//{
-	//	xt[a] = 0.8f * cosf(degToRad * ((float)a/scale) * 3.0);
-	//	yt[a] = 0.8f * sinf(degToRad * ((float)a/scale) * 2.0);
-	//};
-
-	//// triangle geometry:
-	//float4 triPos[3] = { { 0.0f,  0.05, 0.0f, 1.0f },{ 0.05, -0.05, 0.0f, 1.0f },{ -0.05, -0.05, 0.0f, 1.0f } };
-	//float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
-	//float2 triUV[3] =  { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
-
-	//// load Materials.
-	//std::string shaderPath = renderer->getShaderPath();
-	//std::string shaderExtension = renderer->getShaderExtension();
-	//float diffuse[4][4] = {
-	//	0.0,0.0,1.0,1.0,
-	//	0.0,1.0,0.0,1.0,
-	//	1.0,1.0,1.0,1.0,
-	//	1.0,0.0,0.0,1.0
-	//};
-
-	//for (int i = 0; i < materialDefs.size(); i++)
-	//{
-	//	// set material name from text file?
-	//	Material* m = renderer->makeMaterial("material_" + std::to_string(i));
-	//	m->setShader(shaderPath + materialDefs[i][0] + shaderExtension, Material::ShaderType::VS);
-	//	m->setShader(shaderPath + materialDefs[i][1] + shaderExtension, Material::ShaderType::PS);
-
-	//	m->addDefine(materialDefs[i][2], Material::ShaderType::VS);
-	//	m->addDefine(materialDefs[i][2], Material::ShaderType::PS);
-
-	//	std::string err;
-	//	m->compileMaterial(err);
-
-	//	// add a constant buffer to the material, to tint every triangle using this material
-	//	m->addConstantBuffer(DIFFUSE_TINT_NAME, DIFFUSE_TINT);
-	//	// no need to update anymore
-	//	// when material is bound, this buffer should be also bound for access.
-
-	//	m->updateConstantBuffer(diffuse[i], 4 * sizeof(float), DIFFUSE_TINT);
-	//	
-	//	materials.push_back(m);
-	//}
-
-	//// one technique with wireframe
-	//RenderState* renderState1 = renderer->makeRenderState();
-	//renderState1->setWireFrame(true);
-
-	//// basic technique
-	//techniques.push_back(renderer->makeTechnique(materials[0], renderState1));
-	//techniques.push_back(renderer->makeTechnique(materials[1], renderer->makeRenderState()));
-	//techniques.push_back(renderer->makeTechnique(materials[2], renderer->makeRenderState()));
-	//techniques.push_back(renderer->makeTechnique(materials[3], renderer->makeRenderState()));
-
-	//// create texture
-	//Texture2D* fatboy = renderer->makeTexture2D();
-	//fatboy->loadFromFile("../assets/textures/fatboy.png");
-	//Sampler2D* sampler = renderer->makeSampler2D();
-	//sampler->setWrap(WRAPPING::REPEAT, WRAPPING::REPEAT);
-	//fatboy->sampler = sampler;
-
-	//textures.push_back(fatboy);
-	//samplers.push_back(sampler);
-
-	//// pre-allocate one single vertex buffer for ALL triangles
-	//pos = renderer->makeVertexBuffer(TOTAL_TRIS * sizeof(triPos), VertexBuffer::DATA_USAGE::STATIC);
-	//nor = renderer->makeVertexBuffer(TOTAL_TRIS * sizeof(triNor), VertexBuffer::DATA_USAGE::STATIC);
-	//uvs = renderer->makeVertexBuffer(TOTAL_TRIS * sizeof(triUV), VertexBuffer::DATA_USAGE::STATIC);
-
-	//// Create a mesh array with 3 basic vertex buffers.
-	//for (int i = 0; i < TOTAL_TRIS; i++) {
-
-	//	Mesh* m = renderer->makeMesh();
-
-	//	constexpr auto numberOfPosElements = std::extent<decltype(triPos)>::value;
-	//	size_t offset = i * sizeof(triPos);
-	//	pos->setData(triPos, sizeof(triPos), offset);
-	//	m->addIAVertexBufferBinding(pos, offset, numberOfPosElements, sizeof(float4), POSITION);
-
-	//	constexpr auto numberOfNorElements = std::extent<decltype(triNor)>::value;
-	//	offset = i * sizeof(triNor);
-	//	nor->setData(triNor, sizeof(triNor), offset);
-	//	m->addIAVertexBufferBinding(nor, offset, numberOfNorElements, sizeof(float4), NORMAL);
-
-	//	constexpr auto numberOfUVElements = std::extent<decltype(triUV)>::value;
-	//	offset = i * sizeof(triUV);
-	//	uvs->setData(triUV, sizeof(triUV), offset);
-	//	m->addIAVertexBufferBinding(uvs, offset, numberOfUVElements , sizeof(float2), TEXTCOORD);
-
-	//	// we can create a constant buffer outside the material, for example as part of the Mesh.
-	//	m->txBuffer = renderer->makeConstantBuffer(std::string(TRANSLATION_NAME), TRANSLATION);
-	//	
-	//	m->technique = techniques[ i % 4];
-	//	if (i % 4 == 2)
-	//		m->addTexture(textures[0], DIFFUSE_SLOT);
-
-	//	scene.push_back(m);
-	//}
 	return 0;
 }
 
@@ -418,55 +292,72 @@ void shutdown() {
 	//{
 	//	delete t;
 	//}
+	delete meshReader;
 	renderer->shutdown();
 };
 unsigned int __stdcall  threadfunctionloadingdata(void* data)
 {
 	int i = 0;
-	threadinfo * threadinformation = (threadinfo*) data;
+	threadinfo * threadInfo = (threadinfo*) data;
 	//	std::cout << threadinformation->data[i]->position.x << std::endl;
 	//	Object** testdata = (Object**)data;
 //	std::cout << testdata[0]->position.x << std::endl;
 	int x = 0;
 	int y = 0;
-	float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
-	int triInd[3] = { 0, 1, 2 };
-	float2 triUV[3] = { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
-	int amount = threadinformation->size;
+	//float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
+	//int triInd[3] = { 0, 1, 2 };
+	//float2 triUV[3] = { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
+	int amount = threadInfo->size;
+	int key = threadInfo->key;
+	std::vector<std::shared_ptr<Mesh>>* outMeshList = threadInfo->meshes;
 	for (int i = 0; i < amount; i++)
 	{
-	//	std::shared_ptr<ConstantBuffer> cbmesh;
+		//Load the meshes
+		int beforeSize = outMeshList->size();
+		threadInfo->reader->LoadFromFile(threadInfo->data[i]->Name, threadInfo->data[i]->textureFileName, *outMeshList, key);
+		
+		//Fill data of alla added meshes from the file
+		for (int j = beforeSize; j < outMeshList->size(); j++)
+		{
+			(*outMeshList)[j]->technique = triangleT;
+			(*outMeshList)[j]->setRotation(threadInfo->data[i]->rotation);
+			(*outMeshList)[j]->setScale(threadInfo->data[i]->scale);
+			(*outMeshList)[j]->setTranslation(threadInfo->data[i]->position);
+		}
+		
+		//std::shared_ptr<ConstantBuffer> cbmesh;
 		// triangle geometry:
-		float4 triPos[3] = { { x * cellWidth,  0.05, y * cellHeight, 1.0f },{ x * cellWidth + 0.05, -0.05, y * cellHeight, 1.0f },{ x * cellWidth - 0.05, -0.05, y * cellHeight, 1.0f } };
+		//float4 triPos[3] = { { x * cellWidth,  0.05, y * cellHeight, 1.0f },{ x * cellWidth + 0.05, -0.05, y * cellHeight, 1.0f },{ x * cellWidth - 0.05, -0.05, y * cellHeight, 1.0f } };
 
-		std::shared_ptr<VertexBuffer> trianglePos = renderer->makeVertexBuffer(sizeof(triPos), VertexBuffer::DATA_USAGE::DONTCARE);
-		std::shared_ptr<VertexBuffer> triangleNor = renderer->makeVertexBuffer(sizeof(triNor), VertexBuffer::DATA_USAGE::DONTCARE);
-		std::shared_ptr<VertexBuffer> triangleUvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
-		std::shared_ptr<VertexBuffer> triangleInd = renderer->makeVertexBuffer(sizeof(triInd), VertexBuffer::DATA_USAGE::DONTCARE);
+		//std::shared_ptr<VertexBuffer> trianglePos = renderer->makeVertexBuffer(sizeof(triPos), VertexBuffer::DATA_USAGE::DONTCARE);
+		//std::shared_ptr<VertexBuffer> triangleNor = renderer->makeVertexBuffer(sizeof(triNor), VertexBuffer::DATA_USAGE::DONTCARE);
+		//std::shared_ptr<VertexBuffer> triangleUvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
+		//std::shared_ptr<VertexBuffer> triangleInd = renderer->makeVertexBuffer(sizeof(triInd), VertexBuffer::DATA_USAGE::DONTCARE);
 
-		//Create mesh
-		std::shared_ptr<Mesh> mesh = renderer->makeMesh(1);
-		trianglePos->setData(triPos, sizeof(triPos), 0);
-		mesh->addIAVertexBufferBinding(trianglePos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
+		////Create mesh
+		//std::shared_ptr<Mesh> mesh = renderer->makeMesh(1);
+		//trianglePos->setData(triPos, sizeof(triPos), 0);
+		//mesh->addIAVertexBufferBinding(trianglePos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
 
-		triangleNor->setData(triNor, sizeof(triNor), 0);
-		mesh->addIAVertexBufferBinding(triangleNor, 0, ARRAYSIZE(triNor), sizeof(float4), NORM);
+		//triangleNor->setData(triNor, sizeof(triNor), 0);
+		//mesh->addIAVertexBufferBinding(triangleNor, 0, ARRAYSIZE(triNor), sizeof(float4), NORM);
 
-		triangleUvs->setData(triUV, sizeof(triUV), 0);
-		mesh->addIAVertexBufferBinding(triangleUvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
+		//triangleUvs->setData(triUV, sizeof(triUV), 0);
+		//mesh->addIAVertexBufferBinding(triangleUvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
 
-		triangleInd->setData(triInd, sizeof(triInd), 0);
-		mesh->addIAVertexBufferBinding(triangleInd, 0, ARRAYSIZE(triInd), sizeof(float), INDEXBUFF);
+		//triangleInd->setData(triInd, sizeof(triInd), 0);
+		//mesh->addIAVertexBufferBinding(triangleInd, 0, ARRAYSIZE(triInd), sizeof(float), INDEXBUFF);
 
-		mesh->technique = triangleT;
-		mesh->setRotation(threadinformation->data[i]->rotation);
-		mesh->setScale(threadinformation->data[i]->scale);
-		mesh->setTranslation(threadinformation->data[i]->position);
+		//mesh->technique = triangleT;
+		//mesh->setRotation(threadinformation->data[i]->rotation);
+		//mesh->setScale(threadinformation->data[i]->scale);
+		//mesh->setTranslation(threadinformation->data[i]->position);
 	//	mesh->setCBuffer(cbmesh);
-		scene.push_back(mesh);
+	//	scene.push_back(mesh);
+
 	}
 	
-		return 1;
+	return 1;
 }
 void fillCell(int x, int y, int amount)
 {
@@ -479,16 +370,15 @@ void fillCell(int x, int y, int amount)
 		float pos[3] = { x * cellWidth + randNumb, 1, y * cellWidth + randNumb };
 		float scale[3] = { 1, 1, 1 };
 		float rot[3] = { 0, 0, 0 };
-		Object* object = new Object(pos, scale, rot, "Models/PolyTreeTexture.png");
+		Object* object = new Object(pos, scale, rot, "Models/NewLowPolyTree.fbx","Models/PolyTreeTexture.png");
 		grid->addMesh(x, y, object);
 	}
 
 }
 
 
-void createThreads()
+void createThread(std::vector<Object*> &objectList, std::vector<std::shared_ptr<Mesh>>* meshes, int threadKey)
 {
-
 	//    std::cout << (*grid)[0][0]->objectList.size(); 
 	//    std::cout << (*grid)[0][1]->objectList.size(); 
 	//    std::cout << (*grid)[0][2]->objectList.size(); 
@@ -496,7 +386,14 @@ void createThreads()
 //	std::vector<Object*> data2 = (*grid)[0][1]->objectList;
 //	std::vector<Object*> data3 = (*grid)[0][2]->objectList;
 	//    std::cout << (*grid)[0][0]->objectList[0]->position.x << std::endl; 
-	threadinfo data1 = { (*grid)[0][0]->objectList.size(),(*grid)[0][0]->objectList.data() };
+	threadinfo data1 = {};
+	data1.size = objectList.size();
+	data1.data = objectList.data();
+	data1.key = threadKey;
+	data1.meshes = meshes;
+	data1.reader = meshReader;
+
+
 	HANDLE Thread1;
 	Thread1 = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &data1, 0, 0);
 	WaitForSingleObject(Thread1, INFINITE);
@@ -573,12 +470,14 @@ int main(int argc, char *argv[])
 	renderer->initialize(800, 600);
 	renderer->setWinTitle("DirectX12 - Dynamic scene loader test");
 	renderer->setClearColor(0.0, 0.1, 0.1, 1.0);
-	
+	meshReader = new MeshReader(renderer);
 	createGlobalData();
 	grid = new Grid();
 	grid->createGrid(WWidth, HHeight);
 	fillGrid();
-	createThreads();
+	std::vector<std::shared_ptr<Mesh>>* meshes = new std::vector<std::shared_ptr<Mesh>>();
+	createThread((*grid)[0][0]->objectList, meshes, 1);
+	scene = *meshes;
 	//(*grid)[0].size();
 	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
 //	initialiseTestbench();
