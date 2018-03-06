@@ -21,11 +21,11 @@
 #include <wrl\client.h>
 struct ClAcFc //Commandlist Allocator Fence struct
 {
-	Microsoft::WRL::ComPtr<ID3D12Fence> Fence;
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> DirectCommandlist;
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> DirectcommandAllocator;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> copyCommandAllocator;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> copyCommandList;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> directCommandList;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> directCommandAllocator;
 };
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
