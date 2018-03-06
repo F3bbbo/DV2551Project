@@ -377,7 +377,7 @@ void fillCell(int x, int y, int amount)
 }
 
 
-void createThread(std::vector<Object*> &objectList, std::vector<std::shared_ptr<Mesh>>* meshes, int threadKey)
+void createThread(HANDLE &threadHandle, std::vector<Object*> &objectList, std::vector<std::shared_ptr<Mesh>>* meshes, int threadKey)
 {
 	//    std::cout << (*grid)[0][0]->objectList.size(); 
 	//    std::cout << (*grid)[0][1]->objectList.size(); 
@@ -394,10 +394,9 @@ void createThread(std::vector<Object*> &objectList, std::vector<std::shared_ptr<
 	data1.reader = meshReader;
 
 
-	HANDLE Thread1;
-	Thread1 = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &data1, 0, 0);
-	WaitForSingleObject(Thread1, INFINITE);
-	CloseHandle(Thread1);
+	threadHandle = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &data1, 0, 0);
+	WaitForSingleObject(threadHandle, INFINITE);
+	CloseHandle(threadHandle);
 }
 void fillGrid()
 {
@@ -476,7 +475,8 @@ int main(int argc, char *argv[])
 	grid->createGrid(WWidth, HHeight);
 	fillGrid();
 	std::vector<std::shared_ptr<Mesh>>* meshes = new std::vector<std::shared_ptr<Mesh>>();
-	//createThread((*grid)[0][0]->objectList, meshes, 1);
+	HANDLE thread1;
+	createThread(thread1, (*grid)[0][0]->objectList, meshes, 1);
 	scene = *meshes;
 	//(*grid)[0].size();
 	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
