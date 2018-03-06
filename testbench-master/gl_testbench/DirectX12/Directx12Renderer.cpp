@@ -583,20 +583,20 @@ void DirectX12Renderer::createDepthStencil()
 	);
 }
 
-void DirectX12Renderer::updateCamera()
+void DirectX12Renderer::updateCamera(float delta)
 {
 	bool run = false;
 	if (GetAsyncKeyState(0xA0)) // Left shift
 		run = true;
 
 	if (GetAsyncKeyState(0x57)) //W
-		camera->moveCamera(camera->getForward(), run);
+		camera->moveCamera(camera->getForward(), run,delta);
 	if (GetAsyncKeyState(0x41)) //A
-		camera->moveCamera(-camera->getRight(), run);
+		camera->moveCamera(-camera->getRight(), run, delta);
 	if (GetAsyncKeyState(0x53)) //S
-		camera->moveCamera(-camera->getForward(), run);
+		camera->moveCamera(-camera->getForward(), run, delta);
 	if (GetAsyncKeyState(0x44)) //D
-		camera->moveCamera(camera->getRight(), run);
+		camera->moveCamera(camera->getRight(), run, delta);
 
 	camera->update();
 }

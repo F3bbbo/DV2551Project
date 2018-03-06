@@ -26,6 +26,8 @@
 
 #include <process.h>
 #include <mutex>
+
+#include <time.h>
 using namespace std;
 DirectX12Renderer* renderer;
 Grid* grid;
@@ -53,6 +55,8 @@ void renderScene();
 void updateGridList();
 char gTitleBuff[256];
 double gLastDelta = 0.0;
+
+float deltatime=0;
 
 struct threadinfo
 {
@@ -89,6 +93,7 @@ void updateDelta()
 	last = start;
 	start = SDL_GetPerformanceCounter();
 	double deltaTime = (double)((start - last) * 1000.0 / SDL_GetPerformanceFrequency());
+	deltatime = deltaTime;
 	// moving average window of WINDOWS_SIZE
 	lastSum -= avg[loop];
 	lastSum += deltaTime;
@@ -140,7 +145,8 @@ void run() {
 */
 void updateScene()
 {
-	renderer->updateCamera();
+	
+	renderer->updateCamera(deltatime);
 	// Check if new grids needs to be loaded and add them to a grid list.
 	// Check if the list associated to a thread previously launched had finished by checking a fence, if the fence has been reached, add integers to the "idleThreads" queue indicating that a new thread can be launched with that command list.
 	// Launch threads. Each thread is responisble for loading one grid cell, launch as many threads as available
