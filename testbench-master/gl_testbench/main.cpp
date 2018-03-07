@@ -441,6 +441,8 @@ void LaunchThreads()
 		if (idleThreads[tID])
 		{
 			int cellIndex = -1;
+
+			// Find a cell that a thread should start to load
 			for (int j = 0; j < activeCells.size(); j++)
 			{
 				if ((*grid)[activeCells[j].x][activeCells[j].y]->status == PENDING_LOAD)
@@ -467,25 +469,34 @@ void CheckThreadLoading()
 {
 	for (int i = 0; i < NUMBER_OF_THREADS; i++)
 	{
+		// check if a thread is working, if it is, check if the thread has finished. Not sure if that check is working or not...
 		if (!(idleThreads[i]) && WAIT_OBJECT_0 == WaitForMultipleObjects(1, &threads[i], true, 0))
 		{
 			int index = -1;
+			// Since the thread has finished it has loaded all of the meshes in one grid cell, however, we need to find which cell the thread is responsible for
 			for (int j = 0; j < objectsToRender.size(); j++)
 			{
-				if (objectsToRender[j]->thread == i)
+				if (objectsToRender[j]->thread == i && objectsToRender[j]->isReady == false)
 					index = j;
 			}
+
+			// mikaels funtion, set command list such that we can execute it and change resource state.
 			for (unsigned int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
 			{
 				renderer->setDirectList((*objectsToRender[index]->objects)[k].get(), MAIN_THREAD);
 			}
 			renderer->executeDirectCommandList(1);
 			renderer->signalDirect(1, 1);
+
+			// might as well wait for it when we're testing.
 			renderer->waitForDirect(1, INFINITY, 1);
 			for (int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
 			{
 				scene.push_back((*objectsToRender[index]->objects)[k]);
 			}
+			
+			// tell the renderer that the list is ready to draw
+			objectsToRender[index]->isReady = true;
 		}
 	}
 }
