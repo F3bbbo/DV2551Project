@@ -21,7 +21,7 @@
 
 //Thread include
 #include "ThreadFunctions.h"
-
+#include <future>
 
 //testing includes
 #include <stdlib.h>     /* srand, rand */
@@ -42,6 +42,7 @@ Grid* grid;
 struct int2
 {
 	int2(int x, int y) { this->x = x; this->y = y; };
+	int2() { x = 0; y = 0; };
 	int x, y;
 
 	bool operator==(const int2& o)
@@ -52,11 +53,15 @@ struct int2
 
 struct cellRender
 {
+	bool isReady;
+	int thread;
 	int2 cell;
-	vector<Mesh>* objects;
+	vector<shared_ptr<Mesh>>* objects;
+
+	cellRender() { isReady = false; cell = int2(-1, -1); objects = nullptr; thread = -1; };
 };
 
-vector<cellRender> objectsToRender;
+vector<cellRender*> objectsToRender;
 
 
 vector<std::shared_ptr<Mesh>> scene;
@@ -85,7 +90,11 @@ std::shared_ptr<Material> triangleMaterial;
 std::shared_ptr<RenderState> triangleRS;
 std::shared_ptr<Technique> triangleT;
 
-queue<int> idleThreads;
+void LaunchThreads();
+void CheckThreadLoading();
+bool idleThreads[NUMBER_OF_THREADS];
+HANDLE threads[NUMBER_OF_THREADS];
+promise<bool> threadStatuses[NUMBER_OF_THREADS];
 vector<int2> activeCells;
 
 const int2 gridStart = { -5, -5 };
@@ -142,7 +151,8 @@ void run() {
 			if (windowEvent.type == SDL_KEYUP && windowEvent.key.keysym.sym == SDLK_ESCAPE) break;
 		}
 		updateGridList();
-
+		/*LaunchThreads();
+		CheckThreadLoading();*/
 		/*for (int i = 0; i < gridCellsToBeLoaded.size(); i++)
 			cout << gridCellsToBeLoaded[i].x << " " << gridCellsToBeLoaded[i].y << ", ";
 		cout << endl;*/
@@ -340,7 +350,7 @@ void createThread(HANDLE &threadHandle, std::vector<Object*> &objectList, std::v
 
 
 	threadHandle = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &data1, 0, 0);
-	WaitForSingleObject(threadHandle, INFINITE);
+	//WaitForSingleObject(threadHandle, INFINITE);
 	CloseHandle(threadHandle);
 }
 void fillGrid()
@@ -414,7 +424,7 @@ void updateGridList()
 				(*grid)[x][y]->status = NOT_LOADED;
 				for (int j = 0; j < objectsToRender.size(); j++)
 				{
-					if (objectsToRender[i].cell == int2(x, y))
+					if (objectsToRender[i]->cell == int2(x, y))
 					{
 						objectsToRender.erase(objectsToRender.begin() + i);
 						break;
@@ -424,21 +434,61 @@ void updateGridList()
 		}
 	}
 }
-void ThreadTest()
+void LaunchThreads()
 {
-	std::vector<std::shared_ptr<Mesh>>* meshes = new std::vector<std::shared_ptr<Mesh>>();
-	HANDLE thread1;
-	createThread(thread1, (*grid)[0][0]->objectList, meshes, 1);
-	for (unsigned int i = 0; i < (*meshes).size(); i++)
+	for (int tID = 0; tID < NUMBER_OF_THREADS; tID++)
 	{
-		renderer->setDirectList((*meshes)[i].get(), MAIN_THREAD);
+		if (idleThreads[tID])
+		{
+			int cellIndex = -1;
+			for (int j = 0; j < activeCells.size(); j++)
+			{
+				if ((*grid)[activeCells[j].x][activeCells[j].y]->status == PENDING_LOAD)
+				{
+					cellIndex = j;
+					break;
+				}
+			}
+			if (cellIndex == -1) // return if no grid cells needs to be loaded
+				return;
+
+			cellRender* cell = new cellRender();
+			cell->cell = int2(activeCells[cellIndex].x, activeCells[cellIndex].y);
+			cell->objects = new std::vector<std::shared_ptr<Mesh>>();
+			cell->thread = tID;
+			objectsToRender.push_back(cell);
+
+			createThread(threads[tID], (*grid)[activeCells[cellIndex].x][activeCells[cellIndex].y]->objectList, cell->objects, tID);
+		}
 	}
-	renderer->executeDirectCommandList(1);
-	renderer->signalDirect(1, 1);
-	renderer->waitForDirect(1, INFINITY, 1);
-	scene = *meshes;
 }
 
+void CheckThreadLoading()
+{
+	for (int i = 0; i < NUMBER_OF_THREADS; i++)
+	{
+		if (!(idleThreads[i]) && WAIT_OBJECT_0 == WaitForMultipleObjects(1, &threads[i], true, 0))
+		{
+			int index = -1;
+			for (int j = 0; j < objectsToRender.size(); j++)
+			{
+				if (objectsToRender[j]->thread == i)
+					index = j;
+			}
+			for (unsigned int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
+			{
+				renderer->setDirectList((*objectsToRender[index]->objects)[k].get(), MAIN_THREAD);
+			}
+			renderer->executeDirectCommandList(1);
+			renderer->signalDirect(1, 1);
+			renderer->waitForDirect(1, INFINITY, 1);
+			for (int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
+			{
+				scene.push_back((*objectsToRender[index]->objects)[k]);
+			}
+		}
+	}
+}
 #undef main
 int main(int argc, char *argv[])
 {
@@ -451,7 +501,10 @@ int main(int argc, char *argv[])
 	grid = new Grid();
 	grid->createGrid(WWidth, HHeight);
 	fillGrid();
-	ThreadTest();
+
+	for (int i = 0; i < NUMBER_OF_THREADS; i++)
+		idleThreads[i] = true;
+
 	//(*grid)[0].size();
 	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
 	//initialiseTestbench();
