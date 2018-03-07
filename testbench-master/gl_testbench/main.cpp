@@ -39,7 +39,24 @@ Grid* grid;
 // do what ever you want in your renderer backend.
 // all these objects are loosely coupled, creation and destruction is responsibility
 // of the testbench, not of the container objects
-map<int, vector<Object>> object;
+struct int2
+{
+	int2(int x, int y) { this->x = x; this->y = y; };
+	int x, y;
+
+	bool operator==(const int2& o)
+	{
+		return x == o.x && y == o.y;
+	}
+};
+
+struct cellRender
+{
+	int2 cell;
+	vector<Mesh>* objects;
+};
+
+vector<cellRender> objectsToRender;
 
 
 vector<std::shared_ptr<Mesh>> scene;
@@ -68,14 +85,8 @@ std::shared_ptr<Material> triangleMaterial;
 std::shared_ptr<RenderState> triangleRS;
 std::shared_ptr<Technique> triangleT;
 
-struct int2
-{
-	int2(int x, int y) { this->x = x; this->y = y; };
-	int x, y;
-};
-
-std::queue<int> idleThreads;
-std::vector<int2> gridCellsToBeLoaded;
+queue<int> idleThreads;
+vector<int2> activeCells;
 
 const int2 gridStart = { -5, -5 };
 #define XOFFSET -5 + 0.5f * cellWidth
@@ -369,9 +380,9 @@ void updateGridList()
 {
 	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
 	int xStartDist = min(max(0, (int)camPos.x - LOADINGTHRESHOLD), WWidth);
-	int yStartDist = min(max(0, (int)camPos.y - LOADINGTHRESHOLD), WWidth);
+	int yStartDist = min(max(0, (int)camPos.y - LOADINGTHRESHOLD), HHeight);
 	int xEndDist = min(max(0, (int)camPos.x + LOADINGTHRESHOLD), WWidth);
-	int yEndDist = min(max(0, (int)camPos.y + LOADINGTHRESHOLD), WWidth);
+	int yEndDist = min(max(0, (int)camPos.y + LOADINGTHRESHOLD), HHeight);
 
 	//Check if cells needs to be loaded
 	for (int x = xStartDist; x < xEndDist; x++)
@@ -381,18 +392,35 @@ void updateGridList()
 			if ((*grid)[x][y]->status == NOT_LOADED)
 			{
 				(*grid)[x][y]->status = PENDING_LOAD;
-				gridCellsToBeLoaded.push_back(int2(x, y));
+				activeCells.push_back(int2(x, y));
 			}
 		}
 	}
-	
-	//Remove cells that should had been loaded but didn't even start loading in time.
-	for (int i = 0; i < gridCellsToBeLoaded.size(); i++)
+
+	//Remove
+	for (int i = 0; i < activeCells.size(); i++)
 	{
-		if (gridCellsToBeLoaded[i].x < xStartDist || gridCellsToBeLoaded[i].x > xEndDist || gridCellsToBeLoaded[i].y < yStartDist || gridCellsToBeLoaded[i].y > yEndDist)
+		int x = activeCells[i].x;
+		int y = activeCells[i].y;
+		if (x < xStartDist || x > xEndDist || y < yStartDist || y > yEndDist)
 		{
-			(*grid)[gridCellsToBeLoaded[i].x][gridCellsToBeLoaded[i].y]->status = NOT_LOADED;
-			gridCellsToBeLoaded.erase(gridCellsToBeLoaded.begin() + i);
+			if ((*grid)[x][y]->status == PENDING_LOAD)
+			{
+				(*grid)[x][y]->status = NOT_LOADED;
+				activeCells.erase(activeCells.begin() + i);
+			}
+			if ((*grid)[x][y]->status == LOADED)
+			{
+				(*grid)[x][y]->status = NOT_LOADED;
+				for (int j = 0; j < objectsToRender.size(); j++)
+				{
+					if (objectsToRender[i].cell == int2(x, y))
+					{
+						objectsToRender.erase(objectsToRender.begin() + i);
+						break;
+					}
+				}
+			}
 		}
 	}
 }
