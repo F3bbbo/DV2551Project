@@ -13,6 +13,7 @@
 
 DirectX12Renderer::DirectX12Renderer()
 {
+	m = 0;
 	createwalkingpath();
 	createDevice();
 	CreateClAcFcThread();
@@ -663,26 +664,34 @@ void DirectX12Renderer::updateCamera(float delta)
 		camera->moveCamera(camera->getRight(), run, delta);
 
 //	camera->getposition();
-	/*
-		Vector3 lengthofvector =	camera->getPosition() - Vector3(walkingpath[0].x, walkingpath[0].y, -200);
+	
+		Vector3 lengthofvector =	camera->getPosition() - Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z);
 		float lengthDist = lengthofvector.Length();
 	//	std::cout << lengthDist <<"  "<< delta<<std::endl;
 		if (delta > 2)
 		delta = 2;
 		float movespeed =0.001;
 		bool reached = movespeed > lengthDist;
-		Vector3 move = (Vector3(walkingpath[0].x, walkingpath[0].y, -200) - camera->getPosition());
+		Vector3 move = (Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z) - camera->getPosition());
 		if(lengthDist>0.1)
 		camera->moveCamera(camera->getPosition() + (move*movespeed* delta));
-		*/
+		else
+		{
+			m++;
+			if (m > walkingpath.size()-1)
+			{
+				m = 0;
+			}
+		}
+
 	camera->update();
 }
 void DirectX12Renderer::createwalkingpath()
 {
-	walkingpath.push_back({ 0, 0 });
-	walkingpath.push_back({10, 2 });
-	walkingpath.push_back({ 2, 10 });
-	walkingpath.push_back({ 2, 2 });
+	walkingpath.push_back({ 400, 0,-400 });
+	walkingpath.push_back({200, 0,-400 });
+	walkingpath.push_back({ -200, 0, -400 });
+	walkingpath.push_back({ 0, 0, -400 });
 }
 void DirectX12Renderer::executeCopyCommandList(int ThreadID)
 {
