@@ -461,6 +461,7 @@ void LaunchThreads()
 			objectsToRender.push_back(cell);
 
 			createThread(threads[tID], (*grid)[activeCells[cellIndex].x][activeCells[cellIndex].y]->objectList, cell->objects, tID);
+			idleThreads[tID] = false;
 		}
 	}
 }
@@ -497,6 +498,7 @@ void CheckThreadLoading()
 			
 			// tell the renderer that the list is ready to draw
 			objectsToRender[index]->isReady = true;
+			idleThreads[i] = true;
 		}
 	}
 }
