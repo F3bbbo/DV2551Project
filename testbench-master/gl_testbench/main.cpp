@@ -32,6 +32,9 @@
 #include <mutex>
 
 #include <time.h>
+
+#include "D3D12Timer.hpp"
+
 using namespace std;
 DirectX12Renderer* renderer;
 Grid* grid;
