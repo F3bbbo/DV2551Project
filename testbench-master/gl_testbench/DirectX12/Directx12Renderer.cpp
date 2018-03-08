@@ -664,25 +664,25 @@ void DirectX12Renderer::updateCamera(float delta)
 		camera->moveCamera(camera->getRight(), run, delta);
 
 //	camera->getposition();
-	
-		Vector3 lengthofvector =	camera->getPosition() - Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z);
-		float lengthDist = lengthofvector.Length();
-	//	std::cout << lengthDist <<"  "<< delta<<std::endl;
-		if (delta > 2)
-		delta = 2;
-		float movespeed =0.001;
-		bool reached = movespeed > lengthDist;
-		Vector3 move = (Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z) - camera->getPosition());
-		if(lengthDist>0.1)
-		camera->moveCamera(camera->getPosition() + (move*movespeed* delta));
-		else
-		{
-			m++;
-			if (m > walkingpath.size()-1)
-			{
-				m = 0;
-			}
-		}
+	//
+	//	Vector3 lengthofvector =	camera->getPosition() - Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z);
+	//	float lengthDist = lengthofvector.Length();
+	////	std::cout << lengthDist <<"  "<< delta<<std::endl;
+	//	if (delta > 2)
+	//	delta = 2;
+	//	float movespeed =0.001;
+	//	bool reached = movespeed > lengthDist;
+	//	Vector3 move = (Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z) - camera->getPosition());
+	//	if(lengthDist>0.1)
+	//	camera->moveCamera(camera->getPosition() + (move*movespeed* delta));
+	//	else
+	//	{
+	//		m++;
+	//		if (m > walkingpath.size()-1)
+	//		{
+	//			m = 0;
+	//		}
+	//	}
 
 	camera->update();
 }
