@@ -11,6 +11,8 @@
 #include "RootSignature.h"
 #include "PipelineStateDX12.h"
 #include "CameraDX12.h"
+#include "Defines.h"
+
 #include <mutex>
 
 #include <SDL.h>
@@ -39,7 +41,6 @@ typedef union {
 } float3;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-#include "Defines.h"
 class DirectX12Renderer : public Renderer
 {
 public:

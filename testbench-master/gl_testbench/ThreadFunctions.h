@@ -8,8 +8,8 @@
 #include "DirectX12\Directx12Renderer.h"
 #include "DirectX12\Texture2DDX12.h"
 #include "Technique.h"
+#include "Defines.h"
 
-#define FENCEDONE 1
 struct threadinfo
 {
 	int size;
