@@ -449,7 +449,7 @@ void LaunchThreads()
 			{
 				if ((*grid)[activeCells[j].x][activeCells[j].y]->status == PENDING_LOAD)
 				{
-					(*grid)[activeCells[j].x][activeCells[j].y]->status == LOADING;
+					(*grid)[activeCells[j].x][activeCells[j].y]->status = LOADING;
 					cellIndex = j;
 					break;
 				}
