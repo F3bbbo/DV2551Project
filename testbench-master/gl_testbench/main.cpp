@@ -151,8 +151,8 @@ void run() {
 			if (windowEvent.type == SDL_KEYUP && windowEvent.key.keysym.sym == SDLK_ESCAPE) break;
 		}
 		updateGridList();
-		/*LaunchThreads();
-		CheckThreadLoading();*/
+		LaunchThreads();
+		CheckThreadLoading();
 		/*for (int i = 0; i < gridCellsToBeLoaded.size(); i++)
 			cout << gridCellsToBeLoaded[i].x << " " << gridCellsToBeLoaded[i].y << ", ";
 		cout << endl;*/
@@ -330,7 +330,7 @@ void fillCell(int x, int y, int amount)
 }
 
 
-void createThread(HANDLE &threadHandle, std::vector<Object*> &objectList, std::vector<std::shared_ptr<Mesh>>* meshes, int threadKey)
+threadinfo* createThread(HANDLE &threadHandle, std::vector<Object*> &objectList, std::vector<std::shared_ptr<Mesh>>* meshes, int threadKey)
 {
 	//    std::cout << (*grid)[0][0]->objectList.size(); 
 	//    std::cout << (*grid)[0][1]->objectList.size(); 
@@ -339,19 +339,20 @@ void createThread(HANDLE &threadHandle, std::vector<Object*> &objectList, std::v
 //	std::vector<Object*> data2 = (*grid)[0][1]->objectList;
 //	std::vector<Object*> data3 = (*grid)[0][2]->objectList;
 	//    std::cout << (*grid)[0][0]->objectList[0]->position.x << std::endl; 
-	threadinfo data1 = {};
-	data1.size = objectList.size();
-	data1.data = objectList.data();
-	data1.key = threadKey;
-	data1.meshes = meshes;
-	data1.reader = meshReader;
-	data1.renderer = renderer;
-	data1.technique = &triangleT;
+	threadinfo* data1 = new threadinfo();
+	data1->size = objectList.size();
+	data1->data = objectList.data();
+	data1->key = threadKey;
+	data1->meshes = meshes;
+	data1->reader = meshReader;
+	data1->renderer = renderer;
+	data1->technique = &triangleT;
 
 
-	threadHandle = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &data1, 0, 0);
+	threadHandle = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, data1, 0, 0);
 	//WaitForSingleObject(threadHandle, INFINITE);
-	CloseHandle(threadHandle);
+	//CloseHandle(threadHandle);
+	return data1;
 }
 void fillGrid()
 {
@@ -486,11 +487,11 @@ void CheckThreadLoading()
 			{
 				renderer->setDirectList((*objectsToRender[index]->objects)[k].get(), MAIN_THREAD);
 			}
-			renderer->executeDirectCommandList(1);
-			renderer->signalDirect(1, 1);
+			renderer->executeDirectCommandList(i);
+			renderer->signalDirect(1, i);
 
 			// might as well wait for it when we're testing.
-			renderer->waitForDirect(1, INFINITY, 1);
+			renderer->waitForDirect(1, INFINITY, i);
 			for (int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
 			{
 				scene.push_back((*objectsToRender[index]->objects)[k]);
