@@ -469,7 +469,7 @@ void CheckThreadLoading()
 	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
 	{
 		// check if a thread is working, if it is, check if the thread has finished. Not sure if that check is working or not...
-		if (!(idleThreads[i]) && WAIT_OBJECT_0 == WaitForMultipleObjects(1, &threads[i], true, 0))
+		if (!(idleThreads[i]) && WAIT_OBJECT_0 == WaitForSingleObject(threads[i], 0))
 		{
 			int index = -1;
 			// Since the thread has finished it has loaded all of the meshes in one grid cell, however, we need to find which cell the thread is responsible for
