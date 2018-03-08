@@ -167,6 +167,7 @@ void updateScene()
 {
 	
 	renderer->updateCamera(deltatimeGlobale);
+	// cout << scene.size() << endl;
 	// Check if new grids needs to be loaded and add them to a grid list.
 	// Check if the list associated to a thread previously launched had finished by checking a fence, if the fence has been reached, add integers to the "idleThreads" queue indicating that a new thread can be launched with that command list.
 	// Launch threads. Each thread is responisble for loading one grid cell, launch as many threads as available
@@ -445,6 +446,7 @@ void LaunchThreads()
 			{
 				if ((*grid)[activeCells[j].x][activeCells[j].y]->status == PENDING_LOAD)
 				{
+					(*grid)[activeCells[j].x][activeCells[j].y]->status == LOADING;
 					cellIndex = j;
 					break;
 				}
@@ -495,6 +497,7 @@ void CheckThreadLoading()
 			}
 			
 			// tell the renderer that the list is ready to draw
+			(*grid)[objectsToRender[index]->cell.x][objectsToRender[index]->cell.y]->status = LOADED;
 			objectsToRender[index]->isReady = true;
 			idleThreads[i] = true;
 		}
