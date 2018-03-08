@@ -194,9 +194,6 @@
     <ClInclude Include="DirectX12\Sampler2DDX12.h">
       <Filter>Source Files\DirectX12</Filter>
     </ClInclude>
-    <ClInclude Include="..\assets\DX5\Defines.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="Grid.h">
       <Filter>Header Files</Filter>
     </ClInclude>

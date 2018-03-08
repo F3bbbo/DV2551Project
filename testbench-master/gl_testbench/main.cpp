@@ -32,6 +32,9 @@
 #include <mutex>
 
 #include <time.h>
+
+#include "D3D12Timer.hpp"
+
 using namespace std;
 DirectX12Renderer* renderer;
 Grid* grid;
@@ -487,10 +490,10 @@ void CheckThreadLoading()
 				renderer->setDirectList((*objectsToRender[index]->objects)[k].get(), MAIN_THREAD);
 			}
 			renderer->executeDirectCommandList(i);
-			renderer->signalDirect(1, i);
+			renderer->signalDirect(FENCEDONE, i);
 
 			// might as well wait for it when we're testing.
-			renderer->waitForDirect(1, INFINITY, i);
+			renderer->waitForDirect(FENCEDONE, INFINITY, i);
 			for (int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
 			{
 				scene.push_back((*objectsToRender[index]->objects)[k]);

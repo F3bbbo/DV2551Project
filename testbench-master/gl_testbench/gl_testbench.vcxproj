@@ -187,7 +187,6 @@
     <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\assets\DX5\Defines.h" />
     <ClInclude Include="..\assets\DX5\IA.h" />
     <ClInclude Include="..\include\stb_image.h" />
     <ClInclude Include="Grid.h" />

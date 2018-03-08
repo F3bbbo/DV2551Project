@@ -9,3 +9,7 @@
 #define WWidth 100
 #define HHeight 100
 #define LOADINGTHRESHOLD 3
+
+//Fence Defines
+#define FENCEDONE 1
+#define FENCEBUSY 0
