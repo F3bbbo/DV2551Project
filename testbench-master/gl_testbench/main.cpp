@@ -92,14 +92,11 @@ std::shared_ptr<Technique> triangleT;
 
 void LaunchThreads();
 void CheckThreadLoading();
-bool idleThreads[NUMBER_OF_THREADS];
-HANDLE threads[NUMBER_OF_THREADS];
-promise<bool> threadStatuses[NUMBER_OF_THREADS];
+bool idleThreads[NUMBER_OF_LOADING_THREADS];
+HANDLE threads[NUMBER_OF_LOADING_THREADS];
 vector<int2> activeCells;
 
 const int2 gridStart = { -5, -5 };
-#define XOFFSET -5 + 0.5f * cellWidth
-#define YOFFSET -5 + 0.5f * cellHeight
 
 void updateDelta()
 {
@@ -437,7 +434,7 @@ void updateGridList()
 }
 void LaunchThreads()
 {
-	for (int tID = 0; tID < NUMBER_OF_THREADS; tID++)
+	for (int tID = 0; tID < NUMBER_OF_LOADING_THREADS; tID++)
 	{
 		if (idleThreads[tID])
 		{
@@ -469,7 +466,7 @@ void LaunchThreads()
 
 void CheckThreadLoading()
 {
-	for (int i = 0; i < NUMBER_OF_THREADS; i++)
+	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
 	{
 		// check if a thread is working, if it is, check if the thread has finished. Not sure if that check is working or not...
 		if (!(idleThreads[i]) && WAIT_OBJECT_0 == WaitForMultipleObjects(1, &threads[i], true, 0))
@@ -516,7 +513,7 @@ int main(int argc, char *argv[])
 	grid->createGrid(WWidth, HHeight);
 	fillGrid();
 
-	for (int i = 0; i < NUMBER_OF_THREADS; i++)
+	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
 		idleThreads[i] = true;
 
 	//(*grid)[0].size();
