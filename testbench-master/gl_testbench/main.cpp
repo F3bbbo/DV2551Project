@@ -421,18 +421,19 @@ void updateGridList()
 				(*grid)[x][y]->status = NOT_LOADED;
 				activeCells.erase(activeCells.begin() + i);
 			}
-			if ((*grid)[x][y]->status == LOADED)
+			// The code seems to be working, but since we still need to remove the meshes from the scene vector the following code is outcommented
+			/*if ((*grid)[x][y]->status == LOADED)
 			{
 				(*grid)[x][y]->status = NOT_LOADED;
 				for (int j = 0; j < objectsToRender.size(); j++)
 				{
-					if (objectsToRender[i]->cell == int2(x, y))
+					if (objectsToRender[j]->cell == int2(x, y))
 					{
-						objectsToRender.erase(objectsToRender.begin() + i);
+						objectsToRender.erase(objectsToRender.begin() + j);
 						break;
 					}
 				}
-			}
+			}*/
 		}
 	}
 }
