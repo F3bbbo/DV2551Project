@@ -150,8 +150,8 @@ void run() {
 		updateGridList();
 		LaunchThreads();
 		CheckThreadLoading();
-		/*for (int i = 0; i < gridCellsToBeLoaded.size(); i++)
-			cout << gridCellsToBeLoaded[i].x << " " << gridCellsToBeLoaded[i].y << ", ";
+		/*for (int i = 0; i < activeCells.size(); i++)
+			cout << activeCells[i].x << " " << activeCells[i].y << ", ";
 		cout << endl;*/
 		updateScene();
 		renderScene();
@@ -388,15 +388,15 @@ void createGlobalData()
 void updateGridList()
 {
 	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
-	int xStartDist = min(max(0, (int)camPos.x - LOADINGTHRESHOLD), WWidth);
-	int yStartDist = min(max(0, (int)camPos.y - LOADINGTHRESHOLD), HHeight);
-	int xEndDist = min(max(0, (int)camPos.x + LOADINGTHRESHOLD), WWidth);
-	int yEndDist = min(max(0, (int)camPos.y + LOADINGTHRESHOLD), HHeight);
+	int xStartDist = min(max(0, int(((int)camPos.x - LOADINGTHRESHOLD) / (float)cellWidth)), WWidth);
+	int yStartDist = min(max(0, int(((int)camPos.y - LOADINGTHRESHOLD) / (float)cellHeight)), HHeight);
+	int xEndDist = min(max(0, int(((int)camPos.x + LOADINGTHRESHOLD) / (float)cellWidth)), WWidth);
+	int yEndDist = min(max(0, int(((int)camPos.y + LOADINGTHRESHOLD) / (float)cellHeight)), HHeight);
 
 	//Check if cells needs to be loaded
-	for (int x = xStartDist; x < xEndDist; x++)
+	for (int x = xStartDist; x <= xEndDist; x++)
 	{
-		for (int y = yStartDist; y < yEndDist; y++)
+		for (int y = yStartDist; y <= yEndDist; y++)
 		{
 			if ((*grid)[x][y]->status == NOT_LOADED)
 			{
