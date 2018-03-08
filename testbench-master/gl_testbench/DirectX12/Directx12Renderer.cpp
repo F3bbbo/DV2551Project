@@ -444,8 +444,8 @@ void DirectX12Renderer::signalGPU(ID3D12CommandQueue* cmdQueue, Microsoft::WRL::
 }
 void DirectX12Renderer::signalGPU(ID3D12CommandQueue* cmdQueue, Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value,int ThreadID)
 {
-	cmdQueue->Signal(Fence.Get(), value);
 	Fence->Signal(FENCEBUSY);
+	cmdQueue->Signal(Fence.Get(), value);
 }
 
 bool DirectX12Renderer::waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime)
