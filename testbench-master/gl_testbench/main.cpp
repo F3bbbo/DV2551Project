@@ -34,7 +34,7 @@
 #include <time.h>
 
 #include "D3D12Timer.hpp"
-
+Vector2 oldCamPos;
 using namespace std;
 DirectX12Renderer* renderer;
 Grid* grid;
@@ -388,6 +388,71 @@ void createGlobalData()
 	techniques.push_back(triangleT);
 }
 
+
+
+void addActiveCells()
+{
+	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
+	int xCell = camPos.x / cellWidth;
+	int yCell = camPos.y / cellHeight;
+	int xCellold = oldCamPos.x / cellWidth;
+	int yCellold = oldCamPos.y / cellHeight;
+	if (activeCells.size() == 0)
+	{
+
+
+		for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(xCell + LOADINGTHRESHOLD,WWidth); x++)
+		{
+			for (int y = max(yCell - LOADINGTHRESHOLD,0); y < min(yCell + LOADINGTHRESHOLD, HHeight); y++)
+			{
+				(*grid)[x][y]->status = PENDING_LOAD;
+				activeCells.push_back(int2(x, y));
+			}
+		}
+	}
+	else
+	{
+		if (xCell > xCellold)
+		{
+			//rörtsigåthöger
+			for (int y = max(0,yCell - LOADINGTHRESHOLD); y < min(HHeight,yCell + LOADINGTHRESHOLD); y++)
+			{
+				(*grid)[min(WWidth,xCell + LOADINGTHRESHOLD)][y]->status = PENDING_LOAD;
+				activeCells.push_back(int2(min(HHeight, xCell + LOADINGTHRESHOLD), y));
+			}
+		}
+		else if(xCell < xCellold)
+		{
+			for (int y = max(0, yCell - LOADINGTHRESHOLD); y < min(HHeight, yCell + LOADINGTHRESHOLD); y++)
+			{
+				(*grid)[max(0,xCell - LOADINGTHRESHOLD)][y]->status = PENDING_LOAD;
+				activeCells.push_back(int2(max(0, xCell - LOADINGTHRESHOLD), y));
+			}
+			//rörtsigåtvänster
+		}
+		if (yCell > yCellold)
+		{
+			for (int x = min(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
+			{
+				(*grid)[x][min(WWidth,yCell +LOADINGTHRESHOLD)]->status = PENDING_LOAD;
+				activeCells.push_back(int2(x, min(WWidth, yCell + LOADINGTHRESHOLD)));
+			}
+			//rörtsiginnåt
+		}
+		else if(yCell < yCellold)
+		{
+			for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
+			{
+				(*grid)[x][max(0,yCell - LOADINGTHRESHOLD)]->status = PENDING_LOAD;
+				activeCells.push_back(int2(x, max(0, yCell - LOADINGTHRESHOLD)));
+			}
+
+			//rörtsigutåt
+		}
+	}
+
+
+}
 void updateGridList()
 {
 	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
@@ -396,6 +461,8 @@ void updateGridList()
 	int xEndDist = min(max(0, int(((int)camPos.x + LOADINGTHRESHOLD) / (float)cellWidth)), WWidth);
 	int yEndDist = min(max(0, int(((int)camPos.y + LOADINGTHRESHOLD) / (float)cellHeight)), HHeight);
 
+
+/*
 	//Check if cells needs to be loaded
 	for (int x = xStartDist; x <= xEndDist; x++)
 	{
@@ -408,6 +475,8 @@ void updateGridList()
 			}
 		}
 	}
+*/
+	addActiveCells();
 
 	//Remove
 	for (int i = 0; i < activeCells.size(); i++)
@@ -510,6 +579,8 @@ void CheckThreadLoading()
 #undef main
 int main(int argc, char *argv[])
 {
+	oldCamPos.x = 0;
+	oldCamPos.y = 0;
 	renderer = static_cast<DirectX12Renderer*>(Renderer::makeRenderer(Renderer::BACKEND::DX12));
 	renderer->initialize(800, 600);
 	renderer->setWinTitle("DirectX12 - Dynamic scene loader test");
