@@ -478,46 +478,41 @@ void removeNonActiveCells()
 	int yCell = camPos.y / cellHeight;
 	int xCellold = oldCamPos.x / cellWidth;
 	int yCellold = oldCamPos.y / cellHeight;
-
-
 	if (xCell > xCellold)
 	{
-		//rörtsigåthöger
-		for (int y = max(0, yCell - LOADINGTHRESHOLD); y < min(HHeight, yCell + LOADINGTHRESHOLD); y++)
+		//rörtsigåthöger tar bort det som är till vänster i y led
+		activeCells2.erase(activeCells2.begin());
+		for (int i = 0; i < LOADINGTHRESHOLD*2+1; i++)
 		{
-			(*grid)[min(WWidth, xCell + LOADINGTHRESHOLD)][y]->status = PENDING_LOAD;
-			activeCells.push_back(int2(min(HHeight, xCell + LOADINGTHRESHOLD), y));
+			(*grid)[max(0, xCell - LOADINGTHRESHOLD)][i]->status = NOT_LOADED;
 		}
 	}
 	else if (xCell < xCellold)
 	{
-		for (int y = max(0, yCell - LOADINGTHRESHOLD); y < min(HHeight, yCell + LOADINGTHRESHOLD); y++)
+		//rörtsigåtvänster tar bort   det till höger.
+		activeCells2.erase(activeCells2.begin()+xCell+LOADINGTHRESHOLD - 1);
+		for (int i = 0; i < LOADINGTHRESHOLD * 2 + 1; i++)
 		{
-			(*grid)[max(0, xCell - LOADINGTHRESHOLD)][y]->status = PENDING_LOAD;
-			activeCells.push_back(int2(max(0, xCell - LOADINGTHRESHOLD), y));
+			(*grid)[max(0, xCell - LOADINGTHRESHOLD)][i]->status = NOT_LOADED;
 		}
-		//rörtsigåtvänster
 	}
 	if (yCell > yCellold)
 	{
-		for (int x = min(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
-		{
-			(*grid)[x][min(WWidth, yCell + LOADINGTHRESHOLD)]->status = PENDING_LOAD;
-			activeCells.push_back(int2(x, min(WWidth, yCell + LOADINGTHRESHOLD)));
-		}
-		//rörtsiginnåt
+		//rörtsiginnåt ta bort under
+	
+	//	for(int x = )
+		
 	}
 	else if (yCell < yCellold)
 	{
 		for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
 		{
-			(*grid)[x][max(0, yCell - LOADINGTHRESHOLD)]->status = PENDING_LOAD;
-			activeCells.push_back(int2(x, max(0, yCell - LOADINGTHRESHOLD)));
+			(*grid)[x][max(0, yCell - LOADINGTHRESHOLD)]->status = NOT_LOADED;
+			activeCells2[x].insert(activeCells2[x].begin() + max(0, yCell - LOADINGTHRESHOLD - 1), int2(x, max(0, yCell - LOADINGTHRESHOLD)));
 		}
 
 		//rörtsigutåt
 	}
-
 
 }
 void updateGridList()
