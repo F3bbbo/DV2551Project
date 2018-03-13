@@ -428,7 +428,7 @@ void addActiveCells()
 	{
 		if (xCell > xCellold)
 		{
-			//rörtsigåthöger
+			//rï¿½rtsigï¿½thï¿½ger
 			vector<int2> Xlayer;
 			activeCells2.push_back(Xlayer); //add a new xlayer to the right
 			for (int y = max(0,yCell - LOADINGTHRESHOLD); y < min(HHeight,yCell + LOADINGTHRESHOLD); y++)
@@ -449,7 +449,7 @@ void addActiveCells()
 			//	activeCells2.
 				activeCells2[max(0, xCell - LOADINGTHRESHOLD - 1)].push_back(int2(max(0, xCell - LOADINGTHRESHOLD), y));
 			}
-			//rörtsigåtvänster
+			//rï¿½rtsigï¿½tvï¿½nster
 		}
 		if (yCell > yCellold)
 		{
@@ -460,7 +460,7 @@ void addActiveCells()
 				activeCells.push_back(int2(x, min(WWidth, yCell + LOADINGTHRESHOLD)));
 				activeCells2[x].push_back(int2(x, min(WWidth, yCell + LOADINGTHRESHOLD)));
 			}
-			//rörtsiginnåt
+			//rï¿½rtsiginnï¿½t
 		}
 		else if(yCell < yCellold)
 		{
@@ -471,7 +471,7 @@ void addActiveCells()
 				activeCells2[x].insert(activeCells2[x].begin()+ max(0, yCell - LOADINGTHRESHOLD - 1),int2(x, max(0, yCell - LOADINGTHRESHOLD)));
 			}
 
-			//rörtsigutåt
+			//rï¿½rtsigutï¿½t
 		}
 	}
 
@@ -487,7 +487,7 @@ void removeNonActiveCells()
 	int yCellold = oldCamPos.y / cellHeight;
 	if (xCell > xCellold)
 	{
-		//rörtsigåthöger tar bort det som är till vänster i y led
+		//rï¿½rtsigï¿½thï¿½ger tar bort det som ï¿½r till vï¿½nster i y led
 		activeCells2.erase(activeCells2.begin());
 		for (int i = 0; i < LOADINGTHRESHOLD*2+1; i++)
 		{
@@ -496,7 +496,7 @@ void removeNonActiveCells()
 	}
 	else if (xCell < xCellold)
 	{
-		//rörtsigåtvänster tar bort   det till höger.
+		//rï¿½rtsigï¿½tvï¿½nster tar bort   det till hï¿½ger.
 		activeCells2.erase(activeCells2.begin()+xCell+LOADINGTHRESHOLD - 1);
 		for (int i = 0; i < LOADINGTHRESHOLD * 2 + 1; i++)
 		{
@@ -505,7 +505,7 @@ void removeNonActiveCells()
 	}
 	if (yCell > yCellold)
 	{
-		//rörtsiginnåt ta bort under
+		//rï¿½rtsiginnï¿½t ta bort under
 	
 	//	for(int x = )
 		
@@ -518,7 +518,7 @@ void removeNonActiveCells()
 			activeCells2[x].insert(activeCells2[x].begin() + max(0, yCell - LOADINGTHRESHOLD - 1), int2(x, max(0, yCell - LOADINGTHRESHOLD)));
 		}
 
-		//rörtsigutåt
+		//rï¿½rtsigutï¿½t
 	}
 
 }
@@ -635,7 +635,7 @@ void CheckThreadLoading()
 
 			// might as well wait for it when we're testing.
 			renderer->waitForDirect(FENCEDONE, INFINITY, i);
-			/*for (int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
+			renderer->resetDirectCommandList(i);
 			{
 				scene.push_back((*objectsToRender[index]->objects)[k]);
 			}*/
