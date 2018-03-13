@@ -11,7 +11,9 @@
 #include "RootSignature.h"
 #include "PipelineStateDX12.h"
 #include "CameraDX12.h"
+#include "Defines.h"
 
+#include <mutex>
 
 #include <SDL.h>
 #include <GL/glew.h>
@@ -21,13 +23,24 @@
 #include <wrl\client.h>
 struct ClAcFc //Commandlist Allocator Fence struct
 {
-	Microsoft::WRL::ComPtr<ID3D12Fence> Fence;
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fenceCopy;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> copyCommandAllocator;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> copyCommandList;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fenceDirect;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> directCommandList;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> directCommandAllocator;
 };
+typedef union {
+	struct { float x, y; };
+	struct { float u, v; };
+} float2;
+
+typedef union {
+	struct { float x, y,z; };
+	struct { float u, v,w; };
+} float3;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-#include "Defines.h"
 class DirectX12Renderer : public Renderer
 {
 public:
@@ -36,6 +49,7 @@ public:
 	std::shared_ptr<Material> makeMaterial(const std::string& name);
 	std::shared_ptr<Material> makeMaterial(const std::string& name, int Thread);
 	std::shared_ptr<Mesh> makeMesh();
+	std::shared_ptr<Mesh> makeMesh(unsigned int key);
 	std::shared_ptr<VertexBuffer> makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage);
 	std::shared_ptr<VertexBuffer> makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage,int ThreadID);
 	std::shared_ptr<Texture2D> makeTexture2D();
@@ -50,6 +64,8 @@ public:
 	CameraDX12* camera;
 	std::map<int, ClAcFc> Thread;
 	void CreateClAcFcThread();
+	void setCopyList(Mesh *mesh, int ThreadID);
+	void setDirectList(Mesh* mesh, int ThreadID);
 	 HWND InitWindow(HINSTANCE hInstance,int width, int height);
 
 
@@ -69,17 +85,24 @@ public:
 	void submit(Mesh* mesh);
 	virtual void frame();
 	void frame(int ThreadID);
-	void waitForGPU();
-	void waitForGPU(int ThreadID);
-	void signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value);
-	void signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, int ThreadID);
-	void waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime);
-	void waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime,int ThreadID);
+	void signalDirect(int Value, int ThreadID);
+	bool waitForDirect(int Value, float waitTime);
+	bool waitForDirect(int Value, float waitTime, int ThreadID);
+	void signalCopy(int Value, int ThreadID);
+	bool waitForCopy(int Value, float waitTime);
+	bool waitForCopy(int Value, float waitTime, int ThreadID);
 	Microsoft::WRL::ComPtr<ID3D12Device> getDevice();
 	void setMaterialState(MaterialDX12 *material);
-	void updateCamera();
+	void updateCamera(float delta);
+	void createwalkingpath();
+	void executeCopyCommandList(int ThreadID);
+	void executeDirectCommandList(int threadID);
+	void resetCopyCommandList(int threadID);
+	void resetDirectCommandList(int threadID);
 
 private:
+	int m;
+	std::vector<float3> walkingpath;
 	//Window vars
 	MSG msg;
 	HWND wndHandle;			//1. Create Window
@@ -107,10 +130,14 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 	//Command list/queue
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueueCopy = nullptr;
 //	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
 //	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
-	void executeCommandList();
-	void executeCommandList(int ThreadID);
+	void executeCommandList(ID3D12CommandQueue* cmdQueue);
+	void executeCommandList(ID3D12CommandQueue* cmdQueue, int ThreadID);
+	void signalGPU(ID3D12CommandQueue* cmdQueue, Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value);
+	void signalGPU(ID3D12CommandQueue* cmdQueue, Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, int ThreadID);
+	bool waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime);
 	//Swap Chain
 	D3D12_CPU_DESCRIPTOR_HANDLE currDescHandle;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> RTVHeap;
@@ -129,4 +156,6 @@ private:
 	std::unordered_map<Technique*, std::vector<Mesh*>> drawList2;
 
 	float clearColor[4] = { 0,0,0,0 };
+
+	std::mutex copyLock;
 };

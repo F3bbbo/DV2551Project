@@ -36,7 +36,7 @@ int Texture2DDX12::loadFromFile(std::string filename)
 
 	texture->updateResource(commandList, rgb, 4 * width, 4 * width * height);
 
-	texture->updateState(commandList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	texture->updateState(commandList, D3D12_RESOURCE_STATE_COMMON);
 
 	return 0;
 }
@@ -63,4 +63,14 @@ void Texture2DDX12::setCommandlist(ID3D12GraphicsCommandList * cmdList)
 void Texture2DDX12::bind(unsigned int slot)
 {
 	pRS->bindTexture(slot, textureDescriptorHeap.Get());
+}
+
+void Texture2DDX12::setState(D3D12_RESOURCE_STATES state)
+{
+	texture->updateState(commandList, state);
+}
+
+void Texture2DDX12::setBindState()
+{
+	setState(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }

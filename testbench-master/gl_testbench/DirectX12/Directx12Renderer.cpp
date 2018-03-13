@@ -13,15 +13,16 @@
 
 DirectX12Renderer::DirectX12Renderer()
 {
-	
+	m = 0;
+	createwalkingpath();
 	createDevice();
 	CreateClAcFcThread();
 	createFenceAndDescriptorSizes();
 	createDescriptorHeaps();
 	createCommandObject();
 	pipelineState.setDevice(device);
-	pipelineState.setCommandList(Thread[0].commandList);
-	Root.setCommandList(Thread[0].commandList);
+	pipelineState.setCommandList(Thread[MAIN_THREAD].directCommandList);
+	Root.setCommandList(Thread[MAIN_THREAD].directCommandList);
 	Root.CreateRootsignature(getDevice());
 	Root.bindRootSignature();
 	
@@ -37,39 +38,49 @@ DirectX12Renderer::~DirectX12Renderer()
 
 std::shared_ptr<Material> DirectX12Renderer::makeMaterial(const std::string & name)
 {
-	return makeMaterial(name, 0);
+	return std::make_shared<MaterialDX12>(name, Thread[MAIN_THREAD].directCommandList, getDevice(), getShaderPath(), &Root);
 }
 
 std::shared_ptr<Material> DirectX12Renderer::makeMaterial(const std::string & name, int ThreadID)
 {
-	return std::make_shared<MaterialDX12>(name, Thread[ThreadID].commandList, getDevice(), getShaderPath(), &Root);
+	return std::make_shared<MaterialDX12>(name, Thread[ThreadID].copyCommandList, getDevice(), getShaderPath(), &Root);
 }
 
 std::shared_ptr<Mesh> DirectX12Renderer::makeMesh()
 {
-	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
+	std::shared_ptr<Mesh> mesh = std::make_shared<MeshDX12>();
 	mesh->WMBuffer = makeConstantBuffer("WorldMatrix", WORLDMATRIX_SLOT);
+	return mesh;
+}
+
+std::shared_ptr<Mesh> DirectX12Renderer::makeMesh(unsigned int key)
+{
+	std::shared_ptr<Mesh> mesh = std::make_shared<MeshDX12>();
+	mesh->WMBuffer = makeConstantBuffer("WorldMatrix", WORLDMATRIX_SLOT, key);
 	return mesh;
 }
 
 std::shared_ptr<VertexBuffer> DirectX12Renderer::makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage)
 {
-	return makeVertexBuffer(size, usage, 0);
+	std::shared_ptr<VertexBufferDX12> ptr = std::make_shared<VertexBufferDX12>(device.Get(), Thread[MAIN_THREAD].directCommandList, &Root);
+	ptr->createBuffer(device.Get(), size);
+	return ptr;
 }
 
 std::shared_ptr<VertexBuffer> DirectX12Renderer::makeVertexBuffer(size_t size, VertexBuffer::DATA_USAGE usage, int ThreadID)
 {
-	std::shared_ptr<VertexBufferDX12> ptr = std::make_shared<VertexBufferDX12>(device.Get(), Thread[ThreadID].commandList, &Root);
+	std::shared_ptr<VertexBufferDX12> ptr = std::make_shared<VertexBufferDX12>(device.Get(), Thread[ThreadID].copyCommandList, &Root);
 	ptr->createBuffer(device.Get(), size);
 	return ptr;
 }
 std::shared_ptr<Texture2D> DirectX12Renderer::makeTexture2D()
 {
-	return makeTexture2D(0);
+	std::shared_ptr<Texture2DDX12> texture = std::make_shared<Texture2DDX12>(getDevice().Get(), Thread[MAIN_THREAD].directCommandList.Get(), &Root);
+	return texture;
 }
 std::shared_ptr<Texture2D> DirectX12Renderer::makeTexture2D(int ThreadID)
 {	
-	std::shared_ptr<Texture2DDX12> texture = std::make_shared<Texture2DDX12>(getDevice().Get(), Thread[ThreadID].commandList.Get(), &Root);
+	std::shared_ptr<Texture2DDX12> texture = std::make_shared<Texture2DDX12>(getDevice().Get(), Thread[ThreadID].copyCommandList.Get(), &Root);
 	return texture;
 }
 
@@ -95,12 +106,12 @@ std::string DirectX12Renderer::getShaderExtension()
 
 std::shared_ptr<ConstantBuffer> DirectX12Renderer::makeConstantBuffer(std::string NAME, unsigned int location, int ThreadID)
 {
-	return std::make_shared<ConstantBufferDX12>(device.Get(), NAME, location, Thread[ThreadID].commandList.Get(), &Root);
+	return std::make_shared<ConstantBufferDX12>(device.Get(), NAME, location, Thread[ThreadID].copyCommandList.Get(), &Root);
 }
 
 std::shared_ptr<ConstantBuffer> DirectX12Renderer::makeConstantBuffer(std::string NAME, unsigned int location)
 {
-	return makeConstantBuffer(NAME, location, 0);
+	return std::make_shared<ConstantBufferDX12>(device.Get(), NAME, location, Thread[MAIN_THREAD].directCommandList.Get(), &Root);
 }
 
 std::shared_ptr<Technique> DirectX12Renderer::makeTechnique(std::shared_ptr<Material> m, std::shared_ptr<RenderState> r)
@@ -110,18 +121,64 @@ std::shared_ptr<Technique> DirectX12Renderer::makeTechnique(std::shared_ptr<Mate
 
 void DirectX12Renderer::CreateClAcFcThread()
 {
-	for(int i=0;i<NUMBER_OF_THREADS;i++)
+	Thread[MAIN_THREAD] = ClAcFc{ nullptr,nullptr,nullptr };//newThread;
+	if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&Thread[MAIN_THREAD].directCommandAllocator))))
+		std::cout << "Failed to create command allocator." << std::endl;
+
+	if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, Thread[MAIN_THREAD].directCommandAllocator.Get(), nullptr, IID_PPV_ARGS(&Thread[MAIN_THREAD].directCommandList))))
+		std::cout << "Failed to create command list." << std::endl;
+
+
+	device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[MAIN_THREAD].fenceDirect));
+	device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[MAIN_THREAD].fenceCopy));
+
+	for(int i = 0; i < NUMBER_OF_THREADS - 1; i++)
 	{
-		Thread[i] = ClAcFc{ nullptr,nullptr,nullptr };//newThread;
-		device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[i].Fence));
+		Thread[i] = ClAcFc{ nullptr,nullptr,nullptr }; //newThread;
+		device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[i].fenceDirect));
+		device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[i].fenceCopy));
 	
-		if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&Thread[i].commandAllocator))))
+		if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY, IID_PPV_ARGS(&Thread[i].copyCommandAllocator))))
 			std::cout << "Failed to create command allocator." << std::endl;
 
-		if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, Thread[i].commandAllocator.Get(), nullptr, IID_PPV_ARGS(&Thread[THREAD_ID].commandList))))
+		if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_COPY, Thread[i].copyCommandAllocator.Get(), nullptr, IID_PPV_ARGS(&Thread[i].copyCommandList))))
 			std::cout << "Failed to create command list." << std::endl;
+
+
+		if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&Thread[i].directCommandAllocator))))
+			std::cout << "Failed to create command allocator." << std::endl;
+
+		if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, Thread[i].directCommandAllocator.Get(), nullptr, IID_PPV_ARGS(&Thread[i].directCommandList))))
+			std::cout << "Failed to create command list." << std::endl;
+
 	}
 
+}
+
+void DirectX12Renderer::setCopyList(Mesh * mesh, int ThreadID)
+{
+	MeshDX12* m = dynamic_cast<MeshDX12*>(mesh);
+	if (m == nullptr)
+	{
+		OutputDebugStringA("Error: Mesh not of type MeshDX12.\n");
+	}
+	else
+	{
+		m->setCommandList(Thread[ThreadID].copyCommandList.Get());
+	}
+}
+
+void DirectX12Renderer::setDirectList(Mesh* mesh, int ThreadID)
+{
+	MeshDX12* m = dynamic_cast<MeshDX12*>(mesh);
+	if (m == nullptr)
+	{
+		OutputDebugStringA("Error: Mesh not of type MeshDX12.\n");
+	}
+	else
+	{
+		m->setCommandList(Thread[ThreadID].directCommandList.Get());
+	}
 }
 
 HWND DirectX12Renderer::InitWindow(HINSTANCE hInstance,int width,int height)
@@ -196,30 +253,33 @@ void DirectX12Renderer::setWinTitle(const char * title)
 }
 void DirectX12Renderer::present()
 {
-	present(0);
+	present(MAIN_THREAD);
 }
 void DirectX12Renderer::present(int ThreadID)
 {
 	swapChain->Present(0, 0);
 //	waitForGPU();
-	signalGPU(Thread[ThreadID].Fence, fenceValue);
-	waitForGPU(Thread[ThreadID].Fence, fenceValue, INFINITY);
-	fenceValue++;
+	signalDirect(fenceValue, ThreadID);
+	//signalGPU(Thread[ThreadID].fenceDirect, fenceValue);
+	bool isCompleted = false;
+	while (!isCompleted)
+		isCompleted = waitForGPU(Thread[ThreadID].fenceDirect, fenceValue, 0);
+	fenceValue = (fenceValue + 1) % 2;
 //Prep for next iteration
-	Thread[ThreadID].commandAllocator->Reset();
-	Thread[ThreadID].commandList->Reset(Thread[ThreadID].commandAllocator.Get(), nullptr);
+	resetDirectCommandList(ThreadID);
+	//Thread[ThreadID].directCommandAllocator->Reset();
+	//Thread[ThreadID].directCommandList->Reset(Thread[ThreadID].directCommandAllocator.Get(), nullptr);
 	currBackBuffer = (currBackBuffer + 1) % SWAP_BUFFER_COUNT;
 }
 int DirectX12Renderer::shutdown()
 {
-	return shutdown(0);
+	return shutdown(MAIN_THREAD);
 }
 int DirectX12Renderer::shutdown(int ThreadID)
 {
 //	waitForGPU();
-	signalGPU(Thread[ThreadID].Fence, fenceValue);
-	waitForGPU(Thread[ThreadID].Fence, fenceValue, INFINITY);
-	fenceValue++;
+	signalGPU(commandQueue.Get(), Thread[ThreadID].fenceDirect, fenceValue);
+	waitForGPU(Thread[ThreadID].fenceDirect, fenceValue, INFINITY);
 	return 0;
 }
 
@@ -232,7 +292,7 @@ void DirectX12Renderer::setClearColor(float R, float G , float B, float T)
 }
 void DirectX12Renderer::clearBuffer(unsigned int opts)
 {
-	clearBuffer(opts,0);
+	clearBuffer(opts, MAIN_THREAD);
 }
 void DirectX12Renderer::clearBuffer(unsigned int opts,int ThreadID)
 {
@@ -243,7 +303,7 @@ void DirectX12Renderer::clearBuffer(unsigned int opts,int ThreadID)
 		DispatchMessage(&msg);
 	}
 	//Change state of back buffer to be abble to work on it. (Might wanna consider fixing this)
-	d3dUtil::SetResourceTransitionBarrier(Thread[ThreadID].commandList.Get(),
+	d3dUtil::SetResourceTransitionBarrier(Thread[ThreadID].directCommandList.Get(),
 		swapChainBuffers[currBackBuffer].Get(),
 		D3D12_RESOURCE_STATE_PRESENT,
 		D3D12_RESOURCE_STATE_RENDER_TARGET
@@ -251,20 +311,20 @@ void DirectX12Renderer::clearBuffer(unsigned int opts,int ThreadID)
 
 	//Clearing the backbuffer acording to input flags
 	currDescHandle = getCurrBackBuffView();
-	Thread[ThreadID].commandList->OMSetRenderTargets(1, &currDescHandle, true, &getDepthView());
+	Thread[ThreadID].directCommandList->OMSetRenderTargets(1, &currDescHandle, true, &getDepthView());
 	
 	if (CLEAR_BUFFER_FLAGS::COLOR & opts)
 	{
-		Thread[ThreadID].commandList->ClearRenderTargetView(currDescHandle, clearColor, 0, nullptr);
+		Thread[ThreadID].directCommandList->ClearRenderTargetView(currDescHandle, clearColor, 0, nullptr);
 	}
 	if (CLEAR_BUFFER_FLAGS::DEPTH  & opts)
 	{
-		Thread[ThreadID].commandList->ClearDepthStencilView(getDepthView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+		Thread[ThreadID].directCommandList->ClearDepthStencilView(getDepthView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 	}
 
-	Thread[ThreadID].commandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	Thread[ThreadID].commandList->RSSetViewports(1, &viewPort);
-	Thread[ThreadID].commandList->RSSetScissorRects(1, &scissorRect);
+	Thread[ThreadID].directCommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	Thread[ThreadID].directCommandList->RSSetViewports(1, &viewPort);
+	Thread[ThreadID].directCommandList->RSSetScissorRects(1, &scissorRect);
 }
 
 void DirectX12Renderer::setRenderState(RenderState * ps)
@@ -289,7 +349,7 @@ void DirectX12Renderer::submit(Mesh * mesh)
 
 void DirectX12Renderer::frame()
 {
-	frame(0);
+	frame(MAIN_THREAD);
 }
 void DirectX12Renderer::frame(int ThreadID)
 {
@@ -308,7 +368,8 @@ void DirectX12Renderer::frame(int ThreadID)
 		for (auto work : drawList2)
 		{
 			work.first->enable(this);
-			updateCamera();
+		//	updateCamera();
+			camera->bind();
 			for (auto mesh : work.second)
 			{
 				//Render meshes
@@ -323,70 +384,84 @@ void DirectX12Renderer::frame(int ThreadID)
 				{
 					mesh->bindIAVertexBuffer(ele.first);
 				}
-				Matrix tmp = mesh->getWorldmatrix();
+				Matrix tmp = mesh->getWorldmatrix().Transpose();
 				mesh->WMBuffer->setData(&tmp, sizeof(tmp), nullptr, WORLDMATRIX_SLOT);
 				mesh->WMBuffer->bind();
 				//Bind the table
 				Root.setRootTableData();
 				//Draw
-				Thread[ThreadID].commandList->DrawInstanced(numOfVertices, 1, 0, 0);
+				Thread[ThreadID].directCommandList->DrawInstanced(numOfVertices, 1, 0, 0);
 			}
 		}
 		drawList2.clear();
 	}
 			
-	d3dUtil::SetResourceTransitionBarrier(Thread[ThreadID].commandList.Get(),
+	d3dUtil::SetResourceTransitionBarrier(Thread[ThreadID].directCommandList.Get(),
 		swapChainBuffers[currBackBuffer].Get(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET,
 		D3D12_RESOURCE_STATE_PRESENT
 	);	
 
 	//End of recording
-	Thread[ThreadID].commandList->Close();
+	Thread[ThreadID].directCommandList->Close();
 	//Execute commandList
-	executeCommandList();
+	executeCommandList(commandQueue.Get());
 }
 
-void DirectX12Renderer::waitForGPU()
+void DirectX12Renderer::signalDirect(int Value, int ThreadID)
 {
-	waitForGPU(0);
+	signalGPU(commandQueue.Get(), Thread[ThreadID].fenceDirect, Value);
 }
 
-void DirectX12Renderer::waitForGPU(int ThreadID)
+bool DirectX12Renderer::waitForDirect(int Value, float waitTime)
 {
-	const UINT64 fenceVal = fenceValue;
-	commandQueue->Signal(Thread[ThreadID].Fence.Get(), fenceVal);
-	fenceValue++;
+	return waitForDirect(Value, waitTime, MAIN_THREAD);
+}
 
-	if (Thread[ThreadID].Fence->GetCompletedValue() < fenceVal)
+bool DirectX12Renderer::waitForDirect(int Value, float waitTime, int ThreadID)
+{
+	return waitForGPU(Thread[ThreadID].fenceDirect, Value, waitTime);
+}
+
+void DirectX12Renderer::signalCopy(int Value, int ThreadID)
+{
+	signalGPU(commandQueueCopy.Get(), Thread[ThreadID].fenceCopy, Value);
+}
+
+bool DirectX12Renderer::waitForCopy(int Value, float waitTime)
+{
+	return waitForCopy(Value, waitTime, MAIN_THREAD);
+}
+
+bool DirectX12Renderer::waitForCopy(int Value, float waitTime, int ThreadID)
+{
+	return waitForGPU(Thread[ThreadID].fenceCopy, Value, waitTime);
+}
+
+
+void DirectX12Renderer::signalGPU(ID3D12CommandQueue* cmdQueue, Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value)
+{
+	signalGPU(cmdQueue, Fence, value, MAIN_THREAD);
+}
+void DirectX12Renderer::signalGPU(ID3D12CommandQueue* cmdQueue, Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value,int ThreadID)
+{
+	Fence->Signal(FENCEBUSY);
+	cmdQueue->Signal(Fence.Get(), value);
+}
+
+bool DirectX12Renderer::waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime)
+{
+	UINT64 val = Fence->GetCompletedValue();
+	if (val != value)
 	{
-		Thread[ThreadID].Fence->SetEventOnCompletion(fenceVal, eventHandle);
-		WaitForSingleObject(eventHandle, INFINITY);
+		Fence->SetEventOnCompletion(value, eventHandle);
+		if (WAIT_OBJECT_0 == WaitForSingleObject(eventHandle, waittime))
+			return true;
+		return false;
 	}
+	return true;
 }
 
-void DirectX12Renderer::signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value)
-{
-	signalGPU(Fence, value, 0);
-}
-void DirectX12Renderer::signalGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value,int ThreadID)
-{
-	commandQueue->Signal(Thread[ThreadID].Fence.Get(), value);
-}
-
-void DirectX12Renderer::waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime, int ThreadID)
-{
-	if (Thread[ThreadID].Fence->GetCompletedValue() <= value)
-	{
-		Thread[ThreadID].Fence->SetEventOnCompletion(value, eventHandle);
-		WaitForSingleObject(eventHandle, waittime);
-	}
-}
-
-void DirectX12Renderer::waitForGPU(Microsoft::WRL::ComPtr<ID3D12Fence> Fence, const UINT64 value, float waittime)
-{
-	waitForGPU(Fence, value, waittime, 0);
-}
 
 Microsoft::WRL::ComPtr<ID3D12Device> DirectX12Renderer::getDevice()
 {
@@ -445,6 +520,10 @@ void DirectX12Renderer::createCommandObject()
 
 	if (FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue))))
 		std::cout << "Failed to create command queue." << std::endl;
+	
+	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+	if (FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueueCopy))))
+		std::cout << "Failed to create copy command queue." << std::endl;
 
 //	if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&Thread[THREAD_ID].commandAllocator))))
 //		std::cout << "Failed to create command allocator." << std::endl;
@@ -562,38 +641,92 @@ void DirectX12Renderer::createDepthStencil()
 	device->CreateDepthStencilView(depthStencilBuffer.Get(), nullptr, getDepthView());
 	//Transition the resource from its initial state to be used as a depth buffer
 	d3dUtil::SetResourceTransitionBarrier(
-		Thread[THREAD_ID].commandList.Get(),
+		Thread[MAIN_THREAD].directCommandList.Get(),
 		depthStencilBuffer.Get(),
 		D3D12_RESOURCE_STATE_COMMON,
 		D3D12_RESOURCE_STATE_DEPTH_WRITE
 	);
 }
 
-void DirectX12Renderer::updateCamera()
+
+
+void DirectX12Renderer::updateCamera(float delta)
 {
 	bool run = false;
 	if (GetAsyncKeyState(0xA0)) // Left shift
 		run = true;
 
 	if (GetAsyncKeyState(0x57)) //W
-		camera->moveCamera(camera->getForward(), run);
+		camera->moveCamera(camera->getForward(), run,delta);
 	if (GetAsyncKeyState(0x41)) //A
-		camera->moveCamera(-camera->getRight(), run);
+		camera->moveCamera(-camera->getRight(), run, delta);
 	if (GetAsyncKeyState(0x53)) //S
-		camera->moveCamera(-camera->getForward(), run);
+		camera->moveCamera(-camera->getForward(), run, delta);
 	if (GetAsyncKeyState(0x44)) //D
-		camera->moveCamera(camera->getRight(), run);
+		camera->moveCamera(camera->getRight(), run, delta);
+
+//	camera->getposition();
+	//
+	//	Vector3 lengthofvector =	camera->getPosition() - Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z);
+	//	float lengthDist = lengthofvector.Length();
+	////	std::cout << lengthDist <<"  "<< delta<<std::endl;
+	//	if (delta > 2)
+	//	delta = 2;
+	//	float movespeed =0.001;
+	//	bool reached = movespeed > lengthDist;
+	//	Vector3 move = (Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z) - camera->getPosition());
+	//	if(lengthDist>0.1)
+	//	camera->moveCamera(camera->getPosition() + (move*movespeed* delta));
+	//	else
+	//	{
+	//		m++;
+	//		if (m > walkingpath.size()-1)
+	//		{
+	//			m = 0;
+	//		}
+	//	}
 
 	camera->update();
 }
-void DirectX12Renderer::executeCommandList(int ThreadID)
+void DirectX12Renderer::createwalkingpath()
 {
-	ID3D12CommandList* cmdList[] = { Thread[ThreadID].commandList.Get() };
+	walkingpath.push_back({ 400, 0,-400 });
+	walkingpath.push_back({200, 0,-400 });
+	walkingpath.push_back({ -200, 0, -400 });
+	walkingpath.push_back({ 0, 0, -400 });
+}
+void DirectX12Renderer::executeCopyCommandList(int ThreadID)
+{
+	std::lock_guard<std::mutex> guard(copyLock);
+	Thread[ThreadID].copyCommandList->Close();
+	ID3D12CommandList* cmdList[] = { Thread[ThreadID].copyCommandList.Get() };
+	commandQueueCopy->ExecuteCommandLists(ARRAYSIZE(cmdList), cmdList);
+}
+void DirectX12Renderer::executeDirectCommandList(int threadID)
+{
+	Thread[threadID].directCommandList->Close();
+	ID3D12CommandList* cmdList[] = { Thread[threadID].directCommandList.Get() };
 	commandQueue->ExecuteCommandLists(ARRAYSIZE(cmdList), cmdList);
 }
-void DirectX12Renderer::executeCommandList()
+void DirectX12Renderer::resetCopyCommandList(int threadID)
 {
-	executeCommandList(0);
+	Thread[threadID].directCommandAllocator->Reset();
+	Thread[threadID].copyCommandList->Reset(Thread[threadID].copyCommandAllocator.Get(), nullptr);
+}
+void DirectX12Renderer::resetDirectCommandList(int threadID)
+{ 
+	Thread[threadID].directCommandAllocator->Reset();
+	Thread[threadID].directCommandList->Reset(Thread[threadID].directCommandAllocator.Get(), nullptr);
+}
+void DirectX12Renderer::executeCommandList(ID3D12CommandQueue* cmdQueue, int ThreadID)
+{
+	ID3D12CommandList* cmdList[] = { Thread[ThreadID].directCommandList.Get() };
+	cmdQueue->ExecuteCommandLists(ARRAYSIZE(cmdList), cmdList);
+}
+
+void DirectX12Renderer::executeCommandList(ID3D12CommandQueue* cmdQueue)
+{
+	executeCommandList(cmdQueue, MAIN_THREAD);
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DirectX12Renderer::getCurrBackBuffView()

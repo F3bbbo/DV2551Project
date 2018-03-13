@@ -28,3 +28,16 @@ void TechniqueDX12::enable(Renderer * renderer)
 		printf("Error: Not a MaterialDX12 in TechniqueDX12::enable()");
 	}
 }
+
+void TechniqueDX12::setCommandList(ID3D12GraphicsCommandList * cmdList)
+{
+	MaterialDX12* mat = dynamic_cast<MaterialDX12*>(material.get());
+	if (mat == nullptr)
+	{
+		OutputDebugStringA("Error: Material not of type MaterialDX12.");
+	}
+	else
+	{
+		mat->setCommandlist(cmdList);
+	}
+}

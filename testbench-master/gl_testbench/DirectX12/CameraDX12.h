@@ -25,13 +25,15 @@ public:
 	float rotationSpeed;
 	float speed;
 	float runSpeed;
-	void moveCamera(Vector3 translation, bool run);
+	void moveCamera(Vector3 translation, bool run, float dt);
+	void moveCamera(Vector3 translation);
 	void setCBuffer(std::shared_ptr<ConstantBuffer> cb);
 	void setViewMatrix(Matrix& matrix);
 	void setProjectionMatrix(Matrix& matrix);
 	void setRight(Vector3& vector);
 	void setForward(Vector3& vector);
 	void setUp(Vector3& vector);
+	void bind();
 	void update();
 	Matrix getViewMatrix();
 	Matrix getProjectionMatrix();

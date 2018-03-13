@@ -22,10 +22,16 @@ CameraDX12::~CameraDX12()
 
 }
 
-void CameraDX12::moveCamera(Vector3 translation, bool run)
+void CameraDX12::moveCamera(Vector3 translation, bool run,float dt)
 {
-	position += translation * (run ? runSpeed : speed);
+	position += translation * (run ? runSpeed : speed)*dt;
 }
+
+void CameraDX12::moveCamera(Vector3 positionchange)
+{
+	position = positionchange ;
+}
+
 
 void CameraDX12::setCBuffer(std::shared_ptr<ConstantBuffer> cb)
 {
@@ -59,6 +65,11 @@ void CameraDX12::setUp(Vector3 & vector)
 	upVector = vector;
 }
 
+void CameraDX12::bind()
+{
+	cBuffer->bind();
+}
+
 void CameraDX12::update()
 {
 	viewMatrix = DirectX::XMMatrixLookAtLH(position, forwardVector + position, upVector);
@@ -66,7 +77,7 @@ void CameraDX12::update()
 	VPMatrix = VPMatrix.Transpose();
 	
 	cBuffer->setData(&VPMatrix, sizeof(VPMatrix), nullptr, VPMATRIX_SLOT);
-	cBuffer->bind();
+//	cBuffer->bind();
 }
 
 Matrix CameraDX12::getViewMatrix()

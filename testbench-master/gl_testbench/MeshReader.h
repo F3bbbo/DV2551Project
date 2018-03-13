@@ -15,7 +15,7 @@ private:
 	DirectX12Renderer * renderer;
 	std::map<unsigned int, Assimp::Importer*> importers;
 	Assimp::Importer& getImporter(unsigned int key);
-	void extractMeshes(const aiScene* scene, std::vector<std::shared_ptr<Mesh>> &meshes, std::shared_ptr<Texture2D> texture);
+	void extractMeshes(const aiScene* scene, std::vector<std::shared_ptr<Mesh>> &meshes, std::shared_ptr<Texture2D> texture, unsigned int key);
 public:
 	bool LoadFromFile(std::string MeshFileName, std::string TextureFileName, std::vector<std::shared_ptr<Mesh>> &meshes, unsigned int key);
 	bool LoadFromFile(std::string MeshFileName, std::string TextureFileName, std::vector<std::shared_ptr<Mesh>> &meshes);

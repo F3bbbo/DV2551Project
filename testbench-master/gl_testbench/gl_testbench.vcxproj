@@ -173,6 +173,7 @@
     <ClCompile Include="MeshReader.cpp" />
     <ClCompile Include="Sampler2D.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="ThreadFunctions.cpp" />
     <ClCompile Include="Utilityfunctions.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -186,9 +187,9 @@
     <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\assets\DX5\Defines.h" />
     <ClInclude Include="..\assets\DX5\IA.h" />
     <ClInclude Include="..\include\stb_image.h" />
+    <ClInclude Include="D3D12Timer.hpp" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="DirectX12\CameraDX12.h" />
@@ -209,6 +210,7 @@
     <ClInclude Include="MeshReader.h" />
     <ClInclude Include="Sampler2D.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="ThreadFunctions.h" />
     <ClInclude Include="Utilityfunctions.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="Camera.h" />

@@ -12,16 +12,30 @@
 #include "Texture2D.h"
 #include <math.h>
 #include <memory>
+#include <queue>
 
 //#include "DirectX12/MeshDX12.h"
 #include "MeshReader.h"
 #include "Grid.h"
 #include "IA.h"
 
+//Thread include
+#include "ThreadFunctions.h"
+#include <thread>
+#include <fstream>
+
 //testing includes
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>
+#include <SimpleMath.h>
 
+#include <process.h>
+#include <mutex>
+
+#include <time.h>
+
+#include "D3D12Timer.hpp"
+Vector2 oldCamPos;
 using namespace std;
 DirectX12Renderer* renderer;
 Grid* grid;
@@ -29,7 +43,28 @@ Grid* grid;
 // do what ever you want in your renderer backend.
 // all these objects are loosely coupled, creation and destruction is responsibility
 // of the testbench, not of the container objects
-map<int, vector<Object>> object;
+struct int2
+{
+	int2(int x, int y) { this->x = x; this->y = y; };
+	int2() { x = 0; y = 0; };
+	int x, y;
+
+	bool operator==(const int2& o)
+	{
+		return x == o.x && y == o.y;
+	}
+};
+
+struct cellRender
+{
+	bool isReady;
+	int thread;
+	vector<shared_ptr<Mesh>>* objects;
+
+	cellRender() { isReady = false; objects = nullptr; thread = -1; };
+};
+
+map<int, cellRender*> objectsToRender;
 
 
 vector<std::shared_ptr<Mesh>> scene;
@@ -37,6 +72,8 @@ vector<std::shared_ptr<Material>> materials;
 vector<std::shared_ptr<Technique>> techniques;
 vector<std::shared_ptr<Texture2D>> textures;
 vector<std::shared_ptr<Sampler2D>> samplers;
+
+MeshReader *meshReader = nullptr;
 
 std::shared_ptr<VertexBuffer> pos;
 std::shared_ptr<VertexBuffer> nor;
@@ -46,12 +83,27 @@ std::shared_ptr<VertexBuffer> uvs;
 void updateScene();
 void renderScene();
 
+void updateGridList();
 char gTitleBuff[256];
 double gLastDelta = 0.0;
+
+float deltatimeGlobale=0.0000011;
 
 std::shared_ptr<Material> triangleMaterial;
 std::shared_ptr<RenderState> triangleRS;
 std::shared_ptr<Technique> triangleT;
+
+void LaunchThreads();
+void CheckThreadLoading();
+bool idleThreads[NUMBER_OF_LOADING_THREADS];
+HANDLE threads[NUMBER_OF_LOADING_THREADS];
+vector<int2> activeCells;
+vector<vector<int2>> activeCells2;
+threadinfo threadData[NUMBER_OF_LOADING_THREADS];
+
+const int2 gridStart = { -5, -5 };
+
+thread dataCollector;
 
 void updateDelta()
 {
@@ -65,6 +117,7 @@ void updateDelta()
 	last = start;
 	start = SDL_GetPerformanceCounter();
 	double deltaTime = (double)((start - last) * 1000.0 / SDL_GetPerformanceFrequency());
+	deltatimeGlobale = deltaTime;
 	// moving average window of WINDOWS_SIZE
 	lastSum -= avg[loop];
 	lastSum += deltaTime;
@@ -84,12 +137,12 @@ typedef union {
 	struct { float x, y, z, w; };
 	struct { float r, g, b, a; };
 } float4;
-
+/*
 typedef union { 
 	struct { float x, y; };
 	struct { float u, v; };
 } float2;
-
+*/
 
 void run() {
 
@@ -101,6 +154,14 @@ void run() {
 			if (windowEvent.type == SDL_QUIT) break;
 			if (windowEvent.type == SDL_KEYUP && windowEvent.key.keysym.sym == SDLK_ESCAPE) break;
 		}
+
+		activeCells2;
+		updateGridList();
+		LaunchThreads();
+		CheckThreadLoading();
+		/*for (int i = 0; i < activeCells.size(); i++)
+			cout << activeCells[i].x << " " << activeCells[i].y << ", ";
+		cout << endl;*/
 		updateScene();
 		renderScene();
 	}
@@ -109,8 +170,26 @@ void run() {
 /*
  update positions of triangles in the screen changing a translation only
 */
+
+
 void updateScene()
 {
+	
+	renderer->updateCamera(deltatimeGlobale);
+	// cout << scene.size() << endl;
+	// Check if new grids needs to be loaded and add them to a grid list.
+	// Check if the list associated to a thread previously launched had finished by checking a fence, if the fence has been reached, add integers to the "idleThreads" queue indicating that a new thread can be launched with that command list.
+	// Launch threads. Each thread is responisble for loading one grid cell, launch as many threads as available
+		// A thread is given a vector of objects to be loaded. For each mesh the thread should:
+			// Load the data from the file.
+			// Create position, index , UVs and Normal vertex buffers with the appropriate resource state.
+			// Each file to be loaded has a texture associated with it which needs to be loaded.
+			// Upload the vertex data and texture to the GPU
+			// When the mesh is uploaded, change the command list pointer that he mesh hold to the main threads command list.
+			
+
+
+
 	/*
 	    For each mesh in scene list, update their position 
 	*/
@@ -136,10 +215,19 @@ void updateScene()
 
 void renderScene()
 {
+	//vector<std::shared_ptr<Mesh>> scene;
+	//vector<shared_ptr<Mesh>>* objects;
 	renderer->clearBuffer(CLEAR_BUFFER_FLAGS::COLOR | CLEAR_BUFFER_FLAGS::DEPTH);
-	for (auto m : scene)
+	//map<int, cellRender*>::iterator it;
+	for (auto cellWork : objectsToRender)
 	{
-		renderer->submit(m.get());
+		if (cellWork.second->isReady)
+		{
+			for (auto m : *(cellWork.second->objects))
+			{
+				renderer->submit(m.get());
+			}
+		}
 	}
 	renderer->frame();
 	renderer->present();
@@ -203,138 +291,6 @@ int initialiseTestbench()
 	//mesh->technique = t;
 
 	//scene.push_back(mesh);
-
-
-	//std::string definePos = "#define POSITION " + std::to_string(POSITION) + "\n";
-	//std::string defineNor = "#define NORMAL " + std::to_string(NORMAL) + "\n";
-	//std::string defineUV = "#define TEXTCOORD " + std::to_string(TEXTCOORD) + "\n";
-
-	//std::string defineTX = "#define TRANSLATION " + std::to_string(TRANSLATION) + "\n";
-	//std::string defineTXName = "#define TRANSLATION_NAME " + std::string(TRANSLATION_NAME) + "\n";
-	//
-	//std::string defineDiffCol = "#define DIFFUSE_TINT " + std::to_string(DIFFUSE_TINT) + "\n";
-	//std::string defineDiffColName = "#define DIFFUSE_TINT_NAME " + std::string(DIFFUSE_TINT_NAME) + "\n";
-
-	//std::string defineDiffuse = "#define DIFFUSE_SLOT " + std::to_string(DIFFUSE_SLOT) + "\n";
-
-	//std::vector<std::vector<std::string>> materialDefs = {
-	//	// vertex shader, fragment shader, defines
-	//	// shader filename extension must be asked to the renderer
-	//	// these strings should be constructed from the IA.h file!!!
-
-	//	{ "VertexShader", "FragmentShader", definePos + defineNor + defineUV + defineTX + 
-	//	   defineTXName + defineDiffCol + defineDiffColName }, 
-
-	//	{ "VertexShader", "FragmentShader", definePos + defineNor + defineUV + defineTX + 
-	//	   defineTXName + defineDiffCol + defineDiffColName }, 
-
-	//	{ "VertexShader", "FragmentShader", definePos + defineNor + defineUV + defineTX + 
-	//	   defineTXName + defineDiffCol + defineDiffColName + defineDiffuse	},
-
-	//	{ "VertexShader", "FragmentShader", definePos + defineNor + defineUV + defineTX + 
-	//	   defineTXName + defineDiffCol + defineDiffColName }, 
-	//};
-
-	//float degToRad = M_PI / 180.0;
-	//float scale = (float)TOTAL_PLACES / 359.9;
-	//for (int a = 0; a < TOTAL_PLACES; a++)
-	//{
-	//	xt[a] = 0.8f * cosf(degToRad * ((float)a/scale) * 3.0);
-	//	yt[a] = 0.8f * sinf(degToRad * ((float)a/scale) * 2.0);
-	//};
-
-	//// triangle geometry:
-	//float4 triPos[3] = { { 0.0f,  0.05, 0.0f, 1.0f },{ 0.05, -0.05, 0.0f, 1.0f },{ -0.05, -0.05, 0.0f, 1.0f } };
-	//float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
-	//float2 triUV[3] =  { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
-
-	//// load Materials.
-	//std::string shaderPath = renderer->getShaderPath();
-	//std::string shaderExtension = renderer->getShaderExtension();
-	//float diffuse[4][4] = {
-	//	0.0,0.0,1.0,1.0,
-	//	0.0,1.0,0.0,1.0,
-	//	1.0,1.0,1.0,1.0,
-	//	1.0,0.0,0.0,1.0
-	//};
-
-	//for (int i = 0; i < materialDefs.size(); i++)
-	//{
-	//	// set material name from text file?
-	//	Material* m = renderer->makeMaterial("material_" + std::to_string(i));
-	//	m->setShader(shaderPath + materialDefs[i][0] + shaderExtension, Material::ShaderType::VS);
-	//	m->setShader(shaderPath + materialDefs[i][1] + shaderExtension, Material::ShaderType::PS);
-
-	//	m->addDefine(materialDefs[i][2], Material::ShaderType::VS);
-	//	m->addDefine(materialDefs[i][2], Material::ShaderType::PS);
-
-	//	std::string err;
-	//	m->compileMaterial(err);
-
-	//	// add a constant buffer to the material, to tint every triangle using this material
-	//	m->addConstantBuffer(DIFFUSE_TINT_NAME, DIFFUSE_TINT);
-	//	// no need to update anymore
-	//	// when material is bound, this buffer should be also bound for access.
-
-	//	m->updateConstantBuffer(diffuse[i], 4 * sizeof(float), DIFFUSE_TINT);
-	//	
-	//	materials.push_back(m);
-	//}
-
-	//// one technique with wireframe
-	//RenderState* renderState1 = renderer->makeRenderState();
-	//renderState1->setWireFrame(true);
-
-	//// basic technique
-	//techniques.push_back(renderer->makeTechnique(materials[0], renderState1));
-	//techniques.push_back(renderer->makeTechnique(materials[1], renderer->makeRenderState()));
-	//techniques.push_back(renderer->makeTechnique(materials[2], renderer->makeRenderState()));
-	//techniques.push_back(renderer->makeTechnique(materials[3], renderer->makeRenderState()));
-
-	//// create texture
-	//Texture2D* fatboy = renderer->makeTexture2D();
-	//fatboy->loadFromFile("../assets/textures/fatboy.png");
-	//Sampler2D* sampler = renderer->makeSampler2D();
-	//sampler->setWrap(WRAPPING::REPEAT, WRAPPING::REPEAT);
-	//fatboy->sampler = sampler;
-
-	//textures.push_back(fatboy);
-	//samplers.push_back(sampler);
-
-	//// pre-allocate one single vertex buffer for ALL triangles
-	//pos = renderer->makeVertexBuffer(TOTAL_TRIS * sizeof(triPos), VertexBuffer::DATA_USAGE::STATIC);
-	//nor = renderer->makeVertexBuffer(TOTAL_TRIS * sizeof(triNor), VertexBuffer::DATA_USAGE::STATIC);
-	//uvs = renderer->makeVertexBuffer(TOTAL_TRIS * sizeof(triUV), VertexBuffer::DATA_USAGE::STATIC);
-
-	//// Create a mesh array with 3 basic vertex buffers.
-	//for (int i = 0; i < TOTAL_TRIS; i++) {
-
-	//	Mesh* m = renderer->makeMesh();
-
-	//	constexpr auto numberOfPosElements = std::extent<decltype(triPos)>::value;
-	//	size_t offset = i * sizeof(triPos);
-	//	pos->setData(triPos, sizeof(triPos), offset);
-	//	m->addIAVertexBufferBinding(pos, offset, numberOfPosElements, sizeof(float4), POSITION);
-
-	//	constexpr auto numberOfNorElements = std::extent<decltype(triNor)>::value;
-	//	offset = i * sizeof(triNor);
-	//	nor->setData(triNor, sizeof(triNor), offset);
-	//	m->addIAVertexBufferBinding(nor, offset, numberOfNorElements, sizeof(float4), NORMAL);
-
-	//	constexpr auto numberOfUVElements = std::extent<decltype(triUV)>::value;
-	//	offset = i * sizeof(triUV);
-	//	uvs->setData(triUV, sizeof(triUV), offset);
-	//	m->addIAVertexBufferBinding(uvs, offset, numberOfUVElements , sizeof(float2), TEXTCOORD);
-
-	//	// we can create a constant buffer outside the material, for example as part of the Mesh.
-	//	m->txBuffer = renderer->makeConstantBuffer(std::string(TRANSLATION_NAME), TRANSLATION);
-	//	
-	//	m->technique = techniques[ i % 4];
-	//	if (i % 4 == 2)
-	//		m->addTexture(textures[0], DIFFUSE_SLOT);
-
-	//	scene.push_back(m);
-	//}
 	return 0;
 }
 
@@ -369,9 +325,9 @@ void shutdown() {
 	//{
 	//	delete t;
 	//}
+	delete meshReader;
 	renderer->shutdown();
 };
-
 void fillCell(int x, int y, int amount)
 {
 	srand(time(NULL));
@@ -383,50 +339,39 @@ void fillCell(int x, int y, int amount)
 		float pos[3] = { x * cellWidth + randNumb, 1, y * cellWidth + randNumb };
 		float scale[3] = { 1, 1, 1 };
 		float rot[3] = { 0, 0, 0 };
-		Object* object = new Object(pos, scale, rot);
+		Object* object = new Object(pos, scale, rot, "Models/NewLowPolyTree.fbx","Models/PolyTreeTexture.png");
 		grid->addMesh(x, y, object);
 	}
-	//float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
-	//int triInd[3] = { 0, 1, 2 };
-	//float2 triUV[3] = { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
-	//for (int i = 0; i < amount; i++)
-	//{
-	//	// triangle geometry:
-	//	float4 triPos[3] = { { x * cellWidth,  0.05, y * cellHeight, 1.0f },{ x * cellWidth + 0.05, -0.05, y * cellHeight, 1.0f },{ x * cellWidth - 0.05, -0.05, y * cellHeight, 1.0f } };
 
-	//	std::shared_ptr<VertexBuffer> trianglePos = renderer->makeVertexBuffer(sizeof(triPos), VertexBuffer::DATA_USAGE::DONTCARE);
-	//	std::shared_ptr<VertexBuffer> triangleNor = renderer->makeVertexBuffer(sizeof(triNor), VertexBuffer::DATA_USAGE::DONTCARE);
-	//	std::shared_ptr<VertexBuffer> triangleUvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
-	//	std::shared_ptr<VertexBuffer> triangleInd = renderer->makeVertexBuffer(sizeof(triInd), VertexBuffer::DATA_USAGE::DONTCARE);
-
-	//	//Create mesh
-	//	std::shared_ptr<Mesh> mesh = renderer->makeMesh();
-	//	trianglePos->setData(triPos, sizeof(triPos), 0);
-	//	mesh->addIAVertexBufferBinding(trianglePos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
-
-	//	triangleNor->setData(triNor, sizeof(triNor), 0);
-	//	mesh->addIAVertexBufferBinding(triangleNor, 0, ARRAYSIZE(triNor), sizeof(float4), NORM);
-
-	//	triangleUvs->setData(triUV, sizeof(triUV), 0);
-	//	mesh->addIAVertexBufferBinding(triangleUvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
-
-	//	triangleInd->setData(triInd, sizeof(triInd), 0);
-	//	mesh->addIAVertexBufferBinding(triangleInd, 0, ARRAYSIZE(triInd), sizeof(float), INDEXBUFF);
-
-	//	mesh->technique = triangleT;
-
-	//	scene.push_back(mesh);
-	//}
 }
 
+
+void createThread(HANDLE &threadHandle, std::vector<Object*> &objectList, std::vector<std::shared_ptr<Mesh>>* meshes, int threadKey, int cellX, int cellY)
+{ 
+	threadData[threadKey] =  threadinfo();
+	threadData[threadKey].cellX = cellX;
+	threadData[threadKey].cellY = cellY;
+	threadData[threadKey].size = objectList.size();
+	threadData[threadKey].data = objectList.data();
+	threadData[threadKey].key = threadKey;
+	threadData[threadKey].meshes = meshes;
+	threadData[threadKey].reader = meshReader;
+	threadData[threadKey].renderer = renderer;
+	threadData[threadKey].technique = &triangleT;
+
+
+	threadHandle = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &threadData[threadKey], 0, 0);
+	//WaitForSingleObject(threadHandle, INFINITE);
+	//CloseHandle(threadHandle);
+	return;
+}
 void fillGrid()
 {
 	for (int x = 0; x < 10; x++)
 	{
 		for (int y = 0; y < 10; y++)
 		{
-			for (int triangles = 0; triangles < 2; triangles++)
-				fillCell(x, y, triangles);
+			fillCell(x, y, 2);
 		}
 		cout << x << endl;
 	}
@@ -453,21 +398,297 @@ void createGlobalData()
 	techniques.push_back(triangleT);
 }
 
+
+
+void addActiveCells()
+{
+	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
+	int xCell = camPos.x / cellWidth;
+	int yCell = camPos.y / cellHeight;
+	int xCellold = oldCamPos.x / cellWidth;
+	int yCellold = oldCamPos.y / cellHeight;
+	if (activeCells.size() == 0)
+	{
+
+
+		for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(xCell + LOADINGTHRESHOLD,WWidth); x++)
+		{
+			vector<int2> Xlayer;
+			activeCells2.push_back(Xlayer);
+			for (int y = max(yCell - LOADINGTHRESHOLD,0); y < min(yCell + LOADINGTHRESHOLD, HHeight); y++)
+			{
+				(*grid)[x][y]->status = PENDING_LOAD;
+				activeCells.push_back(int2(x, y));
+				activeCells2[x].push_back(int2(x,y));
+			}
+		}
+		
+	}
+	else
+	{
+		if (xCell > xCellold)
+		{
+			//r�rtsig�th�ger
+			vector<int2> Xlayer;
+			activeCells2.push_back(Xlayer); //add a new xlayer to the right
+			for (int y = max(0,yCell - LOADINGTHRESHOLD); y < min(HHeight,yCell + LOADINGTHRESHOLD); y++)
+			{
+				(*grid)[min(WWidth,xCell + LOADINGTHRESHOLD)][y]->status = PENDING_LOAD;
+				activeCells.push_back(int2(min(HHeight, xCell + LOADINGTHRESHOLD), y));
+				activeCells2[min(HHeight, xCell + LOADINGTHRESHOLD-1)].push_back(int2(min(HHeight, xCell + LOADINGTHRESHOLD - 1), y));
+			}
+		}
+		else if(xCell < xCellold)
+		{
+			vector<int2> Xlayer;
+			activeCells2.insert(activeCells2.begin()+ max(0, xCell - LOADINGTHRESHOLD - 1), Xlayer);
+			for (int y = max(0, yCell - LOADINGTHRESHOLD); y < min(HHeight, yCell + LOADINGTHRESHOLD); y++)
+			{
+				(*grid)[max(0,xCell - LOADINGTHRESHOLD)][y]->status = PENDING_LOAD;
+				activeCells.push_back(int2(max(0, xCell - LOADINGTHRESHOLD), y));
+			//	activeCells2.
+				activeCells2[max(0, xCell - LOADINGTHRESHOLD - 1)].push_back(int2(max(0, xCell - LOADINGTHRESHOLD), y));
+			}
+			//r�rtsig�tv�nster
+		}
+		if (yCell > yCellold)
+		{
+
+			for (int x = min(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
+			{
+				(*grid)[x][min(WWidth,yCell +LOADINGTHRESHOLD)]->status = PENDING_LOAD;
+				activeCells.push_back(int2(x, min(WWidth, yCell + LOADINGTHRESHOLD)));
+				activeCells2[x].push_back(int2(x, min(WWidth, yCell + LOADINGTHRESHOLD)));
+			}
+			//r�rtsiginn�t
+		}
+		else if(yCell < yCellold)
+		{
+			for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
+			{
+				(*grid)[x][max(0,yCell - LOADINGTHRESHOLD)]->status = PENDING_LOAD;
+				activeCells.push_back(int2(x, max(0, yCell - LOADINGTHRESHOLD)));
+				activeCells2[x].insert(activeCells2[x].begin()+ max(0, yCell - LOADINGTHRESHOLD - 1),int2(x, max(0, yCell - LOADINGTHRESHOLD)));
+			}
+
+			//r�rtsigut�t
+		}
+	}
+
+
+}
+
+void removeNonActiveCells()
+{
+	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
+	int xCell = camPos.x / cellWidth;
+	int yCell = camPos.y / cellHeight;
+	int xCellold = oldCamPos.x / cellWidth;
+	int yCellold = oldCamPos.y / cellHeight;
+	if (xCell > xCellold)
+	{
+		//r�rtsig�th�ger tar bort det som �r till v�nster i y led
+		activeCells2.erase(activeCells2.begin());
+		for (int i = 0; i < LOADINGTHRESHOLD*2+1; i++)
+		{
+			(*grid)[max(0, xCell - LOADINGTHRESHOLD)][i]->status = NOT_LOADED;
+		}
+	}
+	else if (xCell < xCellold)
+	{
+		//r�rtsig�tv�nster tar bort   det till h�ger.
+		activeCells2.erase(activeCells2.begin()+xCell+LOADINGTHRESHOLD - 1);
+		for (int i = 0; i < LOADINGTHRESHOLD * 2 + 1; i++)
+		{
+			(*grid)[max(0, xCell - LOADINGTHRESHOLD)][i]->status = NOT_LOADED;
+		}
+	}
+	if (yCell > yCellold)
+	{
+		//r�rtsiginn�t ta bort under
+	
+	//	for(int x = )
+		
+	}
+	else if (yCell < yCellold)
+	{
+		for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
+		{
+			(*grid)[x][max(0, yCell - LOADINGTHRESHOLD)]->status = NOT_LOADED;
+			activeCells2[x].insert(activeCells2[x].begin() + max(0, yCell - LOADINGTHRESHOLD - 1), int2(x, max(0, yCell - LOADINGTHRESHOLD)));
+		}
+
+		//r�rtsigut�t
+	}
+
+}
+void updateGridList()
+{
+	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
+	int xStartDist = min(max(0, int(((int)camPos.x - LOADINGTHRESHOLD) / (float)cellWidth)), WWidth);
+	int yStartDist = min(max(0, int(((int)camPos.y - LOADINGTHRESHOLD) / (float)cellHeight)), HHeight);
+	int xEndDist = min(max(0, int(((int)camPos.x + LOADINGTHRESHOLD) / (float)cellWidth)), WWidth);
+	int yEndDist = min(max(0, int(((int)camPos.y + LOADINGTHRESHOLD) / (float)cellHeight)), HHeight);
+
+
+
+	//Check if cells needs to be loaded
+	for (int x = xStartDist; x <= xEndDist; x++)
+	{
+		for (int y = yStartDist; y <= yEndDist; y++)
+		{
+			if ((*grid)[x][y]->status == NOT_LOADED)
+			{
+				(*grid)[x][y]->status = PENDING_LOAD;
+				activeCells.push_back(int2(x, y));
+			}
+		}
+	}
+
+	//addActiveCells();
+
+	//Remove
+	for (int i = 0; i < activeCells.size(); i++)
+	{
+		int x = activeCells[i].x;
+		int y = activeCells[i].y;
+		if (x < xStartDist || x > xEndDist || y < yStartDist || y > yEndDist)
+		{
+			if ((*grid)[x][y]->status == PENDING_LOAD)
+			{
+				(*grid)[x][y]->status = NOT_LOADED;
+				activeCells.erase(activeCells.begin() + i);
+			}
+			// The code seems to be working, but since we still need to remove the meshes from the scene vector the following code is outcommented
+			if ((*grid)[x][y]->status == LOADED)
+			{
+				(*grid)[x][y]->status = NOT_LOADED;
+				//objectsToRender[y * WWidth + x]->isReady = false;
+				objectsToRender.erase(y * WWidth + x);
+				/*for (int j = 0; j < objectsToRender.size(); j++)
+				{
+					if (objectsToRender[j]->cell == int2(x, y))
+					{
+						objectsToRender.erase(objectsToRender.begin() + j);
+						break;
+					}
+				}
+				*/
+			}
+		}
+	}
+}
+void LaunchThreads()
+{
+	for (int tID = 0; tID < NUMBER_OF_LOADING_THREADS; tID++)
+	{
+		if (idleThreads[tID])
+		{
+			int cellIndex = -1;
+
+			// Find a cell that a thread should start to load
+			for (int j = 0; j < activeCells.size(); j++)
+			{
+				if ((*grid)[activeCells[j].x][activeCells[j].y]->status == PENDING_LOAD)
+				{
+					(*grid)[activeCells[j].x][activeCells[j].y]->status = LOADING;
+					cellIndex = j;
+					break;
+				}
+			}
+			if (cellIndex == -1) // return if no grid cells needs to be loaded
+				return;
+
+			cellRender* cell = new cellRender();
+			cell->objects = new std::vector<std::shared_ptr<Mesh>>();
+			cell->thread = tID;
+			objectsToRender[activeCells[cellIndex].y * WWidth + activeCells[cellIndex].x] = cell;
+
+			createThread(threads[tID], (*grid)[activeCells[cellIndex].x][activeCells[cellIndex].y]->objectList, cell->objects, tID, activeCells[cellIndex].x, activeCells[cellIndex].y);
+			idleThreads[tID] = false;
+		}
+	}
+}
+
+void CheckThreadLoading()
+{
+	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
+	{
+		// check if a thread is working, if it is, check if the thread has finished. Not sure if that check is working or not...
+		if (!(idleThreads[i]) && WAIT_OBJECT_0 == WaitForSingleObject(threads[i], 0))
+		{
+			int index = threadData[i].cellY * WWidth + threadData[i].cellX;
+			//// Since the thread has finished it has loaded all of the meshes in one grid cell, however, we need to find which cell the thread is responsible for
+			//for (int j = 0; j < objectsToRender.size(); j++)
+			//{
+			//	if (objectsToRender[j]->thread == i && objectsToRender[j]->isReady == false)
+			//		index = j;
+			//}
+
+			// mikaels funtion, set command list such that we can execute it and change resource state.
+			for (unsigned int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
+			{
+				renderer->setDirectList((*objectsToRender[index]->objects)[k].get(), MAIN_THREAD);
+			}
+			renderer->executeDirectCommandList(i);
+			renderer->signalDirect(FENCEDONE, i);
+
+			// might as well wait for it when we're testing.
+			renderer->waitForDirect(FENCEDONE, INFINITY, i);
+			renderer->resetDirectCommandList(i);
+	
+			// tell the renderer that the list is ready to draw
+			(*grid)[threadData[i].cellX][threadData[i].cellY]->status = LOADED;
+			objectsToRender[index]->isReady = true;
+			idleThreads[i] = true;
+		}
+	}
+}
+
+void threadDataCollecting(bool* work)
+{
+	ofstream file;
+	int i = 0;
+	file.open("data.txt", ios_base::app);
+	while (work[0])
+	{
+		file << activeCells.size() << endl;
+		file.flush();
+		this_thread::sleep_for(chrono::seconds(1));
+	}
+	file.close();
+	return;
+}
 #undef main
 int main(int argc, char *argv[])
 {
+	oldCamPos.x = 0;
+	oldCamPos.y = 0;
 	renderer = static_cast<DirectX12Renderer*>(Renderer::makeRenderer(Renderer::BACKEND::DX12));
-	renderer->initialize(800,600);
+	renderer->initialize(800, 600);
 	renderer->setWinTitle("DirectX12 - Dynamic scene loader test");
 	renderer->setClearColor(0.0, 0.1, 0.1, 1.0);
-
+	meshReader = new MeshReader(renderer);
 	createGlobalData();
 	grid = new Grid();
-	grid->createGrid(100, 100);
+	grid->createGrid(WWidth, HHeight);
 	fillGrid();
 
+	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
+		idleThreads[i] = true;
+
+	bool work[1];
+	work[0] = true;
+
+	dataCollector = thread(threadDataCollecting, work);
+	//D3D12Timer timer(renderer->getDevice().Get());
+	
+	//(*grid)[0].size();
+	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
 	//initialiseTestbench();
 	run();
 	shutdown();
+	work[0] = false;
+	dataCollector.join();
 	return 0;
 };

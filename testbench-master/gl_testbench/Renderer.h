@@ -56,6 +56,6 @@ public:
 	virtual void submit(Mesh* mesh) = 0;
 	virtual void frame() = 0;
 	
-	virtual void updateCamera() = 0;
+	
 	BACKEND IMPL;
 };
