@@ -266,8 +266,9 @@ void DirectX12Renderer::present(int ThreadID)
 		isCompleted = waitForGPU(Thread[ThreadID].fenceDirect, fenceValue, 0);
 	fenceValue = (fenceValue + 1) % 2;
 //Prep for next iteration
-	Thread[ThreadID].directCommandAllocator->Reset();
-	Thread[ThreadID].directCommandList->Reset(Thread[ThreadID].directCommandAllocator.Get(), nullptr);
+	resetDirectCommandList(ThreadID);
+	//Thread[ThreadID].directCommandAllocator->Reset();
+	//Thread[ThreadID].directCommandList->Reset(Thread[ThreadID].directCommandAllocator.Get(), nullptr);
 	currBackBuffer = (currBackBuffer + 1) % SWAP_BUFFER_COUNT;
 }
 int DirectX12Renderer::shutdown()
@@ -709,10 +710,12 @@ void DirectX12Renderer::executeDirectCommandList(int threadID)
 }
 void DirectX12Renderer::resetCopyCommandList(int threadID)
 {
+	Thread[threadID].directCommandAllocator->Reset();
 	Thread[threadID].copyCommandList->Reset(Thread[threadID].copyCommandAllocator.Get(), nullptr);
 }
 void DirectX12Renderer::resetDirectCommandList(int threadID)
 { 
+	Thread[threadID].directCommandAllocator->Reset();
 	Thread[threadID].directCommandList->Reset(Thread[threadID].directCommandAllocator.Get(), nullptr);
 }
 void DirectX12Renderer::executeCommandList(ID3D12CommandQueue* cmdQueue, int ThreadID)

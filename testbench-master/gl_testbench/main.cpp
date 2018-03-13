@@ -629,6 +629,7 @@ void CheckThreadLoading()
 
 			// might as well wait for it when we're testing.
 			renderer->waitForDirect(FENCEDONE, INFINITY, i);
+			renderer->resetDirectCommandList(i);
 			for (int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
 			{
 				scene.push_back((*objectsToRender[index]->objects)[k]);
