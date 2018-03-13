@@ -8,7 +8,7 @@
 #define THREAD_ID 0
 #define WWidth 100
 #define HHeight 100
-#define LOADINGTHRESHOLD 3
+#define LOADINGTHRESHOLD 4000
 
 //Fence Defines
 #define FENCEDONE 1

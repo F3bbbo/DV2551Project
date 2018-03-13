@@ -649,11 +649,27 @@ void threadDataCollecting(bool* work)
 {
 	ofstream file;
 	int i = 0;
+	int totalvalue = 0;
+	int sizeOfActiveCells = 0;
 	file.open("data.txt", ios_base::app);
 	while (work[0])
 	{
-		file << activeCells.size() << endl;
+		totalvalue = 0;
+		sizeOfActiveCells = 0;
+		for(int m = 0;m<activeCells.size();m++)
+		{
+		sizeOfActiveCells += (*grid)[activeCells[m].x][activeCells[m].y]->objectList.size();
+		}
+		file << sizeOfActiveCells; //amount of objects in the scene
 		file.flush();
+		
+		for (auto readyToRender : objectsToRender)
+		{
+			if (readyToRender.second->isReady == true)
+				totalvalue += readyToRender.second->objects->size();
+		}
+			file <<"	"<<totalvalue << endl;
+		
 		this_thread::sleep_for(chrono::seconds(1));
 	}
 	file.close();

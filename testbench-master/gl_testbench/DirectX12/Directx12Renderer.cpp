@@ -666,34 +666,39 @@ void DirectX12Renderer::updateCamera(float delta)
 		camera->moveCamera(camera->getRight(), run, delta);
 
 //	camera->getposition();
-	//
-	//	Vector3 lengthofvector =	camera->getPosition() - Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z);
-	//	float lengthDist = lengthofvector.Length();
-	////	std::cout << lengthDist <<"  "<< delta<<std::endl;
-	//	if (delta > 2)
-	//	delta = 2;
-	//	float movespeed =0.001;
-	//	bool reached = movespeed > lengthDist;
-	//	Vector3 move = (Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z) - camera->getPosition());
-	//	if(lengthDist>0.1)
-	//	camera->moveCamera(camera->getPosition() + (move*movespeed* delta));
-	//	else
-	//	{
-	//		m++;
-	//		if (m > walkingpath.size()-1)
-	//		{
-	//			m = 0;
-	//		}
-	//	}
+	
+		Vector3 lengthofvector =	camera->getPosition() - Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z);
+		float lengthDist = lengthofvector.Length();
+	//	std::cout << lengthDist <<"  "<< delta<<std::endl;
+		if (delta > 2)
+		delta = 2;
+		float movespeed = 10;
+		bool reached = movespeed > lengthDist;
+		Vector3 move = (Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z) - camera->getPosition());
+		move.Normalize();
+		if(lengthDist>12)
+		camera->moveCamera(camera->getPosition() + (move*movespeed* delta));
+		else
+		{
+			m++;
+			if (m > walkingpath.size()-1)
+			{
+				m = 0;
+			}
+		}
 
 	camera->update();
 }
 void DirectX12Renderer::createwalkingpath()
 {
-	walkingpath.push_back({ 400, 0,-400 });
-	walkingpath.push_back({200, 0,-400 });
-	walkingpath.push_back({ -200, 0, -400 });
-	walkingpath.push_back({ 0, 0, -400 });
+	walkingpath.push_back({ 500, 500,-3000 });
+	walkingpath.push_back({1500, 500,-3000 });
+	walkingpath.push_back({2500, 500, -3000 });
+	walkingpath.push_back({3500, 500, -3000 });
+	walkingpath.push_back({ 4500, 500, -3000 });
+	walkingpath.push_back({ 5500, 500, -3000 });
+	walkingpath.push_back({ 6500, 500, -3000 });
+	walkingpath.push_back({ 7500, 500, -3000 });
 }
 void DirectX12Renderer::executeCopyCommandList(int ThreadID)
 {
