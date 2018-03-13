@@ -636,10 +636,7 @@ void CheckThreadLoading()
 			// might as well wait for it when we're testing.
 			renderer->waitForDirect(FENCEDONE, INFINITY, i);
 			renderer->resetDirectCommandList(i);
-			{
-				scene.push_back((*objectsToRender[index]->objects)[k]);
-			}*/
-			
+	
 			// tell the renderer that the list is ready to draw
 			(*grid)[threadData[i].cellX][threadData[i].cellY]->status = LOADED;
 			objectsToRender[index]->isReady = true;
