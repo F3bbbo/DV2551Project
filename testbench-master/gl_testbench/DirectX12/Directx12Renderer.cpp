@@ -263,7 +263,13 @@ void DirectX12Renderer::present(int ThreadID)
 	//signalGPU(Thread[ThreadID].fenceDirect, fenceValue);
 	bool isCompleted = false;
 	while (!isCompleted)
+	{
+		if(isCompleted != true)
+		{
+		std::cout << "false" << std::endl;
 		isCompleted = waitForGPU(Thread[ThreadID].fenceDirect, fenceValue, 0);
+		}
+	}
 	fenceValue = (fenceValue + 1) % 2;
 //Prep for next iteration
 	resetDirectCommandList(ThreadID);
@@ -691,14 +697,24 @@ void DirectX12Renderer::updateCamera(float delta)
 }
 void DirectX12Renderer::createwalkingpath()
 {
-	walkingpath.push_back({ 500, 500,-3000 });
-	walkingpath.push_back({1500, 500,-3000 });
-	walkingpath.push_back({2500, 500, -3000 });
-	walkingpath.push_back({3500, 500, -3000 });
-	walkingpath.push_back({ 4500, 500, -3000 });
-	walkingpath.push_back({ 5500, 500, -3000 });
-	walkingpath.push_back({ 6500, 500, -3000 });
-	walkingpath.push_back({ 7500, 500, -3000 });
+	walkingpath.push_back({ 500, 500,-1000 });
+	walkingpath.push_back({1500, 500,-1000 });
+	walkingpath.push_back({2500, 500, -1000 });
+	walkingpath.push_back({3500, 500, -1000 });
+	walkingpath.push_back({ 4500, 500, -1000 });
+	walkingpath.push_back({ 5500, 500, -1000 });
+	walkingpath.push_back({ 6500, 500, -1000 });
+	walkingpath.push_back({ 7500, 500, -1000 });
+
+
+	walkingpath.push_back({ 2500, 500, 3000 });
+	walkingpath.push_back({ 3500, 500, 3000 });
+	walkingpath.push_back({ 4500, 500, 3000 });
+	walkingpath.push_back({ 5500, 500, 3000 });
+	walkingpath.push_back({ 6500, 500, 3000 });
+	walkingpath.push_back({ 7500, 500, 3000 });
+
+
 }
 void DirectX12Renderer::executeCopyCommandList(int ThreadID)
 {
