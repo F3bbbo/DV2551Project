@@ -394,7 +394,25 @@ void createGlobalData()
 	techniques.push_back(triangleT);
 }
 
+void printactivecells(int xCell, int yCell, int xCellold, int yCellold)
+{
+	if (GetAsyncKeyState(0x42)) //B
+	{
+		for (int i = 0; i < activeCells2.size(); i++)
+		{
+			for (int j = 0; j<activeCells2[i].size(); j++)
+			{
+				cout << "[]";
+			}
+			cout << "" << endl;
+		}
 
+		cout << "" << endl;
+		cout << "" << endl;
+		cout << activeCells2.size() << " " << activeCells2[0].size() << " " << xCellold << " " << xCell << " " << yCellold << " " << yCell << endl;
+	}
+
+}
 
 void addActiveCells()
 {
@@ -403,74 +421,124 @@ void addActiveCells()
 	int yCell = camPos.y / cellHeight;
 	int xCellold = oldCamPos.x / cellWidth;
 	int yCellold = oldCamPos.y / cellHeight;
+	int xZero = 0;
+	int yZero = 0;
 	if (activeCells.size() == 0)
 	{
 
-
-		for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(xCell + LOADINGTHRESHOLD,WWidth); x++)
+		int xxZero = 0;
+		for (int x = xCell - LOADINGTHRESHOLD; x < xCell + LOADINGTHRESHOLD; x++)
 		{
+			
 			vector<int2> Xlayer;
 			activeCells2.push_back(Xlayer);
-			for (int y = max(yCell - LOADINGTHRESHOLD,0); y < min(yCell + LOADINGTHRESHOLD, HHeight); y++)
+			for (int y = yCell - LOADINGTHRESHOLD; y < yCell + LOADINGTHRESHOLD; y++)
 			{
-				(*grid)[x][y]->status = PENDING_LOAD;
+				xZero = x;
+				yZero = y;
+				if (x > WWidth)
+					xZero = WWidth;
+				if (x < 0)
+					xZero = 0;
+
+				if (y > HHeight)
+					yZero = HHeight;
+				if (y < 0)
+					yZero = 0;
+
+				(*grid)[xZero][yZero]->status = PENDING_LOAD;
+				if (x >= 0 && y>=0)
 				activeCells.push_back(int2(x, y));
-				activeCells2[x].push_back(int2(x,y));
+				
+				activeCells2[xxZero].push_back(int2(max(-1,x),max(-1,y)));
+				yZero++;
+	
 			}
+			xxZero++;
+			xZero++;
 		}
 		
 	}
 	else
 	{
+		xZero = 0;
+		yZero = 0;
 		if (xCell > xCellold)
 		{
 			//rörtsigåthöger
 			vector<int2> Xlayer;
 			activeCells2.push_back(Xlayer); //add a new xlayer to the right
-			for (int y = max(0,yCell - LOADINGTHRESHOLD); y < min(HHeight,yCell + LOADINGTHRESHOLD); y++)
+			for (int y = yCell - LOADINGTHRESHOLD; y < min(HHeight,yCell + LOADINGTHRESHOLD); y++)
 			{
-				(*grid)[min(WWidth,xCell + LOADINGTHRESHOLD)][y]->status = PENDING_LOAD;
-				activeCells.push_back(int2(min(HHeight, xCell + LOADINGTHRESHOLD), y));
-				activeCells2[min(HHeight, xCell + LOADINGTHRESHOLD-1)].push_back(int2(min(HHeight, xCell + LOADINGTHRESHOLD - 1), y));
+				if (y > -1)
+				{
+					(*grid)[min(WWidth, xCell + LOADINGTHRESHOLD)][y]->status = PENDING_LOAD;
+					activeCells.push_back(int2(min(HHeight, xCell + LOADINGTHRESHOLD), y));
+				}
+				if(y>-1)
+					activeCells2[activeCells2.size() - 1].push_back(int2(min(HHeight, xCell + LOADINGTHRESHOLD - 1), y));
+				else
+					activeCells2[activeCells2.size() - 1].push_back(int2(-1,-1));
 			}
 		}
 		else if(xCell < xCellold)
 		{
 			vector<int2> Xlayer;
-			activeCells2.insert(activeCells2.begin()+ max(0, xCell - LOADINGTHRESHOLD - 1), Xlayer);
-			for (int y = max(0, yCell - LOADINGTHRESHOLD); y < min(HHeight, yCell + LOADINGTHRESHOLD); y++)
+			activeCells2.insert(activeCells2.begin(), Xlayer);
+			for (int y =  yCell - LOADINGTHRESHOLD; y < min(HHeight, yCell + LOADINGTHRESHOLD); y++)
 			{
+				if(y>-1)
+				{
 				(*grid)[max(0,xCell - LOADINGTHRESHOLD)][y]->status = PENDING_LOAD;
 				activeCells.push_back(int2(max(0, xCell - LOADINGTHRESHOLD), y));
-			//	activeCells2.
-				activeCells2[max(0, xCell - LOADINGTHRESHOLD - 1)].push_back(int2(max(0, xCell - LOADINGTHRESHOLD), y));
+				}
+				//	activeCells2
+				if(y>-1)
+				activeCells2[0].push_back(int2(max(0, xCell - LOADINGTHRESHOLD), y));
+				else
+					activeCells2[0].push_back(int2(-1,-1));
 			}
 			//rörtsigåtvänster
 		}
 		if (yCell > yCellold)
 		{
-
-			for (int x = min(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
+			xZero = 0;
+			for (int x = xCell - LOADINGTHRESHOLD; x <  xCell + LOADINGTHRESHOLD; x++)
 			{
-				(*grid)[x][min(WWidth,yCell +LOADINGTHRESHOLD)]->status = PENDING_LOAD;
-				activeCells.push_back(int2(x, min(WWidth, yCell + LOADINGTHRESHOLD)));
-				activeCells2[x].push_back(int2(x, min(WWidth, yCell + LOADINGTHRESHOLD)));
+				if(x>-1)
+				{
+					(*grid)[x][min(WWidth,yCell +LOADINGTHRESHOLD)]->status = PENDING_LOAD;
+					activeCells.push_back(int2(x, min(WWidth, yCell + LOADINGTHRESHOLD)));
+				}
+				if (x > -1)
+					activeCells2[xZero].push_back(int2(x, min(WWidth, yCell + LOADINGTHRESHOLD)));
+				else
+					activeCells2[xZero].push_back(int2(-1, -1));
+				xZero++;
 			}
 			//rörtsiginnåt
 		}
 		else if(yCell < yCellold)
 		{
-			for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
+			xZero = 0;
+			for (int x =  xCell - LOADINGTHRESHOLD; x < xCell + LOADINGTHRESHOLD; x++)
 			{
+				if(x>-1)
+				{
 				(*grid)[x][max(0,yCell - LOADINGTHRESHOLD)]->status = PENDING_LOAD;
 				activeCells.push_back(int2(x, max(0, yCell - LOADINGTHRESHOLD)));
-				activeCells2[x].insert(activeCells2[x].begin()+ max(0, yCell - LOADINGTHRESHOLD - 1),int2(x, max(0, yCell - LOADINGTHRESHOLD)));
+				}
+				if(x>-1)
+				activeCells2[xZero].insert(activeCells2[x].begin()+ max(0, yCell - LOADINGTHRESHOLD - 1),int2(x, max(0, yCell - LOADINGTHRESHOLD)));
+				
+				activeCells2[xZero].insert(activeCells2[x].begin() +  yCell - LOADINGTHRESHOLD - 1, int2(-1,-1));
+				xZero++;
 			}
 
 			//rörtsigutåt
 		}
 	}
-
+	printactivecells(xCell, yCell, xCellold, yCellold);
 
 }
 
@@ -481,42 +549,53 @@ void removeNonActiveCells()
 	int yCell = camPos.y / cellHeight;
 	int xCellold = oldCamPos.x / cellWidth;
 	int yCellold = oldCamPos.y / cellHeight;
+	int xZero = 0;
+	int yZero = 0;
+	xZero = 0;
+	yZero = 0;
 	if (xCell > xCellold)
 	{
-		//rörtsigåthöger tar bort det som är till vänster i y led
+		//rörtsigåthöger tarbort åt vänster
 		activeCells2.erase(activeCells2.begin());
-		for (int i = 0; i < LOADINGTHRESHOLD*2+1; i++)
+		for (int y = max(0, yCell - LOADINGTHRESHOLD); y < min(HHeight, yCell + LOADINGTHRESHOLD); y++)
 		{
-			(*grid)[max(0, xCell - LOADINGTHRESHOLD)][i]->status = NOT_LOADED;
+			(*grid)[min(WWidth, xCell + LOADINGTHRESHOLD)][y]->status = NOT_LOADED;
 		}
 	}
 	else if (xCell < xCellold)
 	{
-		//rörtsigåtvänster tar bort   det till höger.
-		activeCells2.erase(activeCells2.begin()+xCell+LOADINGTHRESHOLD - 1);
-		for (int i = 0; i < LOADINGTHRESHOLD * 2 + 1; i++)
+		
+		activeCells2.erase(activeCells2.begin()+activeCells2.size()-1);
+		for (int y = max(0, yCell - LOADINGTHRESHOLD); y < min(HHeight, yCell + LOADINGTHRESHOLD); y++)
 		{
-			(*grid)[max(0, xCell - LOADINGTHRESHOLD)][i]->status = NOT_LOADED;
+			(*grid)[max(0, xCell - LOADINGTHRESHOLD)][y]->status = NOT_LOADED;
 		}
+		//rörtsigåtvänster
 	}
 	if (yCell > yCellold)
 	{
-		//rörtsiginnåt ta bort under
-	
-	//	for(int x = )
-		
+		xZero = 0;
+		yZero = 0;
+		for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
+		{
+			(*grid)[x][min(WWidth, yCell + LOADINGTHRESHOLD)]->status = NOT_LOADED;
+			activeCells2[xZero].erase(activeCells2[xZero].begin());
+			xZero++;
+		}
+		//rörtsiginnåt
 	}
 	else if (yCell < yCellold)
 	{
+		xZero = 0;
 		for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
 		{
 			(*grid)[x][max(0, yCell - LOADINGTHRESHOLD)]->status = NOT_LOADED;
-			activeCells2[x].insert(activeCells2[x].begin() + max(0, yCell - LOADINGTHRESHOLD - 1), int2(x, max(0, yCell - LOADINGTHRESHOLD)));
+			activeCells2[xZero].erase(activeCells2[xZero].begin() + activeCells2[xZero].size() - 1);
+			xZero++;
 		}
-
-		//rörtsigutåt
+			//rörtsigutåt
 	}
-
+	printactivecells(xCell, yCell, xCellold, yCellold);
 }
 void updateGridList()
 {
@@ -540,9 +619,10 @@ void updateGridList()
 			}
 		}
 	}
-
-	//addActiveCells();
-
+	
+//	addActiveCells();
+//	removeNonActiveCells();
+//	oldCamPos = camPos;
 	//Remove
 	for (int i = 0; i < activeCells.size(); i++)
 	{
