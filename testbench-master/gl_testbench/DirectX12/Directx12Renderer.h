@@ -85,7 +85,7 @@ public:
 	void submit(Mesh* mesh);
 	virtual void frame();
 	void frame(int ThreadID);
-	void signalDirect(int Value, int ThreadID);
+	void signalDirectDraw(int Value, int ThreadID);
 	bool waitForDirect(int Value, float waitTime);
 	bool waitForDirect(int Value, float waitTime, int ThreadID);
 	void signalCopy(int Value, int ThreadID);
@@ -96,7 +96,7 @@ public:
 	void updateCamera(float delta);
 	void createwalkingpath();
 	void executeCopyCommandList(int ThreadID);
-	void executeDirectCommandList(int threadID);
+	void executeDirectDrawCommandList(int threadID);
 	void resetCopyCommandList(int threadID);
 	void resetDirectCommandList(int threadID);
 
@@ -129,8 +129,9 @@ private:
 	//Device
 	Microsoft::WRL::ComPtr<ID3D12Device> device = nullptr;
 	//Command list/queue
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandDrawQueue = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueueCopy = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueueThreadDirect = nullptr;
 //	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
 //	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
 	void executeCommandList(ID3D12CommandQueue* cmdQueue);

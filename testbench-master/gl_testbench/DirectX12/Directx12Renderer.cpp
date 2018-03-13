@@ -259,7 +259,7 @@ void DirectX12Renderer::present(int ThreadID)
 {
 	swapChain->Present(0, 0);
 //	waitForGPU();
-	signalDirect(fenceValue, ThreadID);
+	signalDirectDraw(fenceValue, ThreadID);
 	//signalGPU(Thread[ThreadID].fenceDirect, fenceValue);
 	bool isCompleted = false;
 	while (!isCompleted)
@@ -277,7 +277,7 @@ int DirectX12Renderer::shutdown()
 int DirectX12Renderer::shutdown(int ThreadID)
 {
 //	waitForGPU();
-	signalGPU(commandQueue.Get(), Thread[ThreadID].fenceDirect, fenceValue);
+	signalGPU(commandDrawQueue.Get(), Thread[ThreadID].fenceDirect, fenceValue);
 	waitForGPU(Thread[ThreadID].fenceDirect, fenceValue, INFINITY);
 	return 0;
 }
@@ -404,12 +404,12 @@ void DirectX12Renderer::frame(int ThreadID)
 	//End of recording
 	Thread[ThreadID].directCommandList->Close();
 	//Execute commandList
-	executeCommandList(commandQueue.Get());
+	executeCommandList(commandDrawQueue.Get());
 }
 
-void DirectX12Renderer::signalDirect(int Value, int ThreadID)
+void DirectX12Renderer::signalDirectDraw(int Value, int ThreadID)
 {
-	signalGPU(commandQueue.Get(), Thread[ThreadID].fenceDirect, Value);
+	signalGPU(commandDrawQueue.Get(), Thread[ThreadID].fenceDirect, Value);
 }
 
 bool DirectX12Renderer::waitForDirect(int Value, float waitTime)
@@ -517,9 +517,12 @@ void DirectX12Renderer::createCommandObject()
 	queueDesc.NodeMask = NULL;
 	queueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
 
-	if (FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue))))
+	if (FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandDrawQueue))))
 		std::cout << "Failed to create command queue." << std::endl;
 	
+	if (FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueueThreadDirect))))
+		std::cout << "Failed to create direct command queue for threads." << std::endl;
+
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
 	if (FAILED(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueueCopy))))
 		std::cout << "Failed to create copy command queue." << std::endl;
@@ -552,7 +555,7 @@ void DirectX12Renderer::createSwapChain(HWND& wndHandle)
 
 	Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
 	CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory));
-	if (FAILED(mdxgiFactory->CreateSwapChain(commandQueue.Get(), &swapChainDesc, &swapChain)))
+	if (FAILED(mdxgiFactory->CreateSwapChain(commandDrawQueue.Get(), &swapChainDesc, &swapChain)))
 		std::cout << "Failed to create swap chain." << std::endl;
 }
 
@@ -701,11 +704,11 @@ void DirectX12Renderer::executeCopyCommandList(int ThreadID)
 	ID3D12CommandList* cmdList[] = { Thread[ThreadID].copyCommandList.Get() };
 	commandQueueCopy->ExecuteCommandLists(ARRAYSIZE(cmdList), cmdList);
 }
-void DirectX12Renderer::executeDirectCommandList(int threadID)
+void DirectX12Renderer::executeDirectDrawCommandList(int threadID)
 {
 	Thread[threadID].directCommandList->Close();
 	ID3D12CommandList* cmdList[] = { Thread[threadID].directCommandList.Get() };
-	commandQueue->ExecuteCommandLists(ARRAYSIZE(cmdList), cmdList);
+	commandDrawQueue->ExecuteCommandLists(ARRAYSIZE(cmdList), cmdList);
 }
 void DirectX12Renderer::resetCopyCommandList(int threadID)
 {
