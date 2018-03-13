@@ -500,7 +500,6 @@ int main(int argc, char *argv[])
 		changedState[i] = true;
 
 	run();
-	shutdown();
 	work[0] = false;
 	dataCollector.join();
 	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
@@ -509,5 +508,6 @@ int main(int argc, char *argv[])
 		ResumeThread(threads[i]);
 	}
 	WaitForMultipleObjects(NUMBER_OF_LOADING_THREADS, threads, true, INFINITE);
+	shutdown();
 	return 0;
 }
