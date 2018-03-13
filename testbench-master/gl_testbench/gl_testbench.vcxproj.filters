@@ -212,6 +212,9 @@
     <ClInclude Include="ThreadFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="D3D12Timer.hpp">
+      <Filter>Source Files\DirectX12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\assets\GL45\FragmentShader.glsl">

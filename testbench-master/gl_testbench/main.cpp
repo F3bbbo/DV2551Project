@@ -21,7 +21,8 @@
 
 //Thread include
 #include "ThreadFunctions.h"
-#include <future>
+#include <thread>
+#include <fstream>
 
 //testing includes
 #include <stdlib.h>     /* srand, rand */
@@ -101,6 +102,8 @@ vector<int2> activeCells;
 vector<vector<int2>> activeCells2;
 
 const int2 gridStart = { -5, -5 };
+
+thread dataCollector;
 
 void updateDelta()
 {
@@ -529,7 +532,7 @@ void updateGridList()
 	int yEndDist = min(max(0, int(((int)camPos.y + LOADINGTHRESHOLD) / (float)cellHeight)), HHeight);
 
 
-/*
+
 	//Check if cells needs to be loaded
 	for (int x = xStartDist; x <= xEndDist; x++)
 	{
@@ -542,8 +545,8 @@ void updateGridList()
 			}
 		}
 	}
-*/
-	addActiveCells();
+
+	//addActiveCells();
 
 	//Remove
 	for (int i = 0; i < activeCells.size(); i++)
@@ -643,6 +646,21 @@ void CheckThreadLoading()
 		}
 	}
 }
+
+void threadDataCollecting(bool* work)
+{
+	ofstream file;
+	int i = 0;
+	file.open("data.txt", ios_base::app);
+	while (work[0])
+	{
+		file << activeCells.size() << endl;
+		file.flush();
+		this_thread::sleep_for(chrono::seconds(1));
+	}
+	file.close();
+	return;
+}
 #undef main
 int main(int argc, char *argv[])
 {
@@ -661,11 +679,18 @@ int main(int argc, char *argv[])
 	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
 		idleThreads[i] = true;
 
+	bool work[1];
+	work[0] = true;
+
+	dataCollector = thread(threadDataCollecting, work);
+	//D3D12Timer timer(renderer->getDevice().Get());
 	
 	//(*grid)[0].size();
 	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
 	//initialiseTestbench();
 	run();
 	shutdown();
+	work[0] = false;
+	dataCollector.join();
 	return 0;
 };

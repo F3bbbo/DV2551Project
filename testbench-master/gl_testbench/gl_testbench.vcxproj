@@ -189,6 +189,7 @@
   <ItemGroup>
     <ClInclude Include="..\assets\DX5\IA.h" />
     <ClInclude Include="..\include\stb_image.h" />
+    <ClInclude Include="D3D12Timer.hpp" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="DirectX12\CameraDX12.h" />
