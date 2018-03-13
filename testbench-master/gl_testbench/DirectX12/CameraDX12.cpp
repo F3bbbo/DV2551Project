@@ -7,11 +7,14 @@ CameraDX12::CameraDX12(float width, float height, float rotationSpeed, float wal
 	speed = walkSpeed;
 	this->runSpeed = runSpeed;
 
+	rotatecounterPitch = 0;
 	position = Vector3(0.f, 0.f, -1.f);
 	rightVector = Vector3(1.f, 0.f, 0.f);
 	upVector = Vector3(0.f, 1.f, 0.f);
 	forwardVector = Vector3(0.f, 0.f, 1.f);
-
+	camPitch = 0;
+	camYaw = 0;
+	camRoll = 0;
 	viewMatrix = DirectX::XMMatrixLookAtLH(position, forwardVector + position, upVector);
 	projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(3.141592f * 0.5f, width / height, 0.1f, 10000.f);
 	VPMatrix = viewMatrix * projectionMatrix;
@@ -72,12 +75,51 @@ void CameraDX12::bind()
 
 void CameraDX12::update()
 {
-	viewMatrix = DirectX::XMMatrixLookAtLH(position, forwardVector + position, upVector);
+	
+	DirectX::SimpleMath::Vector3 test = DirectX::XMVector3Normalize(DirectX::XMVector3TransformCoord(forwardVector,DirectX::XMMatrixRotationRollPitchYaw(camPitch, camYaw, camRoll)));
+	DirectX::XMMATRIX rotation;
+	rotation = DirectX::XMMatrixRotationY(camYaw);
+//	rightVector =DirectX::XMVector3TransformCoord(rightVector,rotation);
+	upVector = DirectX::XMVector3TransformCoord(upVector, rotation);
+
+//	forwardVector = DirectX::XMVector3TransformCoord(forwardVector, rotation);
+	viewMatrix = DirectX::XMMatrixLookAtLH(position, test + position, upVector);
 	VPMatrix = viewMatrix * projectionMatrix;
 	VPMatrix = VPMatrix.Transpose();
 	
 	cBuffer->setData(&VPMatrix, sizeof(VPMatrix), nullptr, VPMATRIX_SLOT);
 //	cBuffer->bind();
+}
+
+bool CameraDX12::rotatecameracamYaw(int rotatedegree)
+{
+	if (rotatecounter == rotatedegree)
+	{
+		rotatecounter = 0;
+		return true;
+	}
+	else
+	{
+		camYaw = camYaw + 0.001;
+		rotatecounter = camYaw;
+		return false;
+	}
+}
+
+
+bool CameraDX12::rotatecameracamPitch(int rotatedegree)
+{
+	if (rotatecounterPitch == rotatedegree)
+	{
+		rotatecounterPitch = 0;
+		return true;
+	}
+	else
+	{
+		camPitch = camPitch + 0.001;
+		rotatecounterPitch = camPitch;
+		return false;
+	}
 }
 
 Matrix CameraDX12::getViewMatrix()

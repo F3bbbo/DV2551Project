@@ -14,11 +14,16 @@ private:
 	Vector3 forwardVector;
 	Vector3 upVector;
 	Vector3 rightVector;
-
+	int rotatecounter;
+	int	rotatecounterPitch;
 	Matrix viewMatrix;
 	Matrix projectionMatrix;
 	Matrix VPMatrix;
 	std::shared_ptr<ConstantBuffer> cBuffer;
+
+	float camPitch;
+	float camYaw;
+	float 	camRoll;
 public:
 	CameraDX12(float width, float height, float rotationSpeed, float walkSpeed, float runSpeed);
 	~CameraDX12();
@@ -35,6 +40,8 @@ public:
 	void setUp(Vector3& vector);
 	void bind();
 	void update();
+	bool rotatecameracamYaw(int rotatedegree);
+	bool rotatecameracamPitch(int rotatedegree);
 	Matrix getViewMatrix();
 	Matrix getProjectionMatrix();
 	Matrix getVPMatrix();

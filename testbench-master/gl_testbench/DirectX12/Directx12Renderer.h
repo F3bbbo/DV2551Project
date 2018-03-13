@@ -40,6 +40,12 @@ typedef union {
 	struct { float u, v,w; };
 } float3;
 
+typedef union {
+	struct { float x, y, z,pitch,yaw; };
+	struct { float u, v, w,pitch,yaw; };
+} float5;
+
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 class DirectX12Renderer : public Renderer
 {
@@ -101,8 +107,11 @@ public:
 	void resetDirectCommandList(int threadID);
 
 private:
+	bool rotatecheckpitch;
+	bool rotatecheckyaw;
+	bool movementdone;
 	int m;
-	std::vector<float3> walkingpath;
+	std::vector<float5> walkingpath;
 	//Window vars
 	MSG msg;
 	HWND wndHandle;			//1. Create Window
