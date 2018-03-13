@@ -39,10 +39,7 @@ Vector2 oldCamPos;
 using namespace std;
 DirectX12Renderer* renderer;
 Grid* grid;
-// flat scene at the application level...we don't care about this here.
-// do what ever you want in your renderer backend.
-// all these objects are loosely coupled, creation and destruction is responsibility
-// of the testbench, not of the container objects
+
 struct int2
 {
 	int2(int x, int y) { this->x = x; this->y = y; };
@@ -66,12 +63,8 @@ struct cellRender
 
 map<int, cellRender*> objectsToRender;
 
-
-vector<std::shared_ptr<Mesh>> scene;
 vector<std::shared_ptr<Material>> materials;
 vector<std::shared_ptr<Technique>> techniques;
-vector<std::shared_ptr<Texture2D>> textures;
-vector<std::shared_ptr<Sampler2D>> samplers;
 
 MeshReader *meshReader = nullptr;
 
@@ -95,7 +88,7 @@ std::shared_ptr<Technique> triangleT;
 
 void LaunchThreads();
 void CheckThreadLoading();
-bool idleThreads[NUMBER_OF_LOADING_THREADS];
+bool changedState[NUMBER_OF_LOADING_THREADS];
 HANDLE threads[NUMBER_OF_LOADING_THREADS];
 vector<int2> activeCells;
 vector<vector<int2>> activeCells2;
@@ -236,64 +229,6 @@ void renderScene()
 	renderer->setWinTitle(gTitleBuff);
 }
 
-int initialiseTestbench()
-{
-	//MeshReader TEST
-	MeshReader mr(renderer);
-	mr.LoadFromFile("Models/NewLowPolyTree.fbx","Models/PolyTreeTexture.png", scene);
-	// triangle geometry:
-	float4 triPos[3] = { { 0.0f,  1.0, 0.0f, 1.0f },{ 1.0, -1.0, 0.0f, 1.0f },{ -1.0, -1.0, 0.0f, 1.0f } };
-	float4 triNor[3] = { { 0.0f,  0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f, 1.0f, 0.0f } };
-	float2 triUV[3] =  { { 0.5f,  -0.99f },{ 1.49f, 1.1f },{ -0.51, 1.1f } };
-
-
-	//Make material
-	std::string shaderPath = renderer->getShaderPath();
-	std::string shaderExtension = renderer->getShaderExtension();
-
-	std::shared_ptr<Material> m = renderer->makeMaterial(shaderPath + "VertexShader" + shaderExtension);
-	
-	m->setShader(shaderPath + "VertexShader" + shaderExtension, Material::ShaderType::VS);
-	m->setShader(shaderPath + "FragmentShader" + shaderExtension, Material::ShaderType::PS);
-
-	std::string err;
-	m->compileMaterial(err);
-
-	materials.push_back(m);
-
-	std::shared_ptr<RenderState> rs = renderer->makeRenderState();
-
-	std::shared_ptr<Technique> t = renderer->makeTechnique(m, rs);
-
-	techniques.push_back(t);
-
-	for (unsigned int i = 0; i < scene.size(); i++)
-	{
-		scene[i]->technique = t;
-	}
-
-	//Allocate vertex buffers
-	//pos = renderer->makeVertexBuffer(sizeof(triPos), VertexBuffer::DATA_USAGE::DONTCARE);
-	//nor = renderer->makeVertexBuffer(sizeof(triNor), VertexBuffer::DATA_USAGE::DONTCARE);
-	//uvs = renderer->makeVertexBuffer(sizeof(triUV), VertexBuffer::DATA_USAGE::DONTCARE);
-
-	//Create mesh
-	//std::shared_ptr<Mesh> mesh = renderer->makeMesh();
-	//pos->setData(triPos, sizeof(triPos), 0);
-	//mesh->addIAVertexBufferBinding(pos, 0, ARRAYSIZE(triPos), sizeof(float4), POS);
-	//
-	//nor->setData(triNor, sizeof(triNor), 0);
-	//mesh->addIAVertexBufferBinding(nor, 0, ARRAYSIZE(triNor), sizeof(float4), NORM);
-
-	//uvs->setData(triUV, sizeof(triUV), 0);
-	//mesh->addIAVertexBufferBinding(uvs, 0, ARRAYSIZE(triUV), sizeof(float2), UVCOORD);
-
-	//mesh->technique = t;
-
-	//scene.push_back(mesh);
-	return 0;
-}
-
 void shutdown() {
 	// shutdown.
 	// delete dynamic objects
@@ -347,22 +282,15 @@ void fillCell(int x, int y, int amount)
 }
 
 
-void createThread(HANDLE &threadHandle, std::vector<Object*> &objectList, std::vector<std::shared_ptr<Mesh>>* meshes, int threadKey, int cellX, int cellY)
+void setThreadData(HANDLE &threadHandle, std::vector<Object*> &objectList, std::vector<std::shared_ptr<Mesh>>* meshes, int threadKey, int cellX, int cellY)
 { 
-	threadData[threadKey] =  threadinfo();
 	threadData[threadKey].cellX = cellX;
 	threadData[threadKey].cellY = cellY;
 	threadData[threadKey].size = objectList.size();
 	threadData[threadKey].data = objectList.data();
 	threadData[threadKey].key = threadKey;
 	threadData[threadKey].meshes = meshes;
-	threadData[threadKey].reader = meshReader;
-	threadData[threadKey].renderer = renderer;
-	threadData[threadKey].technique = &triangleT;
-
-
-	threadHandle = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &threadData[threadKey], 0, 0);
-	//WaitForSingleObject(threadHandle, INFINITE);
+	threadData[threadKey].done = false;
 	return;
 }
 void fillGrid()
@@ -370,10 +298,7 @@ void fillGrid()
 	for (int x = 0; x < 10; x++)
 	{
 		for (int y = 0; y < 10; y++)
-		{
 			fillCell(x, y, 2);
-		}
-		cout << x << endl;
 	}
 }
 
@@ -398,130 +323,6 @@ void createGlobalData()
 	techniques.push_back(triangleT);
 }
 
-
-
-void addActiveCells()
-{
-	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
-	int xCell = camPos.x / cellWidth;
-	int yCell = camPos.y / cellHeight;
-	int xCellold = oldCamPos.x / cellWidth;
-	int yCellold = oldCamPos.y / cellHeight;
-	if (activeCells.size() == 0)
-	{
-
-
-		for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(xCell + LOADINGTHRESHOLD,WWidth); x++)
-		{
-			vector<int2> Xlayer;
-			activeCells2.push_back(Xlayer);
-			for (int y = max(yCell - LOADINGTHRESHOLD,0); y < min(yCell + LOADINGTHRESHOLD, HHeight); y++)
-			{
-				(*grid)[x][y]->status = PENDING_LOAD;
-				activeCells.push_back(int2(x, y));
-				activeCells2[x].push_back(int2(x,y));
-			}
-		}
-		
-	}
-	else
-	{
-		if (xCell > xCellold)
-		{
-			//r�rtsig�th�ger
-			vector<int2> Xlayer;
-			activeCells2.push_back(Xlayer); //add a new xlayer to the right
-			for (int y = max(0,yCell - LOADINGTHRESHOLD); y < min(HHeight,yCell + LOADINGTHRESHOLD); y++)
-			{
-				(*grid)[min(WWidth,xCell + LOADINGTHRESHOLD)][y]->status = PENDING_LOAD;
-				activeCells.push_back(int2(min(HHeight, xCell + LOADINGTHRESHOLD), y));
-				activeCells2[min(HHeight, xCell + LOADINGTHRESHOLD-1)].push_back(int2(min(HHeight, xCell + LOADINGTHRESHOLD - 1), y));
-			}
-		}
-		else if(xCell < xCellold)
-		{
-			vector<int2> Xlayer;
-			activeCells2.insert(activeCells2.begin()+ max(0, xCell - LOADINGTHRESHOLD - 1), Xlayer);
-			for (int y = max(0, yCell - LOADINGTHRESHOLD); y < min(HHeight, yCell + LOADINGTHRESHOLD); y++)
-			{
-				(*grid)[max(0,xCell - LOADINGTHRESHOLD)][y]->status = PENDING_LOAD;
-				activeCells.push_back(int2(max(0, xCell - LOADINGTHRESHOLD), y));
-			//	activeCells2.
-				activeCells2[max(0, xCell - LOADINGTHRESHOLD - 1)].push_back(int2(max(0, xCell - LOADINGTHRESHOLD), y));
-			}
-			//r�rtsig�tv�nster
-		}
-		if (yCell > yCellold)
-		{
-
-			for (int x = min(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
-			{
-				(*grid)[x][min(WWidth,yCell +LOADINGTHRESHOLD)]->status = PENDING_LOAD;
-				activeCells.push_back(int2(x, min(WWidth, yCell + LOADINGTHRESHOLD)));
-				activeCells2[x].push_back(int2(x, min(WWidth, yCell + LOADINGTHRESHOLD)));
-			}
-			//r�rtsiginn�t
-		}
-		else if(yCell < yCellold)
-		{
-			for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
-			{
-				(*grid)[x][max(0,yCell - LOADINGTHRESHOLD)]->status = PENDING_LOAD;
-				activeCells.push_back(int2(x, max(0, yCell - LOADINGTHRESHOLD)));
-				activeCells2[x].insert(activeCells2[x].begin()+ max(0, yCell - LOADINGTHRESHOLD - 1),int2(x, max(0, yCell - LOADINGTHRESHOLD)));
-			}
-
-			//r�rtsigut�t
-		}
-	}
-
-
-}
-
-void removeNonActiveCells()
-{
-	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
-	int xCell = camPos.x / cellWidth;
-	int yCell = camPos.y / cellHeight;
-	int xCellold = oldCamPos.x / cellWidth;
-	int yCellold = oldCamPos.y / cellHeight;
-	if (xCell > xCellold)
-	{
-		//r�rtsig�th�ger tar bort det som �r till v�nster i y led
-		activeCells2.erase(activeCells2.begin());
-		for (int i = 0; i < LOADINGTHRESHOLD*2+1; i++)
-		{
-			(*grid)[max(0, xCell - LOADINGTHRESHOLD)][i]->status = NOT_LOADED;
-		}
-	}
-	else if (xCell < xCellold)
-	{
-		//r�rtsig�tv�nster tar bort   det till h�ger.
-		activeCells2.erase(activeCells2.begin()+xCell+LOADINGTHRESHOLD - 1);
-		for (int i = 0; i < LOADINGTHRESHOLD * 2 + 1; i++)
-		{
-			(*grid)[max(0, xCell - LOADINGTHRESHOLD)][i]->status = NOT_LOADED;
-		}
-	}
-	if (yCell > yCellold)
-	{
-		//r�rtsiginn�t ta bort under
-	
-	//	for(int x = )
-		
-	}
-	else if (yCell < yCellold)
-	{
-		for (int x = max(0, xCell - LOADINGTHRESHOLD); x < min(WWidth, xCell + LOADINGTHRESHOLD); x++)
-		{
-			(*grid)[x][max(0, yCell - LOADINGTHRESHOLD)]->status = NOT_LOADED;
-			activeCells2[x].insert(activeCells2[x].begin() + max(0, yCell - LOADINGTHRESHOLD - 1), int2(x, max(0, yCell - LOADINGTHRESHOLD)));
-		}
-
-		//r�rtsigut�t
-	}
-
-}
 void updateGridList()
 {
 	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
@@ -545,8 +346,6 @@ void updateGridList()
 		}
 	}
 
-	//addActiveCells();
-
 	//Remove
 	for (int i = 0; i < activeCells.size(); i++)
 	{
@@ -559,33 +358,36 @@ void updateGridList()
 				(*grid)[x][y]->status = NOT_LOADED;
 				activeCells.erase(activeCells.begin() + i);
 			}
-			// The code seems to be working, but since we still need to remove the meshes from the scene vector the following code is outcommented
 			if ((*grid)[x][y]->status == LOADED)
 			{
 				(*grid)[x][y]->status = NOT_LOADED;
-				//objectsToRender[y * WWidth + x]->isReady = false;
 				for (auto m : *(objectsToRender[y * WWidth + x]->objects))
 					m.~shared_ptr();
 				delete objectsToRender[y * WWidth + x];
 				objectsToRender.erase(y * WWidth + x);
-				/*for (int j = 0; j < objectsToRender.size(); j++)
-				{
-					if (objectsToRender[j]->cell == int2(x, y))
-					{
-						objectsToRender.erase(objectsToRender.begin() + j);
-						break;
-					}
-				}
-				*/
 			}
 		}
+	}
+}
+
+void initiateThreads()
+{
+	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
+	{
+		threadData[i] = threadinfo();
+		threadData[i].reader = meshReader;
+		threadData[i].renderer = renderer;
+		threadData[i].technique = &triangleT;
+		threadData[i].shutDown = false;
+
+		threads[i] = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &threadData[i], 0, 0);
 	}
 }
 void LaunchThreads()
 {
 	for (int tID = 0; tID < NUMBER_OF_LOADING_THREADS; tID++)
 	{
-		if (idleThreads[tID])
+		if (threadData[tID].done && changedState[tID])
 		{
 			int cellIndex = -1;
 
@@ -607,8 +409,9 @@ void LaunchThreads()
 			cell->thread = tID;
 			objectsToRender[activeCells[cellIndex].y * WWidth + activeCells[cellIndex].x] = cell;
 
-			createThread(threads[tID], (*grid)[activeCells[cellIndex].x][activeCells[cellIndex].y]->objectList, cell->objects, tID, activeCells[cellIndex].x, activeCells[cellIndex].y);
-			idleThreads[tID] = false;
+			setThreadData(threads[tID], (*grid)[activeCells[cellIndex].x][activeCells[cellIndex].y]->objectList, cell->objects, tID, activeCells[cellIndex].x, activeCells[cellIndex].y);
+			ResumeThread(threads[tID]);
+			changedState[tID] = false;
 		}
 	}
 }
@@ -617,18 +420,11 @@ void CheckThreadLoading()
 {
 	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
 	{
-		// check if a thread is working, if it is, check if the thread has finished. Not sure if that check is working or not...
-		if (!(idleThreads[i]) && WAIT_OBJECT_0 == WaitForSingleObject(threads[i], 0))
+		// check if a thread is done working and if it's data has had it's state changed and make ready for rendering
+		if (threadData[i].done && !changedState[i])
 		{
 			int index = threadData[i].cellY * WWidth + threadData[i].cellX;
-			//// Since the thread has finished it has loaded all of the meshes in one grid cell, however, we need to find which cell the thread is responsible for
-			//for (int j = 0; j < objectsToRender.size(); j++)
-			//{
-			//	if (objectsToRender[j]->thread == i && objectsToRender[j]->isReady == false)
-			//		index = j;
-			//}
 
-			// mikaels funtion, set command list such that we can execute it and change resource state.
 			for (unsigned int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
 			{
 				renderer->setDirectList((*objectsToRender[index]->objects)[k].get(), MAIN_THREAD);
@@ -643,8 +439,7 @@ void CheckThreadLoading()
 			// tell the renderer that the list is ready to draw
 			(*grid)[threadData[i].cellX][threadData[i].cellY]->status = LOADED;
 			objectsToRender[index]->isReady = true;
-			idleThreads[i] = true;
-			CloseHandle(threads[i]);
+			changedState[i] = true;
 		}
 	}
 }
@@ -678,21 +473,25 @@ int main(int argc, char *argv[])
 	grid->createGrid(WWidth, HHeight);
 	fillGrid();
 
-	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
-		idleThreads[i] = true;
-
 	bool work[1];
 	work[0] = true;
 
 	dataCollector = thread(threadDataCollecting, work);
-	//D3D12Timer timer(renderer->getDevice().Get());
-	
-	//(*grid)[0].size();
-	//Vector3 pos = (*grid)[0][0]->objectList[0]->position;
-	//initialiseTestbench();
+
+	initiateThreads();
+
+	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
+		changedState[i] = true;
+
 	run();
 	shutdown();
 	work[0] = false;
 	dataCollector.join();
+	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
+	{
+		threadData[i].shutDown = true;
+		ResumeThread(threads[i]);
+	}
+	WaitForMultipleObjects(NUMBER_OF_LOADING_THREADS, threads, true, INFINITE);
 	return 0;
-};
+}

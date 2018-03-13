@@ -21,6 +21,8 @@ struct threadinfo
 	std::shared_ptr<Technique>* technique;
 	int cellX;
 	int cellY;
+	bool done;
+	bool shutDown;
 };
 
 
