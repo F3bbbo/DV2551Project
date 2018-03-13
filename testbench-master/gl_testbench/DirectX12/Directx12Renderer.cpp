@@ -124,10 +124,11 @@ void DirectX12Renderer::CreateClAcFcThread()
 	Thread[MAIN_THREAD] = ClAcFc{ nullptr,nullptr,nullptr };//newThread;
 	if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&Thread[MAIN_THREAD].directCommandAllocator))))
 		std::cout << "Failed to create command allocator." << std::endl;
+	Thread[MAIN_THREAD].directCommandAllocator->SetName(L"DirectCommandAllocator: MainThread");
 
 	if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, Thread[MAIN_THREAD].directCommandAllocator.Get(), nullptr, IID_PPV_ARGS(&Thread[MAIN_THREAD].directCommandList))))
 		std::cout << "Failed to create command list." << std::endl;
-
+	Thread[MAIN_THREAD].directCommandList->SetName(L"DirectCommandList: MainThread");
 
 	device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[MAIN_THREAD].fenceDirect));
 	device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[MAIN_THREAD].fenceCopy));
@@ -140,17 +141,19 @@ void DirectX12Renderer::CreateClAcFcThread()
 	
 		if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY, IID_PPV_ARGS(&Thread[i].copyCommandAllocator))))
 			std::cout << "Failed to create command allocator." << std::endl;
+		Thread[i].copyCommandAllocator->SetName(convert("CopyCommandAllocator: Thread" + std::to_string(i)).c_str());
 
 		if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_COPY, Thread[i].copyCommandAllocator.Get(), nullptr, IID_PPV_ARGS(&Thread[i].copyCommandList))))
 			std::cout << "Failed to create command list." << std::endl;
-
+		Thread[i].copyCommandList->SetName(convert("CopyCommandList: Thread" + std::to_string(i)).c_str());
 
 		if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&Thread[i].directCommandAllocator))))
 			std::cout << "Failed to create command allocator." << std::endl;
+		Thread[i].directCommandAllocator->SetName(convert("DirectCommandAllocator: Thread" + std::to_string(i)).c_str());
 
 		if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, Thread[i].directCommandAllocator.Get(), nullptr, IID_PPV_ARGS(&Thread[i].directCommandList))))
 			std::cout << "Failed to create command list." << std::endl;
-
+		Thread[i].directCommandList->SetName(convert("DirectCommandList: Thread" + std::to_string(i)).c_str());
 	}
 
 }
@@ -258,17 +261,12 @@ void DirectX12Renderer::present()
 void DirectX12Renderer::present(int ThreadID)
 {
 	swapChain->Present(0, 0);
-//	waitForGPU();
-	signalDirect(fenceValue, ThreadID);
-	//signalGPU(Thread[ThreadID].fenceDirect, fenceValue);
-	bool isCompleted = false;
-	while (!isCompleted)
-		isCompleted = waitForGPU(Thread[ThreadID].fenceDirect, fenceValue, 0);
-	fenceValue = (fenceValue + 1) % 2;
-//Prep for next iteration
+
+	signalDirect(FENCEDONE, ThreadID);
+
+	waitForDirect(FENCEDONE, INFINITY);
+	//Prep for next iteration
 	resetDirectCommandList(ThreadID);
-	//Thread[ThreadID].directCommandAllocator->Reset();
-	//Thread[ThreadID].directCommandList->Reset(Thread[ThreadID].directCommandAllocator.Get(), nullptr);
 	currBackBuffer = (currBackBuffer + 1) % SWAP_BUFFER_COUNT;
 }
 int DirectX12Renderer::shutdown()
@@ -403,9 +401,10 @@ void DirectX12Renderer::frame(int ThreadID)
 	);	
 
 	//End of recording
-	Thread[ThreadID].directCommandList->Close();
+	//Thread[ThreadID].directCommandList->Close();
 	//Execute commandList
-	executeCommandList(commandQueue.Get());
+	//executeCommandList(commandQueue.Get());
+	executeDirectCommandList(MAIN_THREAD);
 }
 
 void DirectX12Renderer::signalDirect(int Value, int ThreadID)
@@ -710,11 +709,13 @@ void DirectX12Renderer::executeDirectCommandList(int threadID)
 }
 void DirectX12Renderer::resetCopyCommandList(int threadID)
 {
-	Thread[threadID].directCommandAllocator->Reset();
+	Thread[threadID].copyCommandAllocator->Reset();
 	Thread[threadID].copyCommandList->Reset(Thread[threadID].copyCommandAllocator.Get(), nullptr);
 }
+#include <comdef.h>
 void DirectX12Renderer::resetDirectCommandList(int threadID)
 { 
+	//OutputDebugStringA((std::to_string(threadID) + "\n").c_str());
 	Thread[threadID].directCommandAllocator->Reset();
 	Thread[threadID].directCommandList->Reset(Thread[threadID].directCommandAllocator.Get(), nullptr);
 }
