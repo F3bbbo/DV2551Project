@@ -327,6 +327,7 @@ void shutdown() {
 	//}
 	delete meshReader;
 	renderer->shutdown();
+	delete renderer;
 };
 void fillCell(int x, int y, int amount)
 {
@@ -362,7 +363,6 @@ void createThread(HANDLE &threadHandle, std::vector<Object*> &objectList, std::v
 
 	threadHandle = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &threadData[threadKey], 0, 0);
 	//WaitForSingleObject(threadHandle, INFINITE);
-	//CloseHandle(threadHandle);
 	return;
 }
 void fillGrid()
@@ -564,6 +564,9 @@ void updateGridList()
 			{
 				(*grid)[x][y]->status = NOT_LOADED;
 				//objectsToRender[y * WWidth + x]->isReady = false;
+				for (auto m : *(objectsToRender[y * WWidth + x]->objects))
+					m.~shared_ptr();
+				delete objectsToRender[y * WWidth + x];
 				objectsToRender.erase(y * WWidth + x);
 				/*for (int j = 0; j < objectsToRender.size(); j++)
 				{
@@ -641,6 +644,7 @@ void CheckThreadLoading()
 			(*grid)[threadData[i].cellX][threadData[i].cellY]->status = LOADED;
 			objectsToRender[index]->isReady = true;
 			idleThreads[i] = true;
+			CloseHandle(threads[i]);
 		}
 	}
 }
