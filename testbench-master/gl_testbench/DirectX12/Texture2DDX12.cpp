@@ -38,6 +38,7 @@ int Texture2DDX12::loadFromFile(std::string filename)
 
 	texture->updateState(commandList, D3D12_RESOURCE_STATE_COMMON);
 
+	stbi_image_free(rgb);
 	return 0;
 }
 

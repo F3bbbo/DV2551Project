@@ -13,6 +13,8 @@ MeshDX12::MeshDX12()
 
 MeshDX12::~MeshDX12()
 {
+	for (auto tex : textures)
+		tex.second.~shared_ptr();
 }
 
 void MeshDX12::bindIAVertexBuffer(unsigned int location)
