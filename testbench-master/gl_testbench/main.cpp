@@ -59,13 +59,12 @@ struct cellRender
 {
 	bool isReady;
 	int thread;
-	int2 cell;
 	vector<shared_ptr<Mesh>>* objects;
 
-	cellRender() { isReady = false; cell = int2(-1, -1); objects = nullptr; thread = -1; };
+	cellRender() { isReady = false; objects = nullptr; thread = -1; };
 };
 
-vector<cellRender*> objectsToRender;
+map<int, cellRender*> objectsToRender;
 
 
 vector<std::shared_ptr<Mesh>> scene;
@@ -100,6 +99,7 @@ bool idleThreads[NUMBER_OF_LOADING_THREADS];
 HANDLE threads[NUMBER_OF_LOADING_THREADS];
 vector<int2> activeCells;
 vector<vector<int2>> activeCells2;
+threadinfo threadData[NUMBER_OF_LOADING_THREADS];
 
 const int2 gridStart = { -5, -5 };
 
@@ -215,10 +215,19 @@ void updateScene()
 
 void renderScene()
 {
+	//vector<std::shared_ptr<Mesh>> scene;
+	//vector<shared_ptr<Mesh>>* objects;
 	renderer->clearBuffer(CLEAR_BUFFER_FLAGS::COLOR | CLEAR_BUFFER_FLAGS::DEPTH);
-	for (auto m : scene)
+	//map<int, cellRender*>::iterator it;
+	for (auto cellWork : objectsToRender)
 	{
-		renderer->submit(m.get());
+		if (cellWork.second->isReady)
+		{
+			for (auto m : *(cellWork.second->objects))
+			{
+				renderer->submit(m.get());
+			}
+		}
 	}
 	renderer->frame();
 	renderer->present();
@@ -337,29 +346,24 @@ void fillCell(int x, int y, int amount)
 }
 
 
-threadinfo* createThread(HANDLE &threadHandle, std::vector<Object*> &objectList, std::vector<std::shared_ptr<Mesh>>* meshes, int threadKey)
-{
-	//    std::cout << (*grid)[0][0]->objectList.size(); 
-	//    std::cout << (*grid)[0][1]->objectList.size(); 
-	//    std::cout << (*grid)[0][2]->objectList.size(); 
-//	std::vector<Object*> data1 = (*grid)[0][0]->objectList;
-//	std::vector<Object*> data2 = (*grid)[0][1]->objectList;
-//	std::vector<Object*> data3 = (*grid)[0][2]->objectList;
-	//    std::cout << (*grid)[0][0]->objectList[0]->position.x << std::endl; 
-	threadinfo* data1 = new threadinfo();
-	data1->size = objectList.size();
-	data1->data = objectList.data();
-	data1->key = threadKey;
-	data1->meshes = meshes;
-	data1->reader = meshReader;
-	data1->renderer = renderer;
-	data1->technique = &triangleT;
+void createThread(HANDLE &threadHandle, std::vector<Object*> &objectList, std::vector<std::shared_ptr<Mesh>>* meshes, int threadKey, int cellX, int cellY)
+{ 
+	threadData[threadKey] =  threadinfo();
+	threadData[threadKey].cellX = cellX;
+	threadData[threadKey].cellY = cellY;
+	threadData[threadKey].size = objectList.size();
+	threadData[threadKey].data = objectList.data();
+	threadData[threadKey].key = threadKey;
+	threadData[threadKey].meshes = meshes;
+	threadData[threadKey].reader = meshReader;
+	threadData[threadKey].renderer = renderer;
+	threadData[threadKey].technique = &triangleT;
 
 
-	threadHandle = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, data1, 0, 0);
+	threadHandle = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &threadData[threadKey], 0, 0);
 	//WaitForSingleObject(threadHandle, INFINITE);
 	//CloseHandle(threadHandle);
-	return data1;
+	return;
 }
 void fillGrid()
 {
@@ -556,10 +560,12 @@ void updateGridList()
 				activeCells.erase(activeCells.begin() + i);
 			}
 			// The code seems to be working, but since we still need to remove the meshes from the scene vector the following code is outcommented
-			/*if ((*grid)[x][y]->status == LOADED)
+			if ((*grid)[x][y]->status == LOADED)
 			{
 				(*grid)[x][y]->status = NOT_LOADED;
-				for (int j = 0; j < objectsToRender.size(); j++)
+				//objectsToRender[y * WWidth + x]->isReady = false;
+				objectsToRender.erase(y * WWidth + x);
+				/*for (int j = 0; j < objectsToRender.size(); j++)
 				{
 					if (objectsToRender[j]->cell == int2(x, y))
 					{
@@ -567,7 +573,8 @@ void updateGridList()
 						break;
 					}
 				}
-			}*/
+				*/
+			}
 		}
 	}
 }
@@ -593,12 +600,11 @@ void LaunchThreads()
 				return;
 
 			cellRender* cell = new cellRender();
-			cell->cell = int2(activeCells[cellIndex].x, activeCells[cellIndex].y);
 			cell->objects = new std::vector<std::shared_ptr<Mesh>>();
 			cell->thread = tID;
-			objectsToRender.push_back(cell);
+			objectsToRender[activeCells[cellIndex].y * WWidth + activeCells[cellIndex].x] = cell;
 
-			createThread(threads[tID], (*grid)[activeCells[cellIndex].x][activeCells[cellIndex].y]->objectList, cell->objects, tID);
+			createThread(threads[tID], (*grid)[activeCells[cellIndex].x][activeCells[cellIndex].y]->objectList, cell->objects, tID, activeCells[cellIndex].x, activeCells[cellIndex].y);
 			idleThreads[tID] = false;
 		}
 	}
@@ -611,13 +617,13 @@ void CheckThreadLoading()
 		// check if a thread is working, if it is, check if the thread has finished. Not sure if that check is working or not...
 		if (!(idleThreads[i]) && WAIT_OBJECT_0 == WaitForSingleObject(threads[i], 0))
 		{
-			int index = -1;
-			// Since the thread has finished it has loaded all of the meshes in one grid cell, however, we need to find which cell the thread is responsible for
-			for (int j = 0; j < objectsToRender.size(); j++)
-			{
-				if (objectsToRender[j]->thread == i && objectsToRender[j]->isReady == false)
-					index = j;
-			}
+			int index = threadData[i].cellY * WWidth + threadData[i].cellX;
+			//// Since the thread has finished it has loaded all of the meshes in one grid cell, however, we need to find which cell the thread is responsible for
+			//for (int j = 0; j < objectsToRender.size(); j++)
+			//{
+			//	if (objectsToRender[j]->thread == i && objectsToRender[j]->isReady == false)
+			//		index = j;
+			//}
 
 			// mikaels funtion, set command list such that we can execute it and change resource state.
 			for (unsigned int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
@@ -629,13 +635,13 @@ void CheckThreadLoading()
 
 			// might as well wait for it when we're testing.
 			renderer->waitForDirect(FENCEDONE, INFINITY, i);
-			for (int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
+			/*for (int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
 			{
 				scene.push_back((*objectsToRender[index]->objects)[k]);
-			}
+			}*/
 			
 			// tell the renderer that the list is ready to draw
-			(*grid)[objectsToRender[index]->cell.x][objectsToRender[index]->cell.y]->status = LOADED;
+			(*grid)[threadData[i].cellX][threadData[i].cellY]->status = LOADED;
 			objectsToRender[index]->isReady = true;
 			idleThreads[i] = true;
 		}

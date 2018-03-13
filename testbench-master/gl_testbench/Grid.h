@@ -5,8 +5,8 @@
 #include <SimpleMath.h>
 #include <vector>
 
-#define cellWidth 100
-#define cellHeight 100
+#define cellWidth 1000
+#define cellHeight 1000
 
 using namespace DirectX::SimpleMath;
 

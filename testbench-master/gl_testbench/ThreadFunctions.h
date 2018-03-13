@@ -19,6 +19,8 @@ struct threadinfo
 	MeshReader *reader;
 	DirectX12Renderer* renderer;
 	std::shared_ptr<Technique>* technique;
+	int cellX;
+	int cellY;
 };
 
 
