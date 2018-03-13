@@ -625,7 +625,7 @@ void CheckThreadLoading()
 				renderer->setDirectList((*objectsToRender[index]->objects)[k].get(), MAIN_THREAD);
 			}
 			renderer->executeDirectDrawCommandList(i);
-			renderer->signalDirectDraw(FENCEDONE, i);
+			renderer->signalDirectThread(FENCEDONE, i);
 
 			// might as well wait for it when we're testing.
 			renderer->waitForDirect(FENCEDONE, INFINITY, i);

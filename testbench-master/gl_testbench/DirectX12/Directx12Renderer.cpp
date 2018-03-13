@@ -260,7 +260,6 @@ void DirectX12Renderer::present(int ThreadID)
 	swapChain->Present(0, 0);
 //	waitForGPU();
 	signalDirectDraw(fenceValue, ThreadID);
-	//signalGPU(Thread[ThreadID].fenceDirect, fenceValue);
 	bool isCompleted = false;
 	while (!isCompleted)
 		isCompleted = waitForGPU(Thread[ThreadID].fenceDirect, fenceValue, 0);
@@ -402,9 +401,14 @@ void DirectX12Renderer::frame(int ThreadID)
 	);	
 
 	//End of recording
-	Thread[ThreadID].directCommandList->Close();
+	//Thread[ThreadID].directCommandList->Close();
 	//Execute commandList
-	executeCommandList(commandDrawQueue.Get());
+	executeDirectDrawCommandList(MAIN_THREAD);
+}
+
+void DirectX12Renderer::signalDirectThread(int Value, int ThreadID)
+{
+	signalGPU(commandDrawQueue.Get(), Thread[ThreadID].fenceDirect, Value);
 }
 
 void DirectX12Renderer::signalDirectDraw(int Value, int ThreadID)

@@ -85,6 +85,7 @@ public:
 	void submit(Mesh* mesh);
 	virtual void frame();
 	void frame(int ThreadID);
+	void signalDirectThread(int Value, int ThreadID);
 	void signalDirectDraw(int Value, int ThreadID);
 	bool waitForDirect(int Value, float waitTime);
 	bool waitForDirect(int Value, float waitTime, int ThreadID);
