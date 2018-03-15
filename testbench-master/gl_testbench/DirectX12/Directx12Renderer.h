@@ -41,8 +41,8 @@ typedef union {
 } float3;
 
 typedef union {
-	struct { float x, y, z,pitch,yaw; };
-	struct { float u, v, w,pitch,yaw; };
+	struct { double x, y, z,pitch,yaw; };
+	struct { double u, v, w,pitch,yaw; };
 } float5;
 
 

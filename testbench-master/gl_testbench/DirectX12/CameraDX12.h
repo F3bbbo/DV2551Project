@@ -14,8 +14,8 @@ private:
 	Vector3 forwardVector;
 	Vector3 upVector;
 	Vector3 rightVector;
-	int rotatecounter;
-	int	rotatecounterPitch;
+	float rotatecounter;
+	float	rotatecounterPitch;
 	Matrix viewMatrix;
 	Matrix projectionMatrix;
 	Matrix VPMatrix;
@@ -40,8 +40,8 @@ public:
 	void setUp(Vector3& vector);
 	void bind();
 	void update();
-	bool rotatecameracamYaw(int rotatedegree);
-	bool rotatecameracamPitch(int rotatedegree);
+	bool rotatecameracamYaw(float rotatedegree);
+	bool rotatecameracamPitch(float rotatedegree);
 	Matrix getViewMatrix();
 	Matrix getProjectionMatrix();
 	Matrix getVPMatrix();

@@ -6,7 +6,7 @@ CameraDX12::CameraDX12(float width, float height, float rotationSpeed, float wal
 	this->rotationSpeed = rotationSpeed;
 	speed = walkSpeed;
 	this->runSpeed = runSpeed;
-
+	rotatecounter = 0;
 	rotatecounterPitch = 0;
 	position = Vector3(0.f, 0.f, -1.f);
 	rightVector = Vector3(1.f, 0.f, 0.f);
@@ -91,33 +91,49 @@ void CameraDX12::update()
 //	cBuffer->bind();
 }
 
-bool CameraDX12::rotatecameracamYaw(int rotatedegree)
+bool CameraDX12::rotatecameracamYaw(float rotatedegree)
 {
-	if (rotatecounter == rotatedegree)
+
+
+
+	if (rotatecounter >= rotatedegree-0.1 && rotatecounter <= rotatedegree +0.1)
 	{
 		rotatecounter = 0;
 		return true;
 	}
 	else
 	{
+		if (rotatedegree < 0)
+		{
+			camYaw = camYaw - 0.001;
+			rotatecounter = rotatecounter - 0.001;
+		}
+		else
+		{
 		camYaw = camYaw + 0.001;
-		rotatecounter = camYaw;
+		rotatecounter = rotatecounter + 0.001;
+		}
 		return false;
 	}
 }
 
 
-bool CameraDX12::rotatecameracamPitch(int rotatedegree)
+bool CameraDX12::rotatecameracamPitch(float rotatedegree)
 {
-	if (rotatecounterPitch == rotatedegree)
+	if (rotatecounterPitch >= rotatedegree)
 	{
 		rotatecounterPitch = 0;
 		return true;
 	}
 	else
 	{
+		if (rotatedegree < 0)
+		{
+			camPitch = camPitch - 0.001;
+		}
+		else
 		camPitch = camPitch + 0.001;
-		rotatecounterPitch = camPitch;
+		rotatecounterPitch = rotatecounterPitch + 0.001;
 		return false;
 	}
 }

@@ -680,7 +680,7 @@ void DirectX12Renderer::updateCamera(float delta)
 	//	std::cout << lengthDist <<"  "<< delta<<std::endl;
 		if (delta > 2)
 		delta = 2;
-		float movespeed = 10;
+		float movespeed = 1;
 		bool reached = movespeed > lengthDist;
 		Vector3 move = (Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z) - camera->getPosition());
 		move.Normalize();
@@ -714,23 +714,16 @@ void DirectX12Renderer::updateCamera(float delta)
 }
 void DirectX12Renderer::createwalkingpath()
 {
-	walkingpath.push_back({ 500, 500,-1000 ,50,50});
-/*	walkingpath.push_back({1500, 500,-1000 });
-	walkingpath.push_back({2500, 500, -1000 });
-	walkingpath.push_back({3500, 500, -1000 });
-	walkingpath.push_back({ 4500, 500, -1000 });
-	walkingpath.push_back({ 5500, 500, -1000 });
-	walkingpath.push_back({ 6500, 500, -1000 });
-	walkingpath.push_back({ 7500, 500, -1000 });
+	// helt varv 6.5 
+	walkingpath.push_back({ 500, 500,-1000 ,0,(6.5/4) });
+
+	walkingpath.push_back({ 10000, 500, -1000 ,0,(-3.25) });
 
 
-	walkingpath.push_back({ 2500, 500, 3000 });
-	walkingpath.push_back({ 3500, 500, 3000 });
-	walkingpath.push_back({ 4500, 500, 3000 });
-	walkingpath.push_back({ 5500, 500, 3000 });
-	walkingpath.push_back({ 6500, 500, 3000 });
-	walkingpath.push_back({ 7500, 500, 3000 });
-	*/
+	walkingpath.push_back({ 500, 500, 3000 ,0,6.5 / 2 });
+
+	walkingpath.push_back({ 10000, 500, 3000 ,0,(-6.5)/4 });
+
 
 }
 void DirectX12Renderer::executeCopyCommandList(int ThreadID)
