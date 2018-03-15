@@ -33,11 +33,15 @@ unsigned int __stdcall  threadfunctionloadingdata(void* data)
 		//Execute copy the data
 		renderer->executeCopyCommandList(key);
 		renderer->signalCopy(FENCEDONE, key);
+		
+		//Wait for direct queue if not done yet
+		renderer->waitForDirect(FENCEDONE, INFINITY, key);
+		renderer->resetDirectCommandList(key);
 		//Change state of the textures
 		for (unsigned int i = 0; i < (*outMeshList).size(); i++)
 		{
 			//Mesh commandlists to directCommandList
-			(*outMeshList)[i].get();
+			//(*outMeshList)[i].get();
 			Mesh* m = ((*outMeshList)[i]).get();
 			renderer->setDirectList(m, key);
 			Texture2DDX12* texture = dynamic_cast<Texture2DDX12*>((*outMeshList)[i]->textures[DIFFUSETEX_SLOT].get());
@@ -48,6 +52,7 @@ unsigned int __stdcall  threadfunctionloadingdata(void* data)
 			}
 			texture->setBindState();
 		}
+		//Change commandlist to mainthreads commandlist
 
 		//Wait until copy queue is done before exiting.
 		renderer->waitForCopy(FENCEDONE, INFINITY, key);
