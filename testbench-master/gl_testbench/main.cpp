@@ -447,28 +447,47 @@ void CheckThreadLoading()
 void threadDataCollecting(bool* work)
 {
 	ofstream file;
-	int i = 0;
-	int totalvalue = 0;
-	int sizeOfActiveCells = 0;
-	file.open("data.txt", ios_base::app);
+	int iteration = 0;
+	int meshesLoaded;
+	int meshesToLoad;
+	std::string fileName;
+	fileName = "data" + std::to_string(NUMBER_OF_LOADING_THREADS) + ".txt";
+
+	bool exist = false;
+	if (FILE *file = fopen(fileName.c_str(), "r")) {
+		fclose(file);
+		exist = true;
+	}
+
+	file.open(fileName, ios_base::app);
+	if (!exist)
+	{
+		file << "n\tMeshesToLoad\tMeshesLoaded\n";
+		file.flush();
+	}
+	
+	std::string info = "";
 	while (work[0])
 	{
-		totalvalue = 0;
-		sizeOfActiveCells = 0;
-		for(int m = 0;m<activeCells.size();m++)
+		file << iteration << '\t';
+		meshesLoaded = 0;
+		meshesToLoad = 0;
+		for(int m = 0; m < activeCells.size(); m++)
 		{
-		sizeOfActiveCells += (*grid)[activeCells[m].x][activeCells[m].y]->objectList.size();
+			meshesToLoad += (*grid)[activeCells[m].x][activeCells[m].y]->objectList.size();
 		}
-		file << sizeOfActiveCells; //amount of objects in the scene
-		file.flush();
+		file << meshesToLoad << '\t'; //amount of objects in the scene
 		
 		for (auto readyToRender : objectsToRender)
 		{
 			if (readyToRender.second->isReady == true)
-				totalvalue += readyToRender.second->objects->size();
+				meshesLoaded += readyToRender.second->objects->size();
 		}
-			file <<"	"<<totalvalue << endl;
 		
+		file << meshesLoaded << '\n';
+		
+		file.flush();
+		iteration++;
 		this_thread::sleep_for(chrono::seconds(1));
 	}
 	file.close();
