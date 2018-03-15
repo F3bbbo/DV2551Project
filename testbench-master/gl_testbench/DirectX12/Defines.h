@@ -6,8 +6,8 @@
 #define MAIN_THREAD NUMBER_OF_THREADS - 1
 #define NUMBER_OF_LOADING_THREADS NUMBER_OF_THREADS - 1
 #define THREAD_ID 0
-#define WWidth 100
-#define HHeight 100
+#define GRIDWIDTH 100
+#define GRIDHEIGHT 100
 #define LOADINGTHRESHOLD 4000
 
 //Fence Defines

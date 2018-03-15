@@ -263,10 +263,10 @@ void createGlobalData()
 void updateGridList()
 {
 	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
-	int xStartDist = min(max(0, int(((int)camPos.x - LOADINGTHRESHOLD) / (float)cellWidth)), WWidth);
-	int yStartDist = min(max(0, int(((int)camPos.y - LOADINGTHRESHOLD) / (float)cellHeight)), HHeight);
-	int xEndDist = min(max(0, int(((int)camPos.x + LOADINGTHRESHOLD) / (float)cellWidth)), WWidth);
-	int yEndDist = min(max(0, int(((int)camPos.y + LOADINGTHRESHOLD) / (float)cellHeight)), HHeight);
+	int xStartDist = min(max(0, int(((int)camPos.x - LOADINGTHRESHOLD) / (float)cellWidth)), GRIDWIDTH);
+	int yStartDist = min(max(0, int(((int)camPos.y - LOADINGTHRESHOLD) / (float)cellHeight)), GRIDHEIGHT);
+	int xEndDist = min(max(0, int(((int)camPos.x + LOADINGTHRESHOLD) / (float)cellWidth)), GRIDWIDTH);
+	int yEndDist = min(max(0, int(((int)camPos.y + LOADINGTHRESHOLD) / (float)cellHeight)), GRIDHEIGHT);
 
 
 
@@ -298,10 +298,10 @@ void updateGridList()
 			if ((*grid)[x][y]->status == LOADED)
 			{
 				(*grid)[x][y]->status = NOT_LOADED;
-				for (auto m : *(objectsToRender[y * WWidth + x]->objects))
+				for (auto m : *(objectsToRender[y * GRIDWIDTH + x]->objects))
 					m.~shared_ptr();
-				delete objectsToRender[y * WWidth + x];
-				objectsToRender.erase(y * WWidth + x);
+				delete objectsToRender[y * GRIDWIDTH + x];
+				objectsToRender.erase(y * GRIDWIDTH + x);
 			}
 		}
 	}
@@ -344,7 +344,7 @@ void LaunchThreads()
 			cellRender* cell = new cellRender();
 			cell->objects = new std::vector<std::shared_ptr<Mesh>>();
 			cell->thread = tID;
-			objectsToRender[activeCells[cellIndex].y * WWidth + activeCells[cellIndex].x] = cell;
+			objectsToRender[activeCells[cellIndex].y * GRIDWIDTH + activeCells[cellIndex].x] = cell;
 
 			setThreadData(threads[tID], (*grid)[activeCells[cellIndex].x][activeCells[cellIndex].y]->objectList, cell->objects, tID, activeCells[cellIndex].x, activeCells[cellIndex].y);
 			ResumeThread(threads[tID]);
@@ -360,7 +360,7 @@ void CheckThreadLoading()
 		// check if a thread is done working and if it's data has had it's state changed and make ready for rendering
 		if (threadData[i].done && !changedState[i])
 		{
-			int index = threadData[i].cellY * WWidth + threadData[i].cellX;
+			int index = threadData[i].cellY * GRIDWIDTH + threadData[i].cellX;
 
 			renderer->executeDirectCommandList(i);
 			renderer->signalDirect(FENCEDONE, i);
@@ -376,28 +376,47 @@ void CheckThreadLoading()
 void threadDataCollecting(bool* work)
 {
 	ofstream file;
-	int i = 0;
-	int totalvalue = 0;
-	int sizeOfActiveCells = 0;
-	file.open("data.txt", ios_base::app);
+	int iteration = 0;
+	int meshesLoaded;
+	int meshesToLoad;
+	std::string fileName;
+	fileName = "data" + std::to_string(NUMBER_OF_LOADING_THREADS) + ".txt";
+
+	bool exist = false;
+	if (FILE *file = fopen(fileName.c_str(), "r")) {
+		fclose(file);
+		exist = true;
+	}
+
+	file.open(fileName, ios_base::app);
+	if (!exist)
+	{
+		file << "n\tMeshesToLoad\tMeshesLoaded\n";
+		file.flush();
+	}
+	
+	std::string info = "";
 	while (work[0])
 	{
-		totalvalue = 0;
-		sizeOfActiveCells = 0;
-		for(int m = 0;m<activeCells.size();m++)
+		file << iteration << '\t';
+		meshesLoaded = 0;
+		meshesToLoad = 0;
+		for(int m = 0; m < activeCells.size(); m++)
 		{
-		sizeOfActiveCells += (*grid)[activeCells[m].x][activeCells[m].y]->objectList.size();
+			meshesToLoad += (*grid)[activeCells[m].x][activeCells[m].y]->objectList.size();
 		}
-		file << sizeOfActiveCells; //amount of objects in the scene
-		file.flush();
+		file << meshesToLoad << '\t'; //amount of objects in the scene
 		
 		for (auto readyToRender : objectsToRender)
 		{
 			if (readyToRender.second->isReady == true)
-				totalvalue += readyToRender.second->objects->size();
+				meshesLoaded += readyToRender.second->objects->size();
 		}
-			file <<"	"<<totalvalue << endl;
 		
+		file << meshesLoaded << '\n';
+		
+		file.flush();
+		iteration++;
 		this_thread::sleep_for(chrono::seconds(1));
 	}
 	file.close();
@@ -415,7 +434,7 @@ int main(int argc, char *argv[])
 	meshReader = new MeshReader(renderer);
 	createGlobalData();
 	grid = new Grid();
-	grid->createGrid(WWidth, HHeight);
+	grid->createGrid(GRIDWIDTH, GRIDHEIGHT);
 	fillGrid();
 
 	bool work[1];
