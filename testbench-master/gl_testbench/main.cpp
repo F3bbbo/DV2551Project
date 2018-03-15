@@ -425,10 +425,6 @@ void CheckThreadLoading()
 		{
 			int index = threadData[i].cellY * WWidth + threadData[i].cellX;
 
-			for (unsigned int k = 0; k < (*objectsToRender[index]->objects).size(); k++)
-			{
-				renderer->setDirectList((*objectsToRender[index]->objects)[k].get(), MAIN_THREAD);
-			}
 			renderer->executeDirectCommandList(i);
 			renderer->signalDirect(FENCEDONE, i);
 	
