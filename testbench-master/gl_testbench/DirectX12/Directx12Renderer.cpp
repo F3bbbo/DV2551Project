@@ -160,6 +160,9 @@ void DirectX12Renderer::CreateClAcFcThread()
 		if (FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, Thread[i].directCommandAllocator.Get(), nullptr, IID_PPV_ARGS(&Thread[i].directCommandList))))
 			std::cout << "Failed to create command list." << std::endl;
 		Thread[i].directCommandList->SetName(convert("DirectCommandList: Thread" + std::to_string(i)).c_str());
+		
+		//Close the direct list for the threads because they will be reset the first time they are used
+		Thread[i].directCommandList->Close();
 	}
 
 }

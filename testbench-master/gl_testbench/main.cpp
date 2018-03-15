@@ -212,7 +212,8 @@ void fillCell(int x, int y, int amount)
 		float pos[3] = { x * cellWidth + randNumb, 1, y * cellWidth + randNumb };
 		float scale[3] = { 1, 1, 1 };
 		float rot[3] = { 0, 0, 0 };
-		Object* object = new Object(pos, scale, rot, "Models/NewLowPolyTree.fbx","Models/PolyTreeTexture.png");
+		//Object* object = new Object(pos, scale, rot, "Models/NewLowPolyTree.fbx","Models/PolyTreeTexture.png");
+		Object* object = new Object(pos, scale, rot, "Models/HigherPolyTree.fbx", "Models/PolyTreeTexture.png");
 		grid->addMesh(x, y, object);
 	}
 
