@@ -136,14 +136,14 @@ void DirectX12Renderer::CreateClAcFcThread()
 		std::cout << "Failed to create command list." << std::endl;
 	Thread[MAIN_THREAD].directCommandList->SetName(L"DirectCommandList: MainThread");
 
-	device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[MAIN_THREAD].fenceDirect));
-	device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[MAIN_THREAD].fenceCopy));
+	device->CreateFence(FENCEDONE, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[MAIN_THREAD].fenceDirect));
+	device->CreateFence(FENCEDONE, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[MAIN_THREAD].fenceCopy));
 
 	for(int i = 0; i < NUMBER_OF_THREADS - 1; i++)
 	{
 		Thread[i] = ClAcFc{ nullptr,nullptr,nullptr }; //newThread;
-		device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[i].fenceDirect));
-		device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[i].fenceCopy));
+		device->CreateFence(FENCEDONE, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[i].fenceDirect));
+		device->CreateFence(FENCEDONE, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Thread[i].fenceCopy));
 	
 		if (FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY, IID_PPV_ARGS(&Thread[i].copyCommandAllocator))))
 			std::cout << "Failed to create command allocator." << std::endl;
