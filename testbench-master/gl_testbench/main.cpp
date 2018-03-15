@@ -169,39 +169,6 @@ void updateScene()
 {
 	
 	renderer->updateCamera(deltatimeGlobale);
-	// cout << scene.size() << endl;
-	// Check if new grids needs to be loaded and add them to a grid list.
-	// Check if the list associated to a thread previously launched had finished by checking a fence, if the fence has been reached, add integers to the "idleThreads" queue indicating that a new thread can be launched with that command list.
-	// Launch threads. Each thread is responisble for loading one grid cell, launch as many threads as available
-		// A thread is given a vector of objects to be loaded. For each mesh the thread should:
-			// Load the data from the file.
-			// Create position, index , UVs and Normal vertex buffers with the appropriate resource state.
-			// Each file to be loaded has a texture associated with it which needs to be loaded.
-			// Upload the vertex data and texture to the GPU
-			// When the mesh is uploaded, change the command list pointer that he mesh hold to the main threads command list.
-			
-
-
-
-	/*
-	    For each mesh in scene list, update their position 
-	*/
-	//{
-	//	static long long shift = 0;
-	//	const int size = scene.size();
-	//	for (int i = 0; i < size; i++)
-	//	{
-	//		const float4 trans { 
-	//			xt[(int)(float)(i + shift) % (TOTAL_PLACES)], 
-	//			yt[(int)(float)(i + shift) % (TOTAL_PLACES)], 
-	//			i * (-1.0 / TOTAL_PLACES),
-	//			0.0
-	//		};
-	//		scene[i]->txBuffer->setData(&trans, sizeof(trans), scene[i]->technique->getMaterial(), TRANSLATION);
-	//	}
-	//	// just to make them move...
-	//	shift+=max(TOTAL_TRIS / 1000.0,TOTAL_TRIS / 100.0);
-	//}
 	return;
 };
 
@@ -230,36 +197,6 @@ void renderScene()
 }
 
 void shutdown() {
-	// shutdown.
-	// delete dynamic objects
-	//for (auto m : materials)
-	//{
-	//	delete(m);
-	//}
-	//for (auto t : techniques)
-	//{
-	//	delete(t);
-	//}
-	//for (auto m : scene)
-	//{
-	//	delete(m);
-	//};
-	//assert(pos->refCount() == 0);
-	//delete pos;
-	//assert(nor->refCount() == 0);
-	//delete nor;
-	//assert(uvs->refCount() == 0);
-	//delete uvs;
-	//
-	//for (auto s : samplers)
-	//{
-	//	delete s;
-	//}
-
-	//for (auto t : textures)
-	//{
-	//	delete t;
-	//}
 	delete meshReader;
 	renderer->shutdown();
 	delete renderer;
