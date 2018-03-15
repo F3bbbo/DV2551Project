@@ -326,10 +326,10 @@ void createGlobalData()
 void updateGridList()
 {
 	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
-	int xStartDist = min(max(0, int(((int)camPos.x - LOADINGTHRESHOLD) / (float)cellWidth)), WWidth);
-	int yStartDist = min(max(0, int(((int)camPos.y - LOADINGTHRESHOLD) / (float)cellHeight)), HHeight);
-	int xEndDist = min(max(0, int(((int)camPos.x + LOADINGTHRESHOLD) / (float)cellWidth)), WWidth);
-	int yEndDist = min(max(0, int(((int)camPos.y + LOADINGTHRESHOLD) / (float)cellHeight)), HHeight);
+	int xStartDist = min(max(0, int(((int)camPos.x - LOADINGTHRESHOLD) / (float)cellWidth)), GRIDWIDTH);
+	int yStartDist = min(max(0, int(((int)camPos.y - LOADINGTHRESHOLD) / (float)cellHeight)), GRIDHEIGHT);
+	int xEndDist = min(max(0, int(((int)camPos.x + LOADINGTHRESHOLD) / (float)cellWidth)), GRIDWIDTH);
+	int yEndDist = min(max(0, int(((int)camPos.y + LOADINGTHRESHOLD) / (float)cellHeight)), GRIDHEIGHT);
 
 
 
@@ -361,10 +361,10 @@ void updateGridList()
 			if ((*grid)[x][y]->status == LOADED)
 			{
 				(*grid)[x][y]->status = NOT_LOADED;
-				for (auto m : *(objectsToRender[y * WWidth + x]->objects))
+				for (auto m : *(objectsToRender[y * GRIDWIDTH + x]->objects))
 					m.~shared_ptr();
-				delete objectsToRender[y * WWidth + x];
-				objectsToRender.erase(y * WWidth + x);
+				delete objectsToRender[y * GRIDWIDTH + x];
+				objectsToRender.erase(y * GRIDWIDTH + x);
 			}
 		}
 	}
@@ -407,7 +407,7 @@ void LaunchThreads()
 			cellRender* cell = new cellRender();
 			cell->objects = new std::vector<std::shared_ptr<Mesh>>();
 			cell->thread = tID;
-			objectsToRender[activeCells[cellIndex].y * WWidth + activeCells[cellIndex].x] = cell;
+			objectsToRender[activeCells[cellIndex].y * GRIDWIDTH + activeCells[cellIndex].x] = cell;
 
 			setThreadData(threads[tID], (*grid)[activeCells[cellIndex].x][activeCells[cellIndex].y]->objectList, cell->objects, tID, activeCells[cellIndex].x, activeCells[cellIndex].y);
 			ResumeThread(threads[tID]);
@@ -423,7 +423,7 @@ void CheckThreadLoading()
 		// check if a thread is done working and if it's data has had it's state changed and make ready for rendering
 		if (threadData[i].done && !changedState[i])
 		{
-			int index = threadData[i].cellY * WWidth + threadData[i].cellX;
+			int index = threadData[i].cellY * GRIDWIDTH + threadData[i].cellX;
 
 			renderer->executeDirectCommandList(i);
 			renderer->signalDirect(FENCEDONE, i);
@@ -497,7 +497,7 @@ int main(int argc, char *argv[])
 	meshReader = new MeshReader(renderer);
 	createGlobalData();
 	grid = new Grid();
-	grid->createGrid(WWidth, HHeight);
+	grid->createGrid(GRIDWIDTH, GRIDHEIGHT);
 	fillGrid();
 
 	bool work[1];
