@@ -431,10 +431,6 @@ void CheckThreadLoading()
 			}
 			renderer->executeDirectCommandList(i);
 			renderer->signalDirect(FENCEDONE, i);
-
-			// might as well wait for it when we're testing.
-			renderer->waitForDirect(FENCEDONE, INFINITY, i);
-			renderer->resetDirectCommandList(i);
 	
 			// tell the renderer that the list is ready to draw
 			(*grid)[threadData[i].cellX][threadData[i].cellY]->status = LOADED;
