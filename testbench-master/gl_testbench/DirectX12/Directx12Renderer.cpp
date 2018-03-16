@@ -749,10 +749,8 @@ void DirectX12Renderer::resetCopyCommandList(int threadID)
 	Thread[threadID].copyCommandAllocator->Reset();
 	Thread[threadID].copyCommandList->Reset(Thread[threadID].copyCommandAllocator.Get(), nullptr);
 }
-#include <comdef.h>
 void DirectX12Renderer::resetDirectCommandList(int threadID)
 { 
-	//OutputDebugStringA((std::to_string(threadID) + "\n").c_str());
 	Thread[threadID].directCommandAllocator->Reset();
 	Thread[threadID].directCommandList->Reset(Thread[threadID].directCommandAllocator.Get(), nullptr);
 }
