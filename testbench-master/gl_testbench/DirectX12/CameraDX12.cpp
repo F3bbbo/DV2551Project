@@ -1,5 +1,6 @@
 #include "CameraDX12.h"
 #include "IA.h"
+#include "Defines.h"
 
 CameraDX12::CameraDX12(float width, float height, float rotationSpeed, float walkSpeed, float runSpeed)
 {
@@ -16,7 +17,7 @@ CameraDX12::CameraDX12(float width, float height, float rotationSpeed, float wal
 	camYaw = 0;
 	camRoll = 0;
 	viewMatrix = DirectX::XMMatrixLookAtLH(position, forwardVector + position, upVector);
-	projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(3.141592f * 0.5f, width / height, 0.1f, 10000.f);
+	projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(3.141592f * 0.5f, width / height, NEARPLANE, FARPLANE);
 	VPMatrix = viewMatrix * projectionMatrix;
 }
 
@@ -94,7 +95,7 @@ void CameraDX12::update()
 bool CameraDX12::rotatecameracamYaw(float rotatedegree,float speed)
 {
 
-	float value = (0.001 * speed);
+	float value = (ROTATIONSPEED * speed);
 
 	if (rotatecounter >= abs(rotatedegree) )
 	{
@@ -130,10 +131,10 @@ bool CameraDX12::rotatecameracamPitch(float rotatedegree, float speed)
 	{
 		if (rotatedegree < 0)
 		{
-			camPitch = camPitch - (0.001 * speed);
+			camPitch = camPitch - (ROTATIONSPEED * speed);
 		}
 		else
-		camPitch = camPitch + (0.001 * speed);
+		camPitch = camPitch + (ROTATIONSPEED * speed);
 		rotatecounterPitch = rotatecounterPitch + 0.001;
 		return false;
 	}

@@ -680,15 +680,14 @@ void DirectX12Renderer::updateCamera(float delta)
 	//	std::cout << lengthDist <<"  "<< delta<<std::endl;
 		if (delta > 2)
 		delta = 2;
-		float movespeed = 1;
-		bool reached = movespeed > lengthDist;
+		bool reached = MOVEMENTSPEED > lengthDist;
 		Vector3 move = (Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z) - camera->getPosition());
 		move.Normalize();
 
 
 
 		if (lengthDist > 12)
-			camera->moveCamera(camera->getPosition() + (move*movespeed* delta));
+			camera->moveCamera(camera->getPosition() + (move*MOVEMENTSPEED* delta));
 		else
 			movementdone = true;
 
@@ -706,8 +705,8 @@ void DirectX12Renderer::updateCamera(float delta)
 
 		if(movementdone && rotatecheckpitch && rotatecheckyaw)
 		{
-			 rotatecheckpitch = false;
-			 rotatecheckyaw = false;
+			rotatecheckpitch = false;
+			rotatecheckyaw = false;
 			movementdone = false;
 			m++;
 			if (m > walkingpath.size()-1)
