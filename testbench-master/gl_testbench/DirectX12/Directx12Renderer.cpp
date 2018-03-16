@@ -680,28 +680,33 @@ void DirectX12Renderer::updateCamera(float delta)
 	//	std::cout << lengthDist <<"  "<< delta<<std::endl;
 		if (delta > 2)
 		delta = 2;
-		float movespeed = 1;
-		bool reached = movespeed > lengthDist;
+		bool reached = MOVEMENTSPEED > lengthDist;
 		Vector3 move = (Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z) - camera->getPosition());
 		move.Normalize();
 
 
 
 		if (lengthDist > 12)
-			camera->moveCamera(camera->getPosition() + (move*movespeed* delta));
+			camera->moveCamera(camera->getPosition() + (move*MOVEMENTSPEED* delta));
 		else
 			movementdone = true;
 
-		if (camera->rotatecameracamPitch(walkingpath[m].pitch))
-			rotatecheckpitch = true;
+		if(rotatecheckpitch == false)
+		{
+			if (camera->rotatecameracamPitch(walkingpath[m].pitch,delta))
+				rotatecheckpitch = true;
+		}
 
-		if (camera->rotatecameracamYaw(walkingpath[m].yaw))
-			rotatecheckyaw = true;
+		if(rotatecheckyaw == false)
+		{
+			if (camera->rotatecameracamYaw(walkingpath[m].yaw, delta))
+				rotatecheckyaw = true;
+		}
 
 		if(movementdone && rotatecheckpitch && rotatecheckyaw)
 		{
-			 rotatecheckpitch = false;
-			 rotatecheckyaw = false;
+			rotatecheckpitch = false;
+			rotatecheckyaw = false;
 			movementdone = false;
 			m++;
 			if (m > walkingpath.size()-1)
@@ -720,9 +725,9 @@ void DirectX12Renderer::createwalkingpath()
 	walkingpath.push_back({ 10000, 500, -1000 ,0,(-3.25) });
 
 
-	walkingpath.push_back({ 500, 500, 3000 ,0,6.5 / 2 });
+	walkingpath.push_back({ 500, 500, 3000 ,0,0 }); //6.5 / 2
 
-	walkingpath.push_back({ 10000, 500, 3000 ,0,(-6.5)/4 });
+	walkingpath.push_back({ 10000, 500, 3000 ,0,0 }); //(-6.5)/4
 
 
 }

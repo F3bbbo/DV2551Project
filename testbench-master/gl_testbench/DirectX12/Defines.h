@@ -13,3 +13,15 @@
 //Fence Defines
 #define FENCEDONE 1
 #define FENCEBUSY 0
+
+
+
+//movementspeed
+#define MOVEMENTSPEED 1
+#define ROTATIONSPEED 0.001
+
+
+//Far close plane
+
+#define NEARPLANE 0.1f
+#define FARPLANE 10000.f

@@ -1,5 +1,6 @@
 #include "CameraDX12.h"
 #include "IA.h"
+#include "Defines.h"
 
 CameraDX12::CameraDX12(float width, float height, float rotationSpeed, float walkSpeed, float runSpeed)
 {
@@ -16,7 +17,7 @@ CameraDX12::CameraDX12(float width, float height, float rotationSpeed, float wal
 	camYaw = 0;
 	camRoll = 0;
 	viewMatrix = DirectX::XMMatrixLookAtLH(position, forwardVector + position, upVector);
-	projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(3.141592f * 0.5f, width / height, 0.1f, 10000.f);
+	projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(3.141592f * 0.5f, width / height, NEARPLANE, FARPLANE);
 	VPMatrix = viewMatrix * projectionMatrix;
 }
 
@@ -91,12 +92,12 @@ void CameraDX12::update()
 //	cBuffer->bind();
 }
 
-bool CameraDX12::rotatecameracamYaw(float rotatedegree)
+bool CameraDX12::rotatecameracamYaw(float rotatedegree,float speed)
 {
 
+	float value = (ROTATIONSPEED * speed);
 
-
-	if (rotatecounter >= rotatedegree-0.1 && rotatecounter <= rotatedegree +0.1)
+	if (rotatecounter >= abs(rotatedegree) )
 	{
 		rotatecounter = 0;
 		return true;
@@ -105,20 +106,21 @@ bool CameraDX12::rotatecameracamYaw(float rotatedegree)
 	{
 		if (rotatedegree < 0)
 		{
-			camYaw = camYaw - 0.001;
-			rotatecounter = rotatecounter - 0.001;
+			camYaw = camYaw - value;
+			rotatecounter = rotatecounter + value;
+	//		rotatecounter = camYaw;
 		}
 		else
 		{
-		camYaw = camYaw + 0.001;
-		rotatecounter = rotatecounter + 0.001;
+		camYaw = camYaw + value;
+		rotatecounter = rotatecounter + value;
 		}
 		return false;
 	}
 }
 
 
-bool CameraDX12::rotatecameracamPitch(float rotatedegree)
+bool CameraDX12::rotatecameracamPitch(float rotatedegree, float speed)
 {
 	if (rotatecounterPitch >= rotatedegree)
 	{
@@ -129,10 +131,10 @@ bool CameraDX12::rotatecameracamPitch(float rotatedegree)
 	{
 		if (rotatedegree < 0)
 		{
-			camPitch = camPitch - 0.001;
+			camPitch = camPitch - (ROTATIONSPEED * speed);
 		}
 		else
-		camPitch = camPitch + 0.001;
+		camPitch = camPitch + (ROTATIONSPEED * speed);
 		rotatecounterPitch = rotatecounterPitch + 0.001;
 		return false;
 	}
