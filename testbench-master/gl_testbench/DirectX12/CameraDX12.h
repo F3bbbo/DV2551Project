@@ -40,8 +40,8 @@ public:
 	void setUp(Vector3& vector);
 	void bind();
 	void update();
-	bool rotatecameracamYaw(float rotatedegree);
-	bool rotatecameracamPitch(float rotatedegree);
+	bool rotatecameracamYaw(float rotatedegree, float speed);
+	bool rotatecameracamPitch(float rotatedegree, float speed);
 	Matrix getViewMatrix();
 	Matrix getProjectionMatrix();
 	Matrix getVPMatrix();

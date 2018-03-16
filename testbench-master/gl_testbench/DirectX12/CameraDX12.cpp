@@ -91,12 +91,12 @@ void CameraDX12::update()
 //	cBuffer->bind();
 }
 
-bool CameraDX12::rotatecameracamYaw(float rotatedegree)
+bool CameraDX12::rotatecameracamYaw(float rotatedegree,float speed)
 {
 
+	float value = (0.001 * speed);
 
-
-	if (rotatecounter >= rotatedegree-0.1 && rotatecounter <= rotatedegree +0.1)
+	if (rotatecounter >= abs(rotatedegree) )
 	{
 		rotatecounter = 0;
 		return true;
@@ -105,20 +105,21 @@ bool CameraDX12::rotatecameracamYaw(float rotatedegree)
 	{
 		if (rotatedegree < 0)
 		{
-			camYaw = camYaw - 0.001;
-			rotatecounter = rotatecounter - 0.001;
+			camYaw = camYaw - value;
+			rotatecounter = rotatecounter + value;
+	//		rotatecounter = camYaw;
 		}
 		else
 		{
-		camYaw = camYaw + 0.001;
-		rotatecounter = rotatecounter + 0.001;
+		camYaw = camYaw + value;
+		rotatecounter = rotatecounter + value;
 		}
 		return false;
 	}
 }
 
 
-bool CameraDX12::rotatecameracamPitch(float rotatedegree)
+bool CameraDX12::rotatecameracamPitch(float rotatedegree, float speed)
 {
 	if (rotatecounterPitch >= rotatedegree)
 	{
@@ -129,10 +130,10 @@ bool CameraDX12::rotatecameracamPitch(float rotatedegree)
 	{
 		if (rotatedegree < 0)
 		{
-			camPitch = camPitch - 0.001;
+			camPitch = camPitch - (0.001 * speed);
 		}
 		else
-		camPitch = camPitch + 0.001;
+		camPitch = camPitch + (0.001 * speed);
 		rotatecounterPitch = rotatecounterPitch + 0.001;
 		return false;
 	}

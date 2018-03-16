@@ -692,11 +692,17 @@ void DirectX12Renderer::updateCamera(float delta)
 		else
 			movementdone = true;
 
-		if (camera->rotatecameracamPitch(walkingpath[m].pitch))
-			rotatecheckpitch = true;
+		if(rotatecheckpitch == false)
+		{
+			if (camera->rotatecameracamPitch(walkingpath[m].pitch,delta))
+				rotatecheckpitch = true;
+		}
 
-		if (camera->rotatecameracamYaw(walkingpath[m].yaw))
-			rotatecheckyaw = true;
+		if(rotatecheckyaw == false)
+		{
+			if (camera->rotatecameracamYaw(walkingpath[m].yaw, delta))
+				rotatecheckyaw = true;
+		}
 
 		if(movementdone && rotatecheckpitch && rotatecheckyaw)
 		{
@@ -720,9 +726,9 @@ void DirectX12Renderer::createwalkingpath()
 	walkingpath.push_back({ 10000, 500, -1000 ,0,(-3.25) });
 
 
-	walkingpath.push_back({ 500, 500, 3000 ,0,6.5 / 2 });
+	walkingpath.push_back({ 500, 500, 3000 ,0,0 }); //6.5 / 2
 
-	walkingpath.push_back({ 10000, 500, 3000 ,0,(-6.5)/4 });
+	walkingpath.push_back({ 10000, 500, 3000 ,0,0 }); //(-6.5)/4
 
 
 }
