@@ -15,8 +15,9 @@ ConstantBufferDX12::~ConstantBufferDX12()
 	delete constantBuffer;
 }
 
-void ConstantBufferDX12::setData(const void * data, size_t size, Material * m, unsigned int location)
+void ConstantBufferDX12::setData(const void * data, size_t inSize, Material * m, unsigned int location)
 {
+	size_t size = d3dUtil::CalcConstantBufferByteSize(inSize);
 	if (this->size < size)
 	{
 		this->size = size;
