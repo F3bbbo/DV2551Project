@@ -17,10 +17,11 @@ DirectX::SimpleMath::Vector2 ExtractUVCoords(aiVector3D vec)
 
 Assimp::Importer& MeshReader::getImporter(unsigned int key)
 {
-	
 	//If key doesn't exist create a new importer for the key.
 	if (importers[key] == nullptr)
 	{
+		//Only one thread can add new importer at a time.
+		std::lock_guard<std::mutex> guard(importerLock);
 		importers[key] = new Assimp::Importer();
 	}
 	return *importers[key];

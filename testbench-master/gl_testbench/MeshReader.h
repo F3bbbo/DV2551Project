@@ -14,6 +14,7 @@ class MeshReader
 private:
 	DirectX12Renderer * renderer;
 	std::map<unsigned int, Assimp::Importer*> importers;
+	std::mutex importerLock;
 	Assimp::Importer& getImporter(unsigned int key);
 	void extractMeshes(const aiScene* scene, std::vector<std::shared_ptr<Mesh>> &meshes, std::shared_ptr<Texture2D> texture, unsigned int key);
 public:
