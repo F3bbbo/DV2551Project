@@ -20,7 +20,7 @@ Resource::Resource(ID3D12Device* device, D3D12_HEAP_PROPERTIES heapProperties, D
 	state = resState;
 }
 
-void Resource::updateResource(ID3D12GraphicsCommandList* commandList, unsigned char * data, int rowPitch, int slicePitch)
+void Resource::updateResource(ID3D12GraphicsCommandList* commandList, const void * data, int rowPitch, int slicePitch)
 {
 	D3D12_SUBRESOURCE_DATA textureData;
 	textureData.pData = data; // pointer to our image data

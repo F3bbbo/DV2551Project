@@ -47,7 +47,7 @@ void ConstantBufferDX12::setData(const void * data, size_t inSize, Material * m,
 		constantBuffer->updateState(commandList, D3D12_RESOURCE_STATE_COPY_DEST);
 	}
 
-	constantBuffer->updateResource(commandList, (unsigned char*)data, size, size);
+	constantBuffer->updateResource(commandList, data, size, size);
 	constantBuffer->updateState(commandList, D3D12_RESOURCE_STATE_COMMON);
 	this->location = location;
 	//D3D12_RANGE range = { 0, 0 }; //We do not intend to read this resource on the CPU.

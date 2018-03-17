@@ -20,7 +20,7 @@ class Resource
 {
 public:
 	Resource(ID3D12Device* device, D3D12_HEAP_PROPERTIES heapProperties, D3D12_RESOURCE_DESC resourceDesc, D3D12_RESOURCE_STATES resState);
-	void updateResource(ID3D12GraphicsCommandList* commandList, unsigned char* data, int rowPitch, int slicePitch);
+	void updateResource(ID3D12GraphicsCommandList* commandList, const void* data, int rowPitch, int slicePitch);
 	void updateState(ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES newState);
 	~Resource();
 	ID3D12Resource* getResource();
