@@ -15,12 +15,12 @@ ConstantBufferDX12::~ConstantBufferDX12()
 	delete constantBuffer;
 }
 
-void ConstantBufferDX12::setData(const void * data, size_t inSize, Material * m, unsigned int location)
+void ConstantBufferDX12::setData(const void * data, size_t size, Material * m, unsigned int location)
 {
-	size_t size = d3dUtil::CalcConstantBufferByteSize(inSize);
-	if (this->size < size)
+	size_t buffSize = d3dUtil::CalcConstantBufferByteSize(size);
+	if (this->size < buffSize)
 	{
-		this->size = size;
+		this->size = buffSize;
 		D3D12_HEAP_PROPERTIES heapProperties = {};
 		heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
 		heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -30,7 +30,7 @@ void ConstantBufferDX12::setData(const void * data, size_t inSize, Material * m,
 
 		D3D12_RESOURCE_DESC resourceDesc = {};
 		resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-		resourceDesc.Width = size;
+		resourceDesc.Width = buffSize;
 		resourceDesc.Height = 1;
 		resourceDesc.DepthOrArraySize = 1;
 		resourceDesc.MipLevels = 1;
