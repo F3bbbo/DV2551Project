@@ -10,9 +10,9 @@ DirectX::SimpleMath::Vector4 DXVector4(aiVector3D vec, float w)
 {
 	return DirectX::SimpleMath::Vector4(vec.x, vec.y, vec.z, w);
 }
-DirectX::SimpleMath::Vector2 ExtractUVCoords(aiVector3D vec)
+DirectX::SimpleMath::Vector4 ExtractUVCoords(aiVector3D vec)
 {
-	return DirectX::SimpleMath::Vector2(vec.x, 1 - vec.y);
+	return DirectX::SimpleMath::Vector4(vec.x, 1 - vec.y, 0, 0);
 }
 
 Assimp::Importer& MeshReader::getImporter(unsigned int key)
@@ -36,7 +36,7 @@ void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_
 		aiMesh* aiMesh = aiMeshes[i];
 		std::vector<DirectX::SimpleMath::Vector4> pos;
 		std::vector<DirectX::SimpleMath::Vector4> norm;
-		std::vector<DirectX::SimpleMath::Vector2> texCoords;
+		std::vector<DirectX::SimpleMath::Vector4> texCoords;
 		std::vector<int> index;
 
 		//Extract vertex data
