@@ -4,7 +4,7 @@
 StructuredBuffer<float4> pos : register(CONCAT(t, POS), space0);
 StructuredBuffer<float4> norm : register(CONCAT(t, NORM), space0);
 StructuredBuffer<float4> texCoord : register(CONCAT(t, UVCOORD), space0);
-StructuredBuffer<int> indexBuffer : register(CONCAT(t, INDEXBUFF), space0);
+StructuredBuffer<unsigned int> indexBuffer : register(CONCAT(t, INDEXBUFF), space0);
 
 cbuffer WMatrixBuf : register(CONCAT(b, WORLDMATRIX_SLOT), space0)
 {

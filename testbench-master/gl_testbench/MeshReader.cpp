@@ -37,7 +37,7 @@ void MeshReader::extractMeshes(const aiScene * aiScene, std::vector<std::shared_
 		std::vector<DirectX::SimpleMath::Vector4> pos;
 		std::vector<DirectX::SimpleMath::Vector4> norm;
 		std::vector<DirectX::SimpleMath::Vector4> texCoords;
-		std::vector<int> index;
+		std::vector<unsigned int> index;
 
 		//Extract vertex data
 		for (unsigned int j = 0; j < aiMesh->mNumVertices; j++)

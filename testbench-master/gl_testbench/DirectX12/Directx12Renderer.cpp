@@ -25,9 +25,7 @@ DirectX12Renderer::DirectX12Renderer()
 	Root.setCommandList(Thread[MAIN_THREAD].directCommandList);
 	Root.CreateRootsignature(getDevice());
 	Root.bindRootSignature();
-	
-	camera = new CameraDX12(width, height, 0.1f, 0.5f, 1.f);
-	camera->setCBuffer(makeConstantBuffer("VPMatrix", VPMATRIX_SLOT));
+
 
 	rotatecheckpitch = false;
 	rotatecheckyaw = false;
@@ -247,6 +245,8 @@ int DirectX12Renderer::initialize(unsigned int width, unsigned int height)
 {
 	msg = { 0 };
 	wndHandle =  InitWindow(GetModuleHandle(NULL),width,height);
+	camera = new CameraDX12(width, height, 0.1f, 0.5f, 1.f);
+	camera->setCBuffer(makeConstantBuffer("VPMatrix", VPMATRIX_SLOT));
 	createSwapChain(wndHandle);
 	createRTV();
 	createDepthStencil();
@@ -592,8 +592,8 @@ void DirectX12Renderer::createViewPortScissor()
 	//Create scissor rect
 	scissorRect.top = 0;
 	scissorRect.left = 0;
-	scissorRect.bottom = height;
-	scissorRect.right = width;
+	scissorRect.bottom = (LONG) height;
+	scissorRect.right = (LONG) width;
 }
 
 void DirectX12Renderer::createDescriptorHeaps()
