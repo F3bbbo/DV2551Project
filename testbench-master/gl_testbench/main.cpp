@@ -214,7 +214,7 @@ void fillCell(int x, int y, int amount)
 		float scale[3] = { 1, 1, 1 };
 		float rot[3] = { 0, 0, 0 };
 		//Object* object = new Object(pos, scale, rot, "Models/NewLowPolyTree.fbx","Models/PolyTreeTexture.png");
-		Object* object = new Object(pos, scale, rot, "Models/HigherPolyTree.fbx", "Models/PolyTreeTexture.png");
+		Object* object = new Object(pos, scale, rot, MODELNAME, TEXTURENAME);
 		grid->addMesh(x, y, object);
 	}
 
@@ -234,9 +234,9 @@ void setThreadData(HANDLE &threadHandle, std::vector<Object*> &objectList, std::
 }
 void fillGrid()
 {
-	for (int x = 0; x < 10; x++)
+	for (int x = 0; x < GRIDWIDTH; x++)
 	{
-		for (int y = 0; y < 10; y++)
+		for (int y = 0; y < GRIDHEIGHT; y++)
 			fillCell(x, y, NROFTREES);
 	}
 }

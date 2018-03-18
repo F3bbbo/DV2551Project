@@ -21,10 +21,15 @@
 #define SAMPLETIME 10
 
 //Testing defines
-#define NUMBER_OF_THREADS 17
-#define NROFTREES 2
+#define NUMBER_OF_THREADS 7
+#define NROFTREES 4
 #define LOADINGTHRESHOLD 4000
 #define NEARPLANE 0.1f
 #define FARPLANE 10000.f
 #define GRIDWIDTH 100
 #define GRIDHEIGHT 100
+#define cellWidth 400
+#define cellHeight 400
+
+#define MODELNAME "Models/18kTree.fbx"
+#define TEXTURENAME "Models/PolyTreeTexture512.png"
