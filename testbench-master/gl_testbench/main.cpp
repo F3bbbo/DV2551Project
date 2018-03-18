@@ -385,18 +385,14 @@ void threadDataCollecting(bool* work)
 	std::string fileName;
 	fileName = "data" + std::to_string(NUMBER_OF_LOADING_THREADS) + ".txt";
 
-	bool exist = false;
 	if (FILE *file = fopen(fileName.c_str(), "r")) {
 		fclose(file);
-		exist = true;
+		remove(fileName.c_str());
 	}
 
 	file.open(fileName, ios_base::app);
-	if (!exist)
-	{
-		file << "n\tMeshesToLoad\tMeshesLoaded\n";
-		file.flush();
-	}
+	file << "n\tMeshesToLoad\tMeshesLoaded\n";
+	file.flush();
 	
 	std::string info = "";
 	while (work[0])
