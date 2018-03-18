@@ -205,11 +205,12 @@ void fillCell(int x, int y, int amount)
 {
 	srand(time(NULL));
 
-	float randNumb;
+	float randNumbX, randNumbY;
 	for (int i = 0; i < amount; i++)
 	{
-		randNumb = (float)(rand() % 1000) / 1000.f;
-		float pos[3] = { x * cellWidth + randNumb, 1, y * cellWidth + randNumb };
+		randNumbX = (float)(rand() % cellWidth);
+		randNumbY = (float)(rand() % cellHeight);
+		float pos[3] = { x * cellWidth + randNumbX, 1, y * cellWidth + randNumbY };
 		float scale[3] = { 1, 1, 1 };
 		float rot[3] = { 0, 0, 0 };
 		//Object* object = new Object(pos, scale, rot, "Models/NewLowPolyTree.fbx","Models/PolyTreeTexture.png");
