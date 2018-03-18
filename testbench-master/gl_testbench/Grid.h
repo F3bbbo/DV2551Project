@@ -4,9 +4,7 @@
 #include <dxgi1_5.h>
 #include <SimpleMath.h>
 #include <vector>
-
-#define cellWidth 1000
-#define cellHeight 1000
+#include "Defines.h"
 
 using namespace DirectX::SimpleMath;
 

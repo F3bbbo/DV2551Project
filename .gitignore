@@ -8,3 +8,4 @@
 *.log
 *.tlog
 testbench-master/gl_testbench/data\.txt
+*.txt
