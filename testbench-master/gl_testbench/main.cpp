@@ -401,7 +401,7 @@ void threadDataCollecting(bool* work)
 	std::string info = "";
 	while (work[0])
 	{
-		file << iteration << '\t';
+		file << iteration * SAMPLETIME / 1000.0f << '\t';
 		meshesLoaded = 0;
 		meshesToLoad = 0;
 		for(int m = 0; m < activeCells.size(); m++)
@@ -420,7 +420,7 @@ void threadDataCollecting(bool* work)
 		
 		file.flush();
 		iteration++;
-		this_thread::sleep_for(chrono::seconds(1));
+		this_thread::sleep_for(chrono::milliseconds(SAMPLETIME));
 	}
 	file.close();
 	return;

@@ -21,6 +21,9 @@
 #define ROTATIONSPEED 0.001
 
 
+//DataCollecter
+#define SAMPLETIME 10
+
 //Far close plane
 
 #define NEARPLANE 0.1f
