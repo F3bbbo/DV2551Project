@@ -110,13 +110,14 @@ void updateDelta()
 	last = start;
 	start = SDL_GetPerformanceCounter();
 	double deltaTime = (double)((start - last) * 1000.0 / SDL_GetPerformanceFrequency());
-	deltatimeGlobale = deltaTime;
+//	deltatimeGlobale = deltaTime;
 	// moving average window of WINDOWS_SIZE
 	lastSum -= avg[loop];
 	lastSum += deltaTime;
 	avg[loop] = deltaTime;
 	loop = (loop + 1) % WINDOW_SIZE;
 	gLastDelta = (lastSum / WINDOW_SIZE);
+	deltatimeGlobale = gLastDelta;
 };
 
 // TOTAL_TRIS pretty much decides how many drawcalls in a brute force approach.
