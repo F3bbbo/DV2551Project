@@ -98,6 +98,7 @@ const int2 gridStart = { -5, -5 };
 
 thread dataCollector;
 
+std::chrono::system_clock::time_point timer;
 void updateDelta()
 {
 	#define WINDOW_SIZE 10
@@ -149,7 +150,10 @@ void run() {
 			if (windowEvent.type == SDL_KEYUP && windowEvent.key.keysym.sym == SDLK_ESCAPE) break;
 		}
 
-		activeCells2;
+		auto stamp = std::chrono::system_clock::now();
+		chrono::duration<float> elapsedTime = stamp - timer;
+		if (elapsedTime.count() >= TIMELIMIT)
+			break;
 		updateGridList();
 		LaunchThreads();
 		CheckThreadLoading();
@@ -434,13 +438,13 @@ int main(int argc, char *argv[])
 	bool work[1];
 	work[0] = true;
 
-	dataCollector = thread(threadDataCollecting, work);
-
 	initiateThreads();
 
 	for (int i = 0; i < NUMBER_OF_LOADING_THREADS; i++)
 		changedState[i] = true;
 
+	dataCollector = thread(threadDataCollecting, work);
+	timer = std::chrono::system_clock::now(); // start timer
 	run();
 	work[0] = false;
 	dataCollector.join();

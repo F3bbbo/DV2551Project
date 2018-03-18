@@ -19,6 +19,7 @@
 
 //DataCollecter
 #define SAMPLETIME 10
+#define TIMELIMIT 30 // seconds
 
 //Testing defines
 #define NUMBER_OF_THREADS 7
