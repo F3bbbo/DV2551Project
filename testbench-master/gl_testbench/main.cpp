@@ -303,6 +303,7 @@ void updateGridList()
 					m.~shared_ptr();
 				delete objectsToRender[y * GRIDWIDTH + x];
 				objectsToRender.erase(y * GRIDWIDTH + x);
+				activeCells.erase(activeCells.begin() + i);
 			}
 		}
 	}
