@@ -76,7 +76,7 @@ std::shared_ptr<VertexBuffer> uvs;
 void updateScene();
 void renderScene();
 
-void updateGridList();
+void cleanMeshList();
 char gTitleBuff[256];
 double gLastDelta = 0.0;
 
@@ -91,7 +91,6 @@ void CheckThreadLoading();
 bool changedState[NUMBER_OF_LOADING_THREADS];
 HANDLE threads[NUMBER_OF_LOADING_THREADS];
 vector<int2> activeCells;
-vector<vector<int2>> activeCells2;
 threadinfo threadData[NUMBER_OF_LOADING_THREADS];
 
 const int2 gridStart = { -5, -5 };
@@ -154,7 +153,7 @@ void run() {
 		chrono::duration<float> elapsedTime = stamp - timer;
 		if (elapsedTime.count() >= TIMELIMIT)
 			break;
-		updateGridList();
+		cleanMeshList();
 		LaunchThreads();
 		CheckThreadLoading();
 		/*for (int i = 0; i < activeCells.size(); i++)
@@ -267,41 +266,17 @@ void createGlobalData()
 	techniques.push_back(triangleT);
 }
 
-void updateGridList()
+void cleanMeshList()
 {
-	Vector2 camPos = { renderer->camera->getPosition().x, renderer->camera->getPosition().z };
-	int xStartDist = min(max(0, int(((int)camPos.x - LOADINGTHRESHOLD) / (float)cellWidth)), GRIDWIDTH);
-	int yStartDist = min(max(0, int(((int)camPos.y - LOADINGTHRESHOLD) / (float)cellHeight)), GRIDHEIGHT);
-	int xEndDist = min(max(0, int(((int)camPos.x + LOADINGTHRESHOLD) / (float)cellWidth)), GRIDWIDTH);
-	int yEndDist = min(max(0, int(((int)camPos.y + LOADINGTHRESHOLD) / (float)cellHeight)), GRIDHEIGHT);
-
-
-
-	//Check if cells needs to be loaded
-	for (int x = xStartDist; x <= xEndDist; x++)
-	{
-		for (int y = yStartDist; y <= yEndDist; y++)
-		{
-			if ((*grid)[x][y]->status == NOT_LOADED)
-			{
-				(*grid)[x][y]->status = PENDING_LOAD;
-				activeCells.push_back(int2(x, y));
-			}
-		}
-	}
-
+	int2 camPos = { (int)(renderer->camera->getPosition().x / (float)cellWidth), (int)(renderer->camera->getPosition().z / (float)cellHeight) };
+	
 	//Remove
 	for (int i = 0; i < activeCells.size(); i++)
 	{
 		int x = activeCells[i].x;
 		int y = activeCells[i].y;
-		if (x < xStartDist || x > xEndDist || y < yStartDist || y > yEndDist)
+		if (abs(x - camPos.x) > LOADINGTHRESHOLD || abs(y - camPos.y) > LOADINGTHRESHOLD)
 		{
-			if ((*grid)[x][y]->status == PENDING_LOAD)
-			{
-				(*grid)[x][y]->status = NOT_LOADED;
-				activeCells.erase(activeCells.begin() + i);
-			}
 			if ((*grid)[x][y]->status == LOADED)
 			{
 				(*grid)[x][y]->status = NOT_LOADED;
@@ -328,33 +303,46 @@ void initiateThreads()
 		threads[i] = (HANDLE)_beginthreadex(0, 0, &threadfunctionloadingdata, &threadData[i], 0, 0);
 	}
 }
+
+void findCellToLoad(int2& cellIndex, int halfWidth, int2 camPos)
+{
+	for (int i = 1; i < halfWidth; i++)
+	{
+		for (int x = max(camPos.x, 0); x < min(camPos.x + i, GRIDWIDTH); x++)
+		{
+			for (int y = max(camPos.y, 0); y < min(camPos.y + i, GRIDHEIGHT); y++)
+			{
+				if ((*grid)[x][y]->status == NOT_LOADED)
+				{
+					(*grid)[x][y]->status = LOADING;
+					cellIndex = { x, y };
+					return;
+				}
+			}
+		}
+	}
+}
 void LaunchThreads()
 {
 	for (int tID = 0; tID < NUMBER_OF_LOADING_THREADS; tID++)
 	{
 		if (threadData[tID].done && changedState[tID])
 		{
-			int cellIndex = -1;
+			int2 camPos = { (int)(renderer->camera->getPosition().x / (float)cellWidth), (int)(renderer->camera->getPosition().z / (float)cellHeight) };
 
-			// Find a cell that a thread should start to load
-			for (int j = 0; j < activeCells.size(); j++)
-			{
-				if ((*grid)[activeCells[j].x][activeCells[j].y]->status == PENDING_LOAD)
-				{
-					(*grid)[activeCells[j].x][activeCells[j].y]->status = LOADING;
-					cellIndex = j;
-					break;
-				}
-			}
-			if (cellIndex == -1) // return if no grid cells needs to be loaded
+			int halfWidth = LOADINGTHRESHOLD;
+			int2 cellIndex = {-1, -1};
+
+			findCellToLoad(cellIndex, halfWidth, camPos);
+			if (cellIndex.x == -1) // only need to check if one is -1 since it's not valid anyways
 				return;
 
 			cellRender* cell = new cellRender();
 			cell->objects = new std::vector<std::shared_ptr<Mesh>>();
 			cell->thread = tID;
-			objectsToRender[activeCells[cellIndex].y * GRIDWIDTH + activeCells[cellIndex].x] = cell;
+			objectsToRender[cellIndex.y * GRIDWIDTH + cellIndex.x] = cell;
 
-			setThreadData(threads[tID], (*grid)[activeCells[cellIndex].x][activeCells[cellIndex].y]->objectList, cell->objects, tID, activeCells[cellIndex].x, activeCells[cellIndex].y);
+			setThreadData(threads[tID], (*grid)[cellIndex.x][cellIndex.y]->objectList, cell->objects, tID, cellIndex.x, cellIndex.y);
 			ResumeThread(threads[tID]);
 			changedState[tID] = false;
 		}
@@ -377,6 +365,7 @@ void CheckThreadLoading()
 			(*grid)[threadData[i].cellX][threadData[i].cellY]->status = LOADED;
 			objectsToRender[index]->isReady = true;
 			changedState[i] = true;
+			activeCells.push_back(int2(threadData[i].cellX, threadData[i].cellY));
 		}
 	}
 }
@@ -399,19 +388,20 @@ void threadDataCollecting(bool* work)
 	file.flush();
 	
 	std::string info = "";
+	int2 camPos;
 	while (work[0])
 	{
+		camPos = { (int)(renderer->camera->getPosition().x / (float)cellWidth), (int)(renderer->camera->getPosition().z / (float)cellHeight) };
+
 		file << iteration * SAMPLETIME / 1000.0f << '\t';
-		meshesLoaded = 0;
-		file << activeCells.size() * NROFTREES << '\t'; //amount of objects in the scene
+
+		int magicNumber = (min(camPos.x + LOADINGTHRESHOLD, GRIDWIDTH) - max(camPos.x - LOADINGTHRESHOLD, 0))
+			* (min(camPos.y + LOADINGTHRESHOLD, GRIDHEIGHT) - max(camPos.y - LOADINGTHRESHOLD, 0))
+			* NROFTREES;
+
+		file << magicNumber << '\t'; //amount of objects in the scene
 		
-		for (auto readyToRender : objectsToRender)
-		{
-			if (readyToRender.second != nullptr && readyToRender.second->isReady == true)
-				meshesLoaded += readyToRender.second->objects->size();
-		}
-		
-		file << meshesLoaded << '\n';
+		file << activeCells.size() * NROFTREES << '\n';
 		
 		file.flush();
 		iteration++;

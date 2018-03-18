@@ -24,7 +24,7 @@
 //Testing defines
 #define NUMBER_OF_THREADS 7
 #define NROFTREES 4
-#define LOADINGTHRESHOLD 4000
+#define LOADINGTHRESHOLD 3
 #define NEARPLANE 0.1f
 #define FARPLANE 10000.f
 #define GRIDWIDTH 100
