@@ -36,6 +36,11 @@ void CameraDX12::moveCamera(Vector3 positionchange)
 	position = positionchange ;
 }
 
+void CameraDX12::setCameraPosition(Vector3 positon)
+{
+	position = positon;
+}
+
 
 void CameraDX12::setCBuffer(std::shared_ptr<ConstantBuffer> cb)
 {

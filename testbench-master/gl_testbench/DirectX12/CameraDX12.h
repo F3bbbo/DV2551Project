@@ -32,6 +32,7 @@ public:
 	float runSpeed;
 	void moveCamera(Vector3 translation, bool run, float dt);
 	void moveCamera(Vector3 translation);
+	void setCameraPosition(Vector3 positon);
 	void setCBuffer(std::shared_ptr<ConstantBuffer> cb);
 	void setViewMatrix(Matrix& matrix);
 	void setProjectionMatrix(Matrix& matrix);

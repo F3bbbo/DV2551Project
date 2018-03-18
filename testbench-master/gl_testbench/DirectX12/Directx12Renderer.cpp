@@ -685,12 +685,17 @@ void DirectX12Renderer::updateCamera(float delta)
 		move.Normalize();
 
 
+		Vector3 vectortomove= ( (move*MOVEMENTSPEED* delta));
+		float lengthOfOtherVector = vectortomove.Length();
 
-		if (lengthDist > 12)
+		if (lengthDist > lengthOfOtherVector)
 			camera->moveCamera(camera->getPosition() + (move*MOVEMENTSPEED* delta));
 		else
+		{
+			camera->setCameraPosition(Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z));
 			movementdone = true;
-
+			
+		}
 		if(rotatecheckpitch == false)
 		{
 			if (camera->rotatecameracamPitch(walkingpath[m].pitch,delta))
