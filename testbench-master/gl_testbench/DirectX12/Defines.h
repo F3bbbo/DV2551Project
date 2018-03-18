@@ -21,10 +21,10 @@
 #define SAMPLETIME 10
 
 //Testing defines
-#define NUMBER_OF_THREADS 4
-#define NROFTREES 4
+#define NUMBER_OF_THREADS 17
+#define NROFTREES 2
 #define LOADINGTHRESHOLD 4000
 #define NEARPLANE 0.1f
 #define FARPLANE 10000.f
-#define GRIDWIDTH 100
-#define GRIDHEIGHT 100
+#define GRIDWIDTH 10
+#define GRIDHEIGHT 10
