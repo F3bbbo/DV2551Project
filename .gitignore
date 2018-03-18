@@ -7,4 +7,9 @@
 *.db
 *.log
 *.tlog
-testbench-master/gl_testbench/data\.txt
+data*.txt
+
+
+*.iobj
+
+*.ipdb
