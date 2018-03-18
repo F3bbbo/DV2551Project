@@ -673,52 +673,48 @@ void DirectX12Renderer::updateCamera(float delta)
 	if (GetAsyncKeyState(0x44)) //D
 		camera->moveCamera(camera->getRight(), run, delta);
 
-//	camera->getposition();
-	
-		Vector3 lengthofvector =	camera->getPosition() - Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z);
-		float lengthDist = lengthofvector.Length();
-	//	std::cout << lengthDist <<"  "<< delta<<std::endl;
-		if (delta > 2)
-		delta = 2;
-		bool reached = MOVEMENTSPEED > lengthDist;
-		Vector3 move = (Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z) - camera->getPosition());
-		move.Normalize();
+	Vector3 vectorFromCameraPositionToPoint = camera->getPosition() - Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z);
+	float lengthDist = vectorFromCameraPositionToPoint.Length();
+
+	bool reached = MOVEMENTSPEED > lengthDist;
+	Vector3 move = (Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z) - camera->getPosition());
+	move.Normalize();
 
 
-		Vector3 vectortomove= ( (move*MOVEMENTSPEED* delta));
-		float lengthOfOtherVector = vectortomove.Length();
+	Vector3 vectorToMove = ((move*MOVEMENTSPEED* delta));
+	float lengthOfOtherVector = vectorToMove.Length();
 
-		if (lengthDist > lengthOfOtherVector)
-			camera->moveCamera(camera->getPosition() + (move*MOVEMENTSPEED* delta));
-		else
+	if (lengthDist > lengthOfOtherVector)
+		camera->moveCamera(camera->getPosition() + (move*MOVEMENTSPEED* delta));
+	else
+	{
+		camera->setCameraPosition(Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z));
+		movementdone = true;
+
+	}
+	if (rotatecheckpitch == false)
+	{
+		if (camera->rotatecameracamPitch(walkingpath[m].pitch, delta))
+			rotatecheckpitch = true;
+	}
+
+	if (rotatecheckyaw == false)
+	{
+		if (camera->rotatecameracamYaw(walkingpath[m].yaw, delta))
+			rotatecheckyaw = true;
+	}
+
+	if (movementdone && rotatecheckpitch && rotatecheckyaw)
+	{
+		rotatecheckpitch = false;
+		rotatecheckyaw = false;
+		movementdone = false;
+		m++;
+		if (m > walkingpath.size() - 1)
 		{
-			camera->setCameraPosition(Vector3(walkingpath[m].x, walkingpath[m].y, walkingpath[m].z));
-			movementdone = true;
-			
+			m = 0;
 		}
-		if(rotatecheckpitch == false)
-		{
-			if (camera->rotatecameracamPitch(walkingpath[m].pitch,delta))
-				rotatecheckpitch = true;
-		}
-
-		if(rotatecheckyaw == false)
-		{
-			if (camera->rotatecameracamYaw(walkingpath[m].yaw, delta))
-				rotatecheckyaw = true;
-		}
-
-		if(movementdone && rotatecheckpitch && rotatecheckyaw)
-		{
-			rotatecheckpitch = false;
-			rotatecheckyaw = false;
-			movementdone = false;
-			m++;
-			if (m > walkingpath.size()-1)
-			{
-				m = 0;
-			}
-		}
+	}
 
 	camera->update();
 }
