@@ -381,7 +381,6 @@ void threadDataCollecting(bool* work)
 	ofstream file;
 	int iteration = 0;
 	int meshesLoaded;
-	int meshesToLoad;
 	std::string fileName;
 	fileName = "data" + std::to_string(NUMBER_OF_LOADING_THREADS) + ".txt";
 
@@ -399,16 +398,11 @@ void threadDataCollecting(bool* work)
 	{
 		file << iteration * SAMPLETIME / 1000.0f << '\t';
 		meshesLoaded = 0;
-		meshesToLoad = 0;
-		for(int m = 0; m < activeCells.size(); m++)
-		{
-			meshesToLoad += (*grid)[activeCells[m].x][activeCells[m].y]->objectList.size();
-		}
-		file << meshesToLoad << '\t'; //amount of objects in the scene
+		file << activeCells.size() * NROFTREES << '\t'; //amount of objects in the scene
 		
 		for (auto readyToRender : objectsToRender)
 		{
-			if (readyToRender.second->isReady == true)
+			if (readyToRender.second != nullptr && readyToRender.second->isReady == true)
 				meshesLoaded += readyToRender.second->objects->size();
 		}
 		

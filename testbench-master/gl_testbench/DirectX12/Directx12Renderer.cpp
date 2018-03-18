@@ -722,15 +722,15 @@ void DirectX12Renderer::createwalkingpath()
 {
 	walkingpath.push_back({ 5500, 200, -1000, 0, 0 });
 
-	walkingpath.push_back({ 5500, 200, 5500 ,0, -M_PI / 2.f });
+	walkingpath.push_back({ 5500, 200, 5500 ,0, 0/*-M_PI / 2.f*/ });
 
 	walkingpath.push_back({ 2500, 200, 5500, 0, 0 });
 
-	walkingpath.push_back({ -1000, 200, 5500, 0, -M_PI / 2.f });
+	walkingpath.push_back({ -1000, 200, 5500, 0, 0/*-M_PI / 2.f*/ });
 
-	walkingpath.push_back({ -1000, 200, 0, 0, -M_PI });
+	walkingpath.push_back({ -1000, 200, -1000, 0, 0/*-M_PI*/ });
 
-	walkingpath.push_back({ 0, 200, 0, 0, 0 });
+	walkingpath.push_back({ 0, 200, -1000.f, 0, 0 });
 }
 void DirectX12Renderer::executeCopyCommandList(int ThreadID)
 {

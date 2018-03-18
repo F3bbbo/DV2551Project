@@ -21,7 +21,7 @@
 #define SAMPLETIME 10
 
 //Testing defines
-#define NUMBER_OF_THREADS 17
+#define NUMBER_OF_THREADS 3
 #define NROFTREES 2
 #define LOADINGTHRESHOLD 4000
 #define NEARPLANE 0.1f
