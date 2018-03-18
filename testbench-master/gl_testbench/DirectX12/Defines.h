@@ -28,8 +28,8 @@
 #define FARPLANE 10000.f
 #define GRIDWIDTH 100
 #define GRIDHEIGHT 100
-#define cellWidth 400
-#define cellHeight 400
+#define cellWidth 1000
+#define cellHeight 1000
 
 #define MODELNAME "Models/18kTree.fbx"
 #define TEXTURENAME "Models/PolyTreeTexture512.png"
