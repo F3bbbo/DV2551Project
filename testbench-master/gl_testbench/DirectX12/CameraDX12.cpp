@@ -9,7 +9,7 @@ CameraDX12::CameraDX12(float width, float height, float rotationSpeed, float wal
 	this->runSpeed = runSpeed;
 	rotatecounter = 0;
 	rotatecounterPitch = 0;
-	position = Vector3(0.f, 0.f, -1.f);
+	position = Vector3(0.f, 200.f, -1000.f);
 	rightVector = Vector3(1.f, 0.f, 0.f);
 	upVector = Vector3(0.f, 1.f, 0.f);
 	forwardVector = Vector3(0.f, 0.f, 1.f);
