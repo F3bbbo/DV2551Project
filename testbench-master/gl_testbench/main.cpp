@@ -388,7 +388,7 @@ void threadDataCollecting(bool* work)
 	}
 
 	file.open(fileName, ios_base::app);
-	file << "n\tMeshesToLoad\tMeshesLoaded\n";
+	file << "n\tMeshesToLoad\tMeshesLoaded\percentage(Loaded/ToLoad)\n";
 	file.flush();
 	
 	std::string info = "";
@@ -405,8 +405,9 @@ void threadDataCollecting(bool* work)
 
 		file << magicNumber << '\t'; //amount of objects in the scene
 		
-		file << activeCells.size() * NROFTREES << '\n';
+		file << activeCells.size() * NROFTREES << '\t';
 		
+		file << (float)(activeCells.size() * NROFTREES) / float(magicNumber) << '\n';
 		file.flush();
 		iteration++;
 		this_thread::sleep_for(chrono::milliseconds(SAMPLETIME));
