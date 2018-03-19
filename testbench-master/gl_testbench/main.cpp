@@ -308,9 +308,9 @@ void findCellToLoad(int2& cellIndex, int halfWidth, int2 camPos)
 {
 	for (int i = 1; i < halfWidth; i++)
 	{
-		for (int x = max(camPos.x, 0); x < min(camPos.x + i, GRIDWIDTH); x++)
+		for (int x = max(camPos.x - i, 0); x < min(camPos.x + i, GRIDWIDTH); x++)
 		{
-			for (int y = max(camPos.y, 0); y < min(camPos.y + i, GRIDHEIGHT); y++)
+			for (int y = max(camPos.y- i, 0); y < min(camPos.y + i, GRIDHEIGHT); y++)
 			{
 				if ((*grid)[x][y]->status == NOT_LOADED)
 				{
