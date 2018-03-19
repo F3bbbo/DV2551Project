@@ -39,7 +39,7 @@ Vector2 oldCamPos;
 using namespace std;
 DirectX12Renderer* renderer;
 Grid* grid;
-
+clock_t starttime, endtime;
 struct int2
 {
 	int2(int x, int y) { this->x = x; this->y = y; };
@@ -117,7 +117,7 @@ void updateDelta()
 	avg[loop] = deltaTime;
 	loop = (loop + 1) % WINDOW_SIZE;
 	gLastDelta = (lastSum / WINDOW_SIZE);
-	deltatimeGlobale = gLastDelta;
+//	deltatimeGlobale = gLastDelta;
 };
 
 // TOTAL_TRIS pretty much decides how many drawcalls in a brute force approach.
@@ -172,7 +172,11 @@ void run() {
 void updateScene()
 {
 	
+	
+	endtime = clock();
+	deltatimeGlobale = (float)(endtime - starttime);
 	renderer->updateCamera(deltatimeGlobale);
+	starttime = endtime;
 	return;
 };
 
@@ -413,6 +417,7 @@ void threadDataCollecting(bool* work)
 #undef main
 int main(int argc, char *argv[])
 {
+	starttime = clock();
 	oldCamPos.x = 0;
 	oldCamPos.y = 0;
 	renderer = static_cast<DirectX12Renderer*>(Renderer::makeRenderer(Renderer::BACKEND::DX12));
