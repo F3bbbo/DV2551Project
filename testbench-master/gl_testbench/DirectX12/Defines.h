@@ -19,10 +19,10 @@
 
 //DataCollecter
 #define SAMPLETIME 10
-#define TIMELIMIT 30 // seconds
+#define TIMELIMIT 50 // seconds
 
 //Testing defines
-#define NUMBER_OF_THREADS 7
+#define NUMBER_OF_THREADS 10
 #define NROFTREES 4
 #define LOADINGTHRESHOLD 3
 #define NEARPLANE 0.1f
