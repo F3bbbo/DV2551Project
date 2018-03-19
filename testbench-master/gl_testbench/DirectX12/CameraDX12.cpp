@@ -1,7 +1,7 @@
 #include "CameraDX12.h"
 #include "IA.h"
 #include "Defines.h"
-
+#define M_PI    3.14159265358979323846264338327950288   /* pi */
 CameraDX12::CameraDX12(float width, float height, float rotationSpeed, float walkSpeed, float runSpeed)
 {
 	this->rotationSpeed = rotationSpeed;
@@ -93,13 +93,17 @@ void CameraDX12::update()
 	VPMatrix = viewMatrix * projectionMatrix;
 	VPMatrix = VPMatrix.Transpose();
 	
+
+		
+
+
 	cBuffer->setData(&VPMatrix, sizeof(VPMatrix), nullptr, VPMATRIX_SLOT);
 //	cBuffer->bind();
 }
 
 bool CameraDX12::rotatecameracamYaw(float rotatedegree,float speed)
 {
-
+	
 	float value = (ROTATIONSPEED * speed);
 
 	if (rotatecounter >= abs(rotatedegree) )
@@ -120,14 +124,22 @@ bool CameraDX12::rotatecameracamYaw(float rotatedegree,float speed)
 		camYaw = camYaw + value;
 		rotatecounter = rotatecounter + value;
 		}
+
+		if (M_PI * 2 < camYaw)
+			camYaw = 0;
+
 		return false;
 	}
+
+
+
 }
 
 
 bool CameraDX12::rotatecameracamPitch(float rotatedegree, float speed)
 {
-	if (rotatecounterPitch >= rotatedegree)
+	float value = (ROTATIONSPEED * speed);
+	if (rotatecounterPitch >= abs(rotatedegree))
 	{
 		rotatecounterPitch = 0;
 		return true;
@@ -136,15 +148,20 @@ bool CameraDX12::rotatecameracamPitch(float rotatedegree, float speed)
 	{
 		if (rotatedegree < 0)
 		{
-			camPitch = camPitch - (ROTATIONSPEED * speed);
+			camPitch = camPitch - value;
+			rotatecounterPitch = rotatecounterPitch + value;
+			//		rotatecounter = camYaw;
 		}
 		else
-		camPitch = camPitch + (ROTATIONSPEED * speed);
-		rotatecounterPitch = rotatecounterPitch + 0.001;
+		{
+			camPitch = camPitch + value;
+			rotatecounterPitch = rotatecounterPitch + value;
+		}
+		if (M_PI * 2 < camPitch)
+			camPitch = 0;
 		return false;
 	}
 }
-
 Matrix CameraDX12::getViewMatrix()
 {
 	return viewMatrix;
