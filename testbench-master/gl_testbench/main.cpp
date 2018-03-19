@@ -405,9 +405,9 @@ void threadDataCollecting(bool* work)
 
 		file << magicNumber << '\t'; //amount of objects in the scene
 		
-		file << activeCells.size() * NROFTREES << '\t';
+		file << min(activeCells.size() * NROFTREES, magicNumber) << '\t';
 		
-		file << (float)(activeCells.size() * NROFTREES) / float(magicNumber) << '\n';
+		file << (float)(min(activeCells.size() * NROFTREES, magicNumber) / float(magicNumber)) << '\n';
 		file.flush();
 		iteration++;
 		this_thread::sleep_for(chrono::milliseconds(SAMPLETIME));
